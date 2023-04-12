@@ -19,7 +19,7 @@
   import TaikoL1 from "../../constants/abi/TaikoL1";
   import DetailsModal from "../../components/DetailsModal.svelte";
   import { addressSubsection } from "../../utils/addressSubsection";
-
+  import Web3 from "web3";
   // export let l1Provider: ethers.providers.JsonRpcProvider;
   // export let l1TaikoAddress: string;
   // export let l2Provider: ethers.providers.JsonRpcProvider;
@@ -38,29 +38,31 @@
   // });
 
   let peers = 0;
-  let chain_head_block = 0;
+  let blockNumber;
+  let syncingStatus;
 
   // const registry = new Registry();
   // const counter = new Counter({
   //   name: "my_counter",
   //   help: "A simple counter",
   // });
+  const myNode = new Web3("http://localhost:8545");
+  const taiko = new Web3("https://l2rpc.a2.taiko.xyz");
 
+  async function getSyncingStatus() {
+    syncingStatus = await myNode.eth.isSyncing();
+    blockNumber = await taiko.eth.getBlockNumber();
+    console.log(syncingStatus);
+  }
+  getSyncingStatus();
   onMount(async () => {
     try {
       let response = await fetch(
         "http://localhost:9090/api/v1/query?query=p2p_peers"
       );
       let data = await response.json();
-      let value = data.data.result[0].value[1];
+      let value = data.data.result[1].value[1];
       peers = value;
-
-      response = await fetch(
-        "http://localhost:9090/api/v1/query?query=chain_head_block"
-      );
-      data = await response.json();
-      value = data.data.result[0].value[1];
-      chain_head_block = value;
     } catch (e) {
       console.error(e);
     }
@@ -76,7 +78,16 @@
   {#if peers}
     <p>Peers: {peers}</p>
   {/if}
-  {#if chain_head_block}
-    <p>chain head: {chain_head_block}</p>
+  {#if blockNumber}
+    <p>Total blocks: {blockNumber}</p>
+  {/if}
+  {#if syncingStatus}
+    <p>Node block: {syncingStatus.currentBlock}</p>
+    <p>
+      Progress: {(syncingStatus.currentBlock / syncingStatus.highestBlock) *
+        100}%
+    </p>
+  {:else}
+    <p>Synced!</p>
   {/if}
 </div>

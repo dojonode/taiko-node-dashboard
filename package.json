@@ -70,6 +70,7 @@
     "identicon.js": "^2.3.3",
     "prom-client": "^14.2.0",
     "svelte-i18n": "^3.5.1",
-    "svelte-spa-router": "^3.2.0"
+    "svelte-spa-router": "^3.2.0",
+    "web3": "^1.9.0"
   }
 }
