@@ -20,6 +20,7 @@
   import DetailsModal from "../../components/DetailsModal.svelte";
   import { addressSubsection } from "../../utils/addressSubsection";
   import Web3 from "web3";
+
   // export let l1Provider: ethers.providers.JsonRpcProvider;
   // export let l1TaikoAddress: string;
   // export let l2Provider: ethers.providers.JsonRpcProvider;
@@ -40,28 +41,41 @@
   let peers = 0;
   let blockNumber;
   let syncingStatus;
+  let syncingProgress;
+  let L1Balance;
+  let L2Balance;
 
-  // const registry = new Registry();
-  // const counter = new Counter({
-  //   name: "my_counter",
-  //   help: "A simple counter",
-  // });
   const myNode = new Web3("http://localhost:8545");
-  const taiko = new Web3("https://l2rpc.a2.taiko.xyz");
+  const taikoL2 = new Web3("https://l2rpc.a2.taiko.xyz");
+  const taikoL1 = new Web3("https://l1rpc.a2.taiko.xyz");
 
-  async function getSyncingStatus() {
+  async function fetchMetric() {
+    L1Balance =
+      (await taikoL1.eth.getBalance(
+        "0x2b253d77323abc934f43dcd896636d38ac84972e"
+      )) / 1000000000000000000;
+    L2Balance =
+      (await taikoL2.eth.getBalance(
+        "0x2b253d77323abc934f43dcd896636d38ac84972e"
+      )) / 1000000000000000000;
+
     syncingStatus = await myNode.eth.isSyncing();
-    blockNumber = await taiko.eth.getBlockNumber();
-    console.log(syncingStatus);
+    syncingProgress =
+      (syncingStatus.currentBlock / syncingStatus.highestBlock) * 100;
+    blockNumber = await taikoL2.eth.getBlockNumber();
+    console.log(await myNode.eth.getNodeInfo());
+    // returns: Geth/v1.10.26-stable/linux-amd64/go1.18.10
+    // can maybe be used to check for updates?
+    console.log(await taikoL2.eth.getNodeInfo());
   }
-  getSyncingStatus();
   onMount(async () => {
     try {
+      fetchMetric();
       let response = await fetch(
         "http://localhost:9090/api/v1/query?query=p2p_peers"
       );
       let data = await response.json();
-      let value = data.data.result[1].value[1];
+      let value = data.data.result[0].value[1];
       peers = value;
     } catch (e) {
       console.error(e);
@@ -72,9 +86,7 @@
 <div class="text-center">
   <h1 class="text-2xl">Taiko Node Status</h1>
 </div>
-<div
-  class="grid grid-cols-1 sm:grid-cols-3 md:grid-cols-5 gap-4 text-center my-10"
->
+<div class="gap-4 text-center my-10">
   {#if peers}
     <p>Peers: {peers}</p>
   {/if}
@@ -84,10 +96,13 @@
   {#if syncingStatus}
     <p>Node block: {syncingStatus.currentBlock}</p>
     <p>
-      Progress: {(syncingStatus.currentBlock / syncingStatus.highestBlock) *
-        100}%
+      Progress: {syncingProgress.toFixed(2)}%
     </p>
   {:else}
     <p>Synced!</p>
+  {/if}
+  {#if L1Balance && L2Balance}
+    <p>L1 Balance: {L1Balance.toFixed(6)} ETH</p>
+    <p>L2 Balance: {L2Balance.toFixed(6)} ETH</p>
   {/if}
 </div>
