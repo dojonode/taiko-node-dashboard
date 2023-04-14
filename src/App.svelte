@@ -3,7 +3,6 @@
   import Router from "svelte-spa-router";
   import Home from "./pages/home/Home.svelte";
   import { setupI18n } from "./i18n";
-  import Navbar from "./components/Navbar.svelte";
   import { ethers } from "ethers";
   setupI18n({ withLocale: "en" });
 
@@ -23,7 +22,6 @@
 </script>
 
 <main class="px-6">
-  <Navbar />
   <Router {routes} />
 </main>
 

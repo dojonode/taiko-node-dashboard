@@ -20,7 +20,6 @@
   import DetailsModal from "../../components/DetailsModal.svelte";
   import { addressSubsection } from "../../utils/addressSubsection";
   import Web3 from "web3";
-
   // export let l1Provider: ethers.providers.JsonRpcProvider;
   // export let l1TaikoAddress: string;
   // export let l2Provider: ethers.providers.JsonRpcProvider;
@@ -51,13 +50,17 @@
 
   async function fetchMetric() {
     L1Balance =
-      (await taikoL1.eth.getBalance(
-        "0x2b253d77323abc934f43dcd896636d38ac84972e"
-      )) / 1000000000000000000;
+      parseInt(
+        await taikoL1.eth.getBalance(
+          "0x2b253d77323abc934f43dcd896636d38ac84972e"
+        )
+      ) / 1000000000000000000;
     L2Balance =
-      (await taikoL2.eth.getBalance(
-        "0x2b253d77323abc934f43dcd896636d38ac84972e"
-      )) / 1000000000000000000;
+      parseInt(
+        await taikoL2.eth.getBalance(
+          "0x2b253d77323abc934f43dcd896636d38ac84972e"
+        )
+      ) / 1000000000000000000;
 
     syncingStatus = await myNode.eth.isSyncing();
     syncingProgress =
@@ -83,26 +86,29 @@
   });
 </script>
 
-<div class="text-center">
-  <h1 class="text-2xl">Taiko Node Status</h1>
-</div>
-<div class="gap-4 text-center my-10">
-  {#if peers}
-    <p>Peers: {peers}</p>
-  {/if}
-  {#if blockNumber}
-    <p>Total blocks: {blockNumber}</p>
-  {/if}
-  {#if syncingStatus}
-    <p>Node block: {syncingStatus.currentBlock}</p>
-    <p>
-      Progress: {syncingProgress.toFixed(2)}%
-    </p>
-  {:else}
-    <p>Synced!</p>
-  {/if}
-  {#if L1Balance && L2Balance}
-    <p>L1 Balance: {L1Balance.toFixed(6)} ETH</p>
-    <p>L2 Balance: {L2Balance.toFixed(6)} ETH</p>
-  {/if}
+<div class="flex flex-col items-center py-6">
+  <div class="text-center">
+    <img src="./src/assets/TaikoLogo.png" alt="" width="350px" />
+    <!-- <TaikoLogo width={400} /> -->
+  </div>
+  <div class="gap-4 text-center my-10">
+    {#if peers}
+      <p>Peers: {peers}</p>
+    {/if}
+    {#if blockNumber}
+      <p>Total blocks: {blockNumber}</p>
+    {/if}
+    {#if syncingStatus}
+      <p>Node block: {syncingStatus.currentBlock}</p>
+      <p>
+        Progress: {syncingProgress.toFixed(2)}%
+      </p>
+    {:else}
+      <p>Synced!</p>
+    {/if}
+    {#if L1Balance && L2Balance}
+      <p>L1 Balance: {L1Balance.toFixed(6)} ETH</p>
+      <p>L2 Balance: {L2Balance.toFixed(6)} ETH</p>
+    {/if}
+  </div>
 </div>
