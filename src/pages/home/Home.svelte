@@ -20,6 +20,9 @@
   import DetailsModal from "../../components/DetailsModal.svelte";
   import { addressSubsection } from "../../utils/addressSubsection";
   import Web3 from "web3";
+  // import Prover from "src/components/details/Prover.svelte";
+  // import Node from "src/components/details/Node.svelte";
+  // import Proposer from "src/components/details/Proposer.svelte";
   // export let l1Provider: ethers.providers.JsonRpcProvider;
   // export let l1TaikoAddress: string;
   // export let l2Provider: ethers.providers.JsonRpcProvider;
@@ -37,12 +40,19 @@
   //   value: "system",
   // });
 
+  const nodeTypes = {
+    Node: 0,
+    Proposer: 1,
+    Prover: 2,
+  };
+
   let peers = 0;
   let blockNumber;
   let syncingStatus;
   let syncingProgress;
   let L1Balance;
   let L2Balance;
+  let nodeType = nodeTypes.Node;
 
   const myNode = new Web3("http://localhost:8545");
   const taikoL2 = new Web3("https://l2rpc.a2.taiko.xyz");
@@ -89,8 +99,26 @@
 <div class="flex flex-col items-center py-6">
   <div class="text-center">
     <img src="./src/assets/TaikoLogo.png" alt="" width="350px" />
-    <!-- <TaikoLogo width={400} /> -->
+
+    <div class="block">
+      <button
+        class:active={nodeType === nodeTypes.Node}
+        on:click={() => (nodeType = nodeTypes.Node)}>Node</button
+      >
+      <!-- svelte-ignore a11y-click-events-have-key-events -->
+      <button
+        class:active={nodeType === nodeTypes.Proposer}
+        on:click={() => (nodeType = nodeTypes.Proposer)}>Proposer</button
+      >
+      <button
+        class:active={nodeType === nodeTypes.Prover}
+        on:click={() => (nodeType = nodeTypes.Prover)}>Prover</button
+      >
+    </div>
   </div>
+
+  <!-- Temporary generic metrics -->
+  <!-- ToDO: abstract away and cleanup -->
   <div class="gap-4 text-center my-10">
     {#if peers}
       <p>Peers: {peers}</p>
@@ -111,4 +139,22 @@
       <p>L2 Balance: {L2Balance.toFixed(6)} ETH</p>
     {/if}
   </div>
+
+  <!-- Show the node details/metrics -->
+  <!-- {#if nodeType === nodeTypes.Prover}
+    <Prover />
+  {:else if nodeType === nodeTypes.Proposer}
+    <Proposer />
+  {:else if nodeType === nodeTypes.Node}
+    <Node />
+  {/if} -->
 </div>
+
+<style>
+  button.active {
+    border: 1px solid #fc07c1;
+    border-radius: 5px;
+    background-color: #fc07c1;
+    color: white;
+  }
+</style>
