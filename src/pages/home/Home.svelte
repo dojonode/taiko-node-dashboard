@@ -55,6 +55,7 @@
   let L2Balance;
   let nodeType = nodeTypes.Node;
   let interval: NodeJS.Timer;
+  let imageRef;
 
   const myNode = new Web3("http://localhost:8545");
   const taikoL2 = new Web3("https://l2rpc.a2.taiko.xyz");
@@ -82,6 +83,31 @@
     // returns: Geth/v1.10.26-stable/linux-amd64/go1.18.10
     // can maybe be used to check for updates?
     console.log(await taikoL2.eth.getNodeInfo());
+  }
+
+  let rotationAngle = 0;
+
+  function switchNodeType(type) {
+    if (nodeType === type) return;
+
+    syncingProgress = 0;
+    rotationAngle += 120;
+    imageRef.style.transformOrigin = "center 200px";
+    imageRef.style.transform = `rotate(${rotationAngle}deg)`;
+
+    switch (type) {
+      case nodeTypes.Node:
+        nodeType = nodeTypes.Node;
+        break;
+      case nodeTypes.Proposer:
+        nodeType = nodeTypes.Proposer;
+        break;
+      case nodeTypes.Prover:
+        nodeType = nodeTypes.Prover;
+        break;
+      default:
+        break;
+    }
   }
   onMount(async () => {
     // Interval to fetch metrics every second
@@ -111,14 +137,34 @@
 </script>
 
 <div class="flex flex-col items-center py-6">
-  <div class="text-center">
-    <img src="./src/assets/TaikoLogo.png" alt="" width="350px" />
-    <div class="block nodeTypes flex justify-evenly mt-4">
+  <div class="text-center relative">
+    <img
+      bind:this={imageRef}
+      src="./src/assets/TaikoLogo.png"
+      class="taikoImg"
+      alt=""
+      width="350px"
+    />
+    <div class="nodeTypes block nodeTypes flex justify-evenly mt-4">
+      <button
+        class:active={nodeType === nodeTypes.Node}
+        on:click={() => switchNodeType(nodeTypes.Node)}>Node</button
+      >
+      <button
+        class:active={nodeType === nodeTypes.Proposer}
+        on:click={() => switchNodeType(nodeTypes.Proposer)}>Proposer</button
+      >
+      <button
+        class:active={nodeType === nodeTypes.Prover}
+        on:click={() => switchNodeType(nodeTypes.Prover)}>Prover</button
+      >
+    </div>
+  </div>
+  <!-- <div class="block nodeTypes flex justify-evenly mt-4">
       <button
         class:active={nodeType === nodeTypes.Node}
         on:click={() => (nodeType = nodeTypes.Node)}>Node</button
       >
-      <!-- svelte-ignore a11y-click-events-have-key-events -->
       <button
         class:active={nodeType === nodeTypes.Proposer}
         on:click={() => (nodeType = nodeTypes.Proposer)}>Proposer</button
@@ -128,11 +174,9 @@
         on:click={() => (nodeType = nodeTypes.Prover)}>Prover</button
       >
     </div>
-  </div>
-  <!-- Progress Bar -->
-  <!-- <div id="progressParent" class="pt-5">
-    <div class="progress-bar" style={`width: ${syncingProgress}%`} />
   </div> -->
+
+  <!-- Progress Bar -->
   <div class="progress-bar m-4">
     <div class="progress-bar__background">
       <div class="progress-bar__text">
@@ -179,6 +223,8 @@
   .nodeTypes {
     color: gray;
     font-weight: lighter;
+    z-index: 1;
+    position: relative;
   }
 
   .nodeTypes .active {
@@ -228,5 +274,9 @@
     font-size: 12px;
     color: white;
     z-index: 2;
+  }
+
+  .taikoImg {
+    transition: transform 0.5s ease-in-out;
   }
 </style>
