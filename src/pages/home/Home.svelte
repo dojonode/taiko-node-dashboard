@@ -21,6 +21,7 @@
   import { addressSubsection } from "../../utils/addressSubsection";
   import Web3 from "web3";
   import ProgressBar from "progressbar.js";
+  import Card from "../../components/Card.svelte";
   // import Prover from "src/components/details/Prover.svelte";
   // import Node from "src/components/details/Node.svelte";
   // import Proposer from "src/components/details/Proposer.svelte";
@@ -148,15 +149,17 @@
     <div class="nodeTypes block nodeTypes flex justify-evenly mt-4">
       <button
         class:active={nodeType === nodeTypes.Node}
-        on:click={() => switchNodeType(nodeTypes.Node)}>Node</button
+        on:click={() => switchNodeType(nodeTypes.Node)}>node</button
       >
+      <span class="bar" />
       <button
         class:active={nodeType === nodeTypes.Proposer}
-        on:click={() => switchNodeType(nodeTypes.Proposer)}>Proposer</button
+        on:click={() => switchNodeType(nodeTypes.Proposer)}>proposer</button
       >
+      <span class="bar" />
       <button
         class:active={nodeType === nodeTypes.Prover}
-        on:click={() => switchNodeType(nodeTypes.Prover)}>Prover</button
+        on:click={() => switchNodeType(nodeTypes.Prover)}>prover</button
       >
     </div>
   </div>
@@ -209,6 +212,13 @@
     {/if}
   </div>
 
+  <div class="flex flex-wrap max-w-[552px]">
+    <Card title="Peers" />
+    <Card title="Sync" />
+    <Card title="CPU" />
+    <Card title="memory" />
+  </div>
+
   <!-- Show the node details/metrics -->
   <!-- {#if nodeType === nodeTypes.Prover}
     <Prover />
@@ -228,12 +238,21 @@
   }
 
   .nodeTypes .active {
-    border: 1px solid #ff9fe9;
+    /* border: 1px solid #ff9fe9;
     border-radius: 5px;
-    background-color: #ff9fe9;
-    color: white;
-    font-weight: bold;
     padding: 1px 10px;
+    background-color: #ff9fe9;
+    color: white; */
+    color: #ff9fe9;
+    font-weight: bold;
+  }
+
+  .nodeTypes .bar {
+    margin-top: auto;
+    margin-bottom: auto;
+    width: 2px;
+    height: 15px;
+    background-color: gray;
   }
 
   .progress-bar {
