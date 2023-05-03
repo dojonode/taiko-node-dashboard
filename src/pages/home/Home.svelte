@@ -20,7 +20,6 @@
   import DetailsModal from "../../components/DetailsModal.svelte";
   import { addressSubsection } from "../../utils/addressSubsection";
   import Web3 from "web3";
-  import ProgressBar from "progressbar.js";
   import Card from "../../components/Card.svelte";
   // import Prover from "src/components/details/Prover.svelte";
   // import Node from "src/components/details/Node.svelte";
@@ -213,10 +212,9 @@
   </div>
 
   <div class="flex flex-wrap max-w-[552px]">
-    <Card title="Peers" />
-    <Card title="Sync" />
-    <Card title="CPU" />
-    <Card title="memory" />
+    <Card title="Node Info" body={["10 peers", "11 hours"]} />
+    <Card title="CPU" body={["20 %"]} />
+    <Card title="Memory" body={["10 %", "1.6 GB"]} />
   </div>
 
   <!-- Show the node details/metrics -->

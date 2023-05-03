@@ -1,10 +1,13 @@
 <script lang="ts">
   export let title: string = null;
+  export let body: string[] = null;
 </script>
 
 <div class="modal">
   <h3 class="modal-title font-bold text-lg">{title}</h3>
-  <div class="modal-body">here comes the body</div>
+  {#each body as b}
+    <div class="modal-body">{b}</div>
+  {/each}
 </div>
 
 <style>
@@ -22,8 +25,13 @@
   .modal-title {
     margin-bottom: 15px;
     text-align: left;
+    color: #4a4a4a;
+    font-size: 18px;
   }
 
   .modal-body {
+    margin-bottom: 25px;
+    text-align: center;
+    font-size: 15px;
   }
 </style>
