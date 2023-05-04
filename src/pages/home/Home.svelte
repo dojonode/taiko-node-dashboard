@@ -21,6 +21,18 @@
   import { addressSubsection } from "../../utils/addressSubsection";
   import Web3 from "web3";
   import Card from "../../components/Card.svelte";
+  import Progressbar from "../../components/Progressbar.svelte";
+  import purseIcon from "../../assets/icons/purse.png";
+  import heartIcon from "../../assets/icons/heart.png";
+  import brainIcon from "../../assets/icons/brain.png";
+  import checkmarkIcon from "../../assets/icons/check_mark.png";
+  import fileboxIcon from "../../assets/icons/file_box.png";
+  import loadingIcon from "../../assets/icons/loading.png";
+  import medalIcon from "../../assets/icons/medal.png";
+  import packageIcon from "../../assets/icons/package.png";
+  import recyclingIcon from "../../assets/icons/recycling.png";
+  import timerclockIcon from "../../assets/icons/timer_clock.png";
+  import warningIcon from "../../assets/icons/warning.png";
   // import Prover from "src/components/details/Prover.svelte";
   // import Node from "src/components/details/Node.svelte";
   // import Proposer from "src/components/details/Proposer.svelte";
@@ -92,7 +104,8 @@
 
     syncingProgress = 0;
     rotationAngle += 120;
-    imageRef.style.transformOrigin = "center 200px";
+    imageRef.style.transformOrigin = "center 130px";
+    // imageRef.style.transformOrigin = "center 115px";
     imageRef.style.transform = `rotate(${rotationAngle}deg)`;
 
     switch (type) {
@@ -136,14 +149,14 @@
   });
 </script>
 
-<div class="flex flex-col items-center py-6">
+<div class="flex flex-col items-center pt-4">
   <div class="text-center relative">
     <img
       bind:this={imageRef}
       src="./src/assets/TaikoLogo.png"
       class="taikoImg"
       alt=""
-      width="350px"
+      width="230px"
     />
     <div class="nodeTypes block nodeTypes flex justify-evenly mt-4">
       <button
@@ -162,35 +175,16 @@
       >
     </div>
   </div>
-  <!-- <div class="block nodeTypes flex justify-evenly mt-4">
-      <button
-        class:active={nodeType === nodeTypes.Node}
-        on:click={() => (nodeType = nodeTypes.Node)}>Node</button
-      >
-      <button
-        class:active={nodeType === nodeTypes.Proposer}
-        on:click={() => (nodeType = nodeTypes.Proposer)}>Proposer</button
-      >
-      <button
-        class:active={nodeType === nodeTypes.Prover}
-        on:click={() => (nodeType = nodeTypes.Prover)}>Prover</button
-      >
-    </div>
-  </div> -->
 
   <!-- Progress Bar -->
-  <div class="progress-bar m-4">
-    <div class="progress-bar__background">
-      <div class="progress-bar__text">
-        {syncingProgress < 100 ? syncingProgress + "%" : "Synced!"}
-      </div>
-    </div>
-    <div class="progress-bar__fill" style={`width: ${syncingProgress}%`} />
-  </div>
+  <Progressbar
+    progress={syncingProgress}
+    showPercentage={true}
+    finishedMessage="Synced!"
+  />
 
-  <!-- Temporary generic metrics -->
-  <!-- ToDO: abstract away and cleanup -->
-  <div class="gap-4 text-center my-10">
+  <!-- Temporary generic metrics to try things out -->
+  <!-- <div class="gap-1 text-center my-10">
     {#if peers}
       <p>Peers: {peers}</p>
     {/if}
@@ -203,18 +197,46 @@
         Progress: {syncingProgress.toFixed(2)}%
       </p>
     {:else}
-      <!-- <p>Synced!</p> -->
+      <p>Synced!</p>
     {/if}
     {#if L1Balance && L2Balance}
       <p>L1 Balance: {L1Balance.toFixed(6)} ETH</p>
       <p>L2 Balance: {L2Balance.toFixed(6)} ETH</p>
     {/if}
-  </div>
+  </div> -->
 
-  <div class="flex flex-wrap max-w-[552px]">
-    <Card title="Node Info" body={["10 peers", "11 hours"]} />
-    <Card title="CPU" body={["20 %"]} />
-    <Card title="Memory" body={["10 %", "1.6 GB"]} />
+  <div class="mt-5 flex flex-wrap max-w-[552px]">
+    <Card
+      title="Memory"
+      body="12 GB"
+      subBody="50 %"
+      icon={brainIcon}
+      loadingbar={true}
+      progress={50}
+    />
+    <Card
+      title="CPU"
+      body="60 %"
+      icon={heartIcon}
+      loadingbar={true}
+      progress={syncingProgress}
+    />
+    <Card
+      title="Runtime"
+      body="10 Hrs"
+      icon={timerclockIcon}
+      loadingbar={false}
+    />
+    <Card
+      title="Storage"
+      body="500 GB"
+      subBody="25%"
+      icon={fileboxIcon}
+      loadingbar={true}
+      progress={25}
+    />
+    <Card title="Wallet" body="0.487 ETH" icon={purseIcon} loadingbar={false} />
+    <Card title="Earned" body="4.588 TKO" icon={medalIcon} loadingbar={false} />
   </div>
 
   <!-- Show the node details/metrics -->
