@@ -19,15 +19,17 @@
     }
   }}
 />
-
-<div class="modal bg-black/60" class:modal-open={isOpen}>
+<div
+  class="modal bg-[#f4cfff] absolute top-[50%] left-[50%] z-50 translate-x-[-50%] translate-y-[-50%] rounded-[20px] w-[390px] h-[390px] shadow-2xl"
+  class:modal-open={isOpen}
+>
   <div class="modal-box bg-dark-2">
     <h3 class="font-bold text-lg text-center mt-4">{title}</h3>
     {#if showXButton}
       <div class="modal-action mt-0">
         <button
           type="button"
-          class="btn btn-sm btn-circle absolute right-2 top-2 cursor-pointer font-sans text-lg"
+          class="btn btn-sm btn-circle absolute right-[20px] top-[15px] cursor-pointer font-sans text-2xl"
           on:click={onCloseClicked}
         >
           &times;

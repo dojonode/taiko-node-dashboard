@@ -9,7 +9,7 @@
   export let progress: number = null;
 </script>
 
-<div class="modal">
+<div class="modal shadow-md">
   <h3 class="modal-title font-bold text-lg">{title}</h3>
   <!-- <div class="modal-body">{body}</div>
   {#if subBody}

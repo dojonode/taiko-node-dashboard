@@ -33,6 +33,7 @@
   import recyclingIcon from "../../assets/icons/recycling.png";
   import timerclockIcon from "../../assets/icons/timer_clock.png";
   import warningIcon from "../../assets/icons/warning.png";
+  import Gear from "../../components/icons/Gear.svelte";
   // import Prover from "src/components/details/Prover.svelte";
   // import Node from "src/components/details/Node.svelte";
   // import Proposer from "src/components/details/Proposer.svelte";
@@ -66,8 +67,10 @@
   let L1Balance;
   let L2Balance;
   let nodeType = nodeTypes.Node;
+  let themeMode = "light";
   let interval: NodeJS.Timer;
   let imageRef;
+  let settingsOpen: boolean = false;
 
   const myNode = new Web3("http://localhost:8545");
   const taikoL2 = new Web3("https://l2rpc.a2.taiko.xyz");
@@ -158,7 +161,7 @@
       alt=""
       width="230px"
     />
-    <div class="nodeTypes block nodeTypes flex justify-evenly mt-4">
+    <div class="nodeTypes flex justify-evenly mt-4">
       <button
         class:active={nodeType === nodeTypes.Node}
         on:click={() => switchNodeType(nodeTypes.Node)}>node</button
@@ -204,39 +207,57 @@
       <p>L2 Balance: {L2Balance.toFixed(6)} ETH</p>
     {/if}
   </div> -->
+  <div class="max-w-[552px] relative">
+    <button
+      class="w-6 h-6 absolute right-[7px] top-[-37px] cursor-pointer"
+      on:click={() => (settingsOpen = true)}
+    >
+      <Gear class="fill-[#9baab2]" />
+    </button>
 
-  <div class="mt-5 flex flex-wrap max-w-[552px]">
-    <Card
-      title="Memory"
-      body="12 GB"
-      subBody="50 %"
-      icon={brainIcon}
-      loadingbar={true}
-      progress={50}
-    />
-    <Card
-      title="CPU"
-      body="60 %"
-      icon={heartIcon}
-      loadingbar={true}
-      progress={syncingProgress}
-    />
-    <Card
-      title="Runtime"
-      body="10 Hrs"
-      icon={timerclockIcon}
-      loadingbar={false}
-    />
-    <Card
-      title="Storage"
-      body="500 GB"
-      subBody="25%"
-      icon={fileboxIcon}
-      loadingbar={true}
-      progress={25}
-    />
-    <Card title="Wallet" body="0.487 ETH" icon={purseIcon} loadingbar={false} />
-    <Card title="Earned" body="4.588 TKO" icon={medalIcon} loadingbar={false} />
+    <div class="mt-[1px] flex flex-wrap">
+      <Card
+        title="Memory"
+        body="12 GB"
+        subBody="50 %"
+        icon={brainIcon}
+        loadingbar={true}
+        progress={50}
+      />
+      <Card
+        title="CPU"
+        body="60 %"
+        icon={heartIcon}
+        loadingbar={true}
+        progress={syncingProgress}
+      />
+      <Card
+        title="Runtime"
+        body="10 Hrs"
+        icon={timerclockIcon}
+        loadingbar={false}
+      />
+      <Card
+        title="Storage"
+        body="500 GB"
+        subBody="25%"
+        icon={fileboxIcon}
+        loadingbar={true}
+        progress={25}
+      />
+      <Card
+        title="Wallet"
+        body="0.487 ETH"
+        icon={purseIcon}
+        loadingbar={false}
+      />
+      <Card
+        title="Earned"
+        body="4.588 TKO"
+        icon={medalIcon}
+        loadingbar={false}
+      />
+    </div>
   </div>
 
   <!-- Show the node details/metrics -->
@@ -248,6 +269,70 @@
     <Node />
   {/if} -->
 </div>
+
+{#if settingsOpen}
+  <DetailsModal title={"Settings"} bind:isOpen={settingsOpen}>
+    <div
+      class="grid grid-cols-1 gap-6 mx-5 my-10 max-h-96 overflow-y-auto"
+      slot="body"
+    >
+      <div class="flex justify-between items-center font-bold">
+        Set L1 address:
+        <div class="">
+          <input
+            class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+            type="text"
+          />
+        </div>
+      </div>
+      <div class="flex justify-between items-center font-bold">
+        Set L2 address:
+        <div class="">
+          <input
+            class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+            type="text"
+          />
+        </div>
+      </div>
+      <div class="flex justify-between items-center font-bold">
+        Theme:
+        <!-- <div class="">
+          <button class="mx-1">Light</button>
+          <button class="mx-1">Dark</button>
+          <button class="mx-1">Paper</button>
+          
+        </div> -->
+        <div class="inline-flex">
+          <button
+            class:active={themeMode === "light"}
+            on:click={() => (themeMode = "light")}
+            class="theme bg-zinc-50 hover:bg-zinc-200 text-zinc-800 py-2 px-4 mx-1 rounded-l"
+          >
+            Light
+          </button>
+          <button
+            class:active={themeMode === "dark"}
+            on:click={() => (themeMode = "dark")}
+            class="theme bg-zinc-50 hover:bg-zinc-200 text-zinc-800 py-2 px-4 mx-1 rounded-r"
+          >
+            Dark
+          </button>
+          <button
+            class:active={themeMode === "paper"}
+            on:click={() => (themeMode = "paper")}
+            class="theme bg-zinc-50 hover:bg-zinc-200 text-zinc-800 py-2 px-4 mx-1 rounded-r"
+          >
+            Paper
+          </button>
+        </div>
+      </div>
+      <button
+        class="bg-white hover:bg-gray-100 text-gray-800 font-semibold py-2 px-4 border w-[33%] mx-auto mt-5 border-gray-400 rounded shadow"
+        >Save</button
+      >
+    </div>
+  </DetailsModal>
+{/if}
 
 <style>
   .nodeTypes {
@@ -317,5 +402,10 @@
 
   .taikoImg {
     transition: transform 0.5s ease-in-out;
+  }
+
+  .theme.active {
+    background-color: rgb(212 212 216);
+    /* background-color: rgb(228 228 231); */
   }
 </style>
