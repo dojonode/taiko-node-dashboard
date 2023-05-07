@@ -22,11 +22,15 @@
       <img src={icon} alt="icon" class="card-icon" />
     </div>
     <div class="div2">
-      {body}
-      {#if subBody}
-        <div class="modal-sub-body">
-          {subBody}
-        </div>
+      <!-- only populate the card once the body gets filled -->
+      <!-- ToDO: add else statement displaying something when error occured? -->
+      {#if body !== null && body !== "null" && body !== ""}
+        {body}
+        {#if subBody}
+          <div class="modal-sub-body">
+            {subBody}
+          </div>
+        {/if}
       {/if}
     </div>
     <div class="div3 text-center">

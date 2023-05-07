@@ -13,6 +13,7 @@
   import { getQueuedTransactions } from "../../utils/getQueuedTransactions";
   import { onDestroy, onMount } from "svelte";
   import { getProofReward } from "../../utils/getProofReward";
+  import { queryPrometheus } from "../../utils/prometheus";
   import type { Status, StatusIndicatorProp } from "../../domain/status";
   import { getStateVariables } from "../../utils/getStateVariables";
   import { truncateString } from "../../utils/truncateString";
@@ -25,6 +26,7 @@
   import purseIcon from "../../assets/icons/purse.png";
   import heartIcon from "../../assets/icons/heart.png";
   import brainIcon from "../../assets/icons/brain.png";
+  import peopleIcon from "../../assets/icons/people.png";
   import checkmarkIcon from "../../assets/icons/check_mark.png";
   import fileboxIcon from "../../assets/icons/file_box.png";
   import loadingIcon from "../../assets/icons/loading.png";
@@ -60,7 +62,10 @@
     Prover: 2,
   };
 
-  let peers = 0;
+  // Prometheus metrics
+  let peers = null;
+  let systemMemoryUsed = null;
+
   let blockNumber;
   let syncingStatus;
   let syncingProgress = 0;
@@ -130,21 +135,34 @@
     interval = setInterval(async () => {
       try {
         // fetchMetric();
+        // Try fetching all the prometheus metrics, in case something goes wrong, we set all the properties to "" so the cards are empty/show error
+        // ToDO: in case 1 metric fails, all the metrics are erased => any better solutions?
+        try {
+          const [peersData, systemMemoryUsedData] = await Promise.all([
+            queryPrometheus("p2p_peers"),
+            queryPrometheus("system_memory_used"),
+          ]);
 
-        // let response = await fetch(
-        //   "http://localhost:9090/api/v1/query?query=p2p_peers"
-        // );
-        // let data = await response.json();
-        // let value = data.data.result[0].value[1];
-        // peers = value;
+          peers = peersData.data.result[0].value[1];
+          // Convert bits to MegaBytes
+          // ToDO: support gigabytes 
+          let systemMemoryUsedMB =
+            systemMemoryUsedData.data.result[0].value[1] / 8000000;
+          systemMemoryUsed = `${systemMemoryUsedMB.toFixed(0)} MB`;
+        } catch (error) {
+          // ToDO: Show alerts/notifications when something went wrong fetching the prometheus metric(s)?
+          peers = "";
+          systemMemoryUsed = "";
+        }
 
         if (syncingProgress < 100) {
           syncingProgress++;
         }
       } catch (e) {
+        console.log("or here?");
         console.error(e);
       }
-    }, 100);
+    }, 1000);
   });
 
   onDestroy(() => {
@@ -218,7 +236,7 @@
     <div class="mt-[1px] flex flex-wrap">
       <Card
         title="Memory"
-        body="12 GB"
+        body={systemMemoryUsed}
         subBody="50 %"
         icon={brainIcon}
         loadingbar={true}
@@ -230,6 +248,13 @@
         icon={heartIcon}
         loadingbar={true}
         progress={syncingProgress}
+      />
+      <Card
+        title="Peers"
+        body={peers}
+        subBody="connected"
+        icon={peopleIcon}
+        loadingbar={false}
       />
       <Card
         title="Runtime"
