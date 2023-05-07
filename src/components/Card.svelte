@@ -24,7 +24,7 @@
     <div class="div2">
       <!-- only populate the card once the body gets filled -->
       <!-- ToDO: add else statement displaying something when error occured? -->
-      {#if body !== null && body !== "null" && body !== ""}
+      {#if body !== "undefined" && body !== undefined && body !== null && body !== "null" && body !== ""}
         {body}
         {#if subBody}
           <div class="modal-sub-body">

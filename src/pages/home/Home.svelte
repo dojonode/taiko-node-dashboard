@@ -56,11 +56,17 @@
   //   value: "system",
   // });
 
-  const nodeTypes = {
+  const NodeTypes = {
     Node: 0,
     Proposer: 1,
     Prover: 2,
   };
+
+  interface SysteminformationMetrics {
+    memUsedGB: number;
+    memUsedPerc: number;
+    cpuUsedPerc: number;
+  }
 
   // Prometheus metrics
   let peers = null;
@@ -71,42 +77,70 @@
   let syncingProgress = 0;
   let L1Balance;
   let L2Balance;
-  let nodeType = nodeTypes.Node;
+  let nodeType = NodeTypes.Node;
   let themeMode = "light";
   let interval: NodeJS.Timer;
   let imageRef;
   let settingsOpen: boolean = false;
+  let systeminformationMetrics: SysteminformationMetrics = null;
 
   const myNode = new Web3("http://localhost:8545");
   const taikoL2 = new Web3("https://l2rpc.a2.taiko.xyz");
   const taikoL1 = new Web3("https://l1rpc.a2.taiko.xyz");
 
-  async function fetchMetric() {
-    L1Balance =
-      parseInt(
-        await taikoL1.eth.getBalance(
-          "0x2b253d77323abc934f43dcd896636d38ac84972e"
-        )
-      ) / 1000000000000000000;
-    L2Balance =
-      parseInt(
-        await taikoL2.eth.getBalance(
-          "0x2b253d77323abc934f43dcd896636d38ac84972e"
-        )
-      ) / 1000000000000000000;
+  // fetch("http://localhost:3009/metrics")
+  //   .then((response) => response.json())
+  //   .then((data) => {
+  //     console.log("dataaa", data);
+  //     systeminformationMetrics = data;
+  //   })
+  //   .catch((error) => console.log(error));
+  // console.log(systeminformationMetrics);
+  // console.log("hi??");
 
-    syncingStatus = await myNode.eth.isSyncing();
-    syncingProgress =
-      (syncingStatus.currentBlock / syncingStatus.highestBlock) * 100;
-    blockNumber = await taikoL2.eth.getBlockNumber();
-    console.log(await myNode.eth.getNodeInfo());
-    // returns: Geth/v1.10.26-stable/linux-amd64/go1.18.10
-    // can maybe be used to check for updates?
-    console.log(await taikoL2.eth.getNodeInfo());
+  async function fetchMetric() {
+    // Fetch metrics from API endpoint
+    // L1Balance =
+    //   parseInt(
+    //     await taikoL1.eth.getBalance(
+    //       "0x2b253d77323abc934f43dcd896636d38ac84972e"
+    //     )
+    //   ) / 1000000000000000000;
+    // L2Balance =
+    //   parseInt(
+    //     await taikoL2.eth.getBalance(
+    //       "0x2b253d77323abc934f43dcd896636d38ac84972e"
+    //     )
+    //   ) / 1000000000000000000;
+    // syncingStatus = await myNode.eth.isSyncing();
+    // syncingProgress =
+    //   (syncingStatus.currentBlock / syncingStatus.highestBlock) * 100;
+    // blockNumber = await taikoL2.eth.getBlockNumber();
+    // console.log(await myNode.eth.getNodeInfo());
+    // // returns: Geth/v1.10.26-stable/linux-amd64/go1.18.10
+    // // can maybe be used to check for updates?
+    // console.log(await taikoL2.eth.getNodeInfo());
   }
 
   let rotationAngle = 0;
-
+  const fetchSystemInfo = async () => {
+    try {
+      console.log("trying??");
+      const response = await fetch("http://localhost:3009/metrics", {
+        headers: {
+          "Access-Control-Allow-Origin": "*",
+          "Access-Control-Allow-Headers":
+            "Origin, X-Requested-With, Content-Type, Accept",
+        },
+      });
+      console.log(response);
+      systeminformationMetrics = await response.json();
+      console.log(systeminformationMetrics);
+    } catch (error) {
+      console.error("Error fetching system info", error);
+    }
+  };
+  fetchSystemInfo();
   function switchNodeType(type) {
     if (nodeType === type) return;
 
@@ -117,52 +151,51 @@
     imageRef.style.transform = `rotate(${rotationAngle}deg)`;
 
     switch (type) {
-      case nodeTypes.Node:
-        nodeType = nodeTypes.Node;
+      case NodeTypes.Node:
+        nodeType = NodeTypes.Node;
         break;
-      case nodeTypes.Proposer:
-        nodeType = nodeTypes.Proposer;
+      case NodeTypes.Proposer:
+        nodeType = NodeTypes.Proposer;
         break;
-      case nodeTypes.Prover:
-        nodeType = nodeTypes.Prover;
+      case NodeTypes.Prover:
+        nodeType = NodeTypes.Prover;
         break;
       default:
         break;
     }
   }
+
   onMount(async () => {
     // Interval to fetch metrics every second
-    interval = setInterval(async () => {
-      try {
-        // fetchMetric();
-        // Try fetching all the prometheus metrics, in case something goes wrong, we set all the properties to "" so the cards are empty/show error
-        // ToDO: in case 1 metric fails, all the metrics are erased => any better solutions?
-        try {
-          const [peersData, systemMemoryUsedData] = await Promise.all([
-            queryPrometheus("p2p_peers"),
-            queryPrometheus("system_memory_used"),
-          ]);
-
-          peers = peersData.data.result[0].value[1];
-          // Convert bits to MegaBytes
-          // ToDO: support gigabytes 
-          let systemMemoryUsedMB =
-            systemMemoryUsedData.data.result[0].value[1] / 8000000;
-          systemMemoryUsed = `${systemMemoryUsedMB.toFixed(0)} MB`;
-        } catch (error) {
-          // ToDO: Show alerts/notifications when something went wrong fetching the prometheus metric(s)?
-          peers = "";
-          systemMemoryUsed = "";
-        }
-
-        if (syncingProgress < 100) {
-          syncingProgress++;
-        }
-      } catch (e) {
-        console.log("or here?");
-        console.error(e);
-      }
-    }, 1000);
+    // interval = setInterval(async () => {
+    //   try {
+    //     // fetchMetric();
+    //     // Try fetching all the prometheus metrics, in case something goes wrong, we set all the properties to "" so the cards are empty/show error
+    //     // ToDO: in case 1 metric fails, all the metrics are erased => any better solutions?
+    //     try {
+    //       const [peersData, systemMemoryUsedData] = await Promise.all([
+    //         queryPrometheus("p2p_peers"),
+    //         queryPrometheus("system_memory_used"),
+    //       ]);
+    //       peers = peersData.data.result[0].value[1];
+    //       // Convert bits to MegaBytes
+    //       // ToDO: support gigabytes
+    //       let systemMemoryUsedMB =
+    //         systemMemoryUsedData.data.result[0].value[1] / 8000000;
+    //       systemMemoryUsed = `${systemMemoryUsedMB.toFixed(0)} MB`;
+    //     } catch (error) {
+    //       // ToDO: Show alerts/notifications when something went wrong fetching the prometheus metric(s)?
+    //       peers = "";
+    //       systemMemoryUsed = "";
+    //     }
+    //     if (syncingProgress < 100) {
+    //       syncingProgress++;
+    //     }
+    //   } catch (e) {
+    //     console.log("or here?");
+    //     console.error(e);
+    //   }
+    // }, 1000);
   });
 
   onDestroy(() => {
@@ -181,18 +214,18 @@
     />
     <div class="nodeTypes flex justify-evenly mt-4">
       <button
-        class:active={nodeType === nodeTypes.Node}
-        on:click={() => switchNodeType(nodeTypes.Node)}>node</button
+        class:active={nodeType === NodeTypes.Node}
+        on:click={() => switchNodeType(NodeTypes.Node)}>node</button
       >
       <span class="bar" />
       <button
-        class:active={nodeType === nodeTypes.Proposer}
-        on:click={() => switchNodeType(nodeTypes.Proposer)}>proposer</button
+        class:active={nodeType === NodeTypes.Proposer}
+        on:click={() => switchNodeType(NodeTypes.Proposer)}>proposer</button
       >
       <span class="bar" />
       <button
-        class:active={nodeType === nodeTypes.Prover}
-        on:click={() => switchNodeType(nodeTypes.Prover)}>prover</button
+        class:active={nodeType === NodeTypes.Prover}
+        on:click={() => switchNodeType(NodeTypes.Prover)}>prover</button
       >
     </div>
   </div>
@@ -236,18 +269,18 @@
     <div class="mt-[1px] flex flex-wrap">
       <Card
         title="Memory"
-        body={systemMemoryUsed}
-        subBody="50 %"
+        body="{systeminformationMetrics?.memUsedGB} GB"
+        subBody="{systeminformationMetrics?.memUsedPerc} %"
         icon={brainIcon}
         loadingbar={true}
-        progress={50}
+        progress={systeminformationMetrics?.memUsedPerc}
       />
       <Card
         title="CPU"
-        body="60 %"
+        body="{systeminformationMetrics?.cpuUsedPerc} %"
         icon={heartIcon}
         loadingbar={true}
-        progress={syncingProgress}
+        progress={systeminformationMetrics?.cpuUsedPerc}
       />
       <Card
         title="Peers"
@@ -383,46 +416,6 @@
     width: 2px;
     height: 15px;
     background-color: gray;
-  }
-
-  .progress-bar {
-    width: 200px;
-    height: 20px;
-    border-radius: 10px;
-    overflow: hidden;
-    position: relative;
-  }
-
-  .progress-bar__background {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: #e0e0e0;
-    border-radius: 10px;
-  }
-
-  .progress-bar__fill {
-    position: absolute;
-    top: 0;
-    left: 0;
-    height: 100%;
-    background-color: #ff9fe9;
-    border-radius: 10px;
-    transition: width 0.2s ease-in-out;
-    width: 0%;
-    z-index: 1;
-  }
-
-  .progress-bar__text {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    font-size: 12px;
-    color: white;
-    z-index: 2;
   }
 
   .taikoImg {
