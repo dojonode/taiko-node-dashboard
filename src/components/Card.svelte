@@ -64,11 +64,18 @@
       <div class="div2 flex flex-col my-auto">
         {#if body !== "undefined" && body !== undefined && body !== null && body !== "null" && body !== ""}
           {body}
-          {#if bodyMetricType === MetricTypes.peers}
+          {#if bodyMetricType && subBody === null && bodyMetricType === MetricTypes.percentage}
+            <span class="modal-sub-body">[ {bodyMetricType} ]</span>
+          {:else if bodyMetricType && subBody === null}
+            <span class="modal-sub-body">{bodyMetricType}</span>
+          {:else}
+            {bodyMetricType}
+          {/if}
+          <!-- {#if bodyMetricType === MetricTypes.peers}
             <span class="modal-sub-body">{bodyMetricType}</span>
           {:else if bodyMetricType}
             {bodyMetricType}
-          {/if}
+          {/if} -->
 
           {#if subBody}
             <div class="modal-sub-body">

@@ -402,7 +402,8 @@
       />
       <Card
         title="Earned"
-        body="4.588 TKO"
+        body="4.588"
+        bodyMetricType={MetricTypes.taiko}
         icon={medalIcon}
         loadingbar={false}
       />

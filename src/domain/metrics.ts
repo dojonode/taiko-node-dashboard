@@ -4,6 +4,7 @@ export const MetricTypes = {
   megabyte: "MB",
   peers: "connected",
   ethereum: "ETH",
+  taiko: "TKO",
   hours: "hours",
   minutes: "minutes",
 };
