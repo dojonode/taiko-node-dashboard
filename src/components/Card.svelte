@@ -1,31 +1,114 @@
 <script lang="ts">
   import Progressbar from "./Progressbar.svelte";
+  import { MetricTypes } from "../domain/metrics";
 
   export let title: string = null;
   export let body: string = null;
+  export let bodyMetricType = null;
   export let subBody: string = null;
   export let icon: string = null;
   export let loadingbar: boolean = null;
   export let progress: number = null;
 </script>
 
-<div class="modal shadow-md">
-  <h3 class="modal-title font-bold text-lg">{title}</h3>
-  <!-- <div class="modal-body">{body}</div>
-  {#if subBody}
-    <div class="modal-sub-body">{subBody}</div>
-  {/if} -->
+<!-- only populate the card once the body gets filled -->
+<!-- ToDO: add else statement displaying something when error occured? -->
+<!-- <div class="border-4 rounded-md m-3 w-[170px] h-[170px]">
+  <h3 class="font-bold text-lg">{title}</h3>
+  <div class="flex flex-col h-[125px]">
+    <div class="parent flex flex-grow">
+      <div class="div1 mr-1">
+        <img src={icon} alt="icon" class="card-icon" />
+      </div>
+      <div class="flex flex-col">
+        {#if body !== "undefined" && body !== undefined && body !== null && body !== "null" && body !== ""}
+          {body}
+          {#if bodyMetricType === MetricTypes.peers}
+            <span class="modal-sub-body">{bodyMetricType}</span>
+          {:else if bodyMetricType}
+            {bodyMetricType}
+          {/if}
 
+          {#if subBody}
+            <div class="modal-sub-body">
+              {subBody}
+            </div>
+          {/if}
+        {/if}
+      </div>
+    </div>
+    <div class="">
+      {#if loadingbar}
+        <Progressbar
+          {progress}
+          showPercentage={false}
+          widthPercentage={100}
+          heightPixels={10}
+        />
+      {/if}
+    </div>
+  </div>
+</div> -->
+
+<!-- V2 -->
+<div class="modal shadow-md">
+  <h3 class="modal-title">{title}</h3>
+  <div class="flex flex-col h-[125px]">
+    <div
+      class="flex content-between items-center h-[100px] justify-around flex-col"
+    >
+      <div class="cardIcon">
+        <img src={icon} alt="icon" class="card-icon" />
+      </div>
+
+      <div class="div2 flex flex-col my-auto">
+        {#if body !== "undefined" && body !== undefined && body !== null && body !== "null" && body !== ""}
+          {body}
+          {#if bodyMetricType === MetricTypes.peers}
+            <span class="modal-sub-body">{bodyMetricType}</span>
+          {:else if bodyMetricType}
+            {bodyMetricType}
+          {/if}
+
+          {#if subBody}
+            <div class="modal-sub-body">
+              {subBody}
+            </div>
+          {/if}
+        {/if}
+      </div>
+    </div>
+
+    <div class="div3 text-center mt-auto mb-[12px]">
+      {#if loadingbar}
+        <Progressbar
+          {progress}
+          showPercentage={false}
+          widthPercentage={100}
+          heightPixels={10}
+        />
+      {/if}
+    </div>
+  </div>
+</div>
+
+<!-- V1 -->
+<!-- <div class="modal shadow-md">
+  <h3 class="modal-title font-bold text-lg">{title}</h3>
   <div class="parent">
     <div class="div1 mr-1">
-      <!-- <div style="font-size:3rem;width:100%;text-align:center;">{icon}</div> -->
       <img src={icon} alt="icon" class="card-icon" />
     </div>
     <div class="div2">
-      <!-- only populate the card once the body gets filled -->
-      <!-- ToDO: add else statement displaying something when error occured? -->
+
       {#if body !== "undefined" && body !== undefined && body !== null && body !== "null" && body !== ""}
         {body}
+        {#if bodyMetricType === MetricTypes.peers}
+          <span class="modal-sub-body">{bodyMetricType}</span>
+        {:else if bodyMetricType}
+          {bodyMetricType}
+        {/if}
+
         {#if subBody}
           <div class="modal-sub-body">
             {subBody}
@@ -44,9 +127,9 @@
       {/if}
     </div>
   </div>
-</div>
+</div> -->
 
-<style>
+<!-- <style>
   .modal {
     align-items: center;
     padding: 10px 20px;
@@ -94,5 +177,56 @@
   }
   .div3 {
     grid-area: 3 / 1 / 4 / 3;
+  }
+</style> -->
+
+<style>
+  .modal {
+    align-items: center;
+    padding: 10px 20px;
+    margin: 7px;
+    border: 1px solid #f5f5f5;
+    border-radius: 20px;
+    background-color: #f5f5f5;
+    aspect-ratio: 1/1;
+    height: 170px;
+  }
+
+  .modal-title {
+    margin-bottom: 10px;
+    text-align: center;
+    color: #fc0fc0;
+    font-size: 18px;
+    font-size: large;
+    font-weight: bold;
+  }
+
+  .modal-body {
+    margin-bottom: 25px;
+    text-align: center;
+    font-size: 15px;
+  }
+
+  .modal-sub-body {
+    color: #b3b3b3;
+    font-size: 14px;
+  }
+
+  .parent {
+    /* display: flex; */
+  }
+
+  .cardIcon {
+    width: 45px;
+  }
+  .div1 {
+    width: 40px;
+  }
+  .div2 {
+    text-align: center;
+    padding-top: 5px;
+  }
+  .div3 {
+    width: 100%;
   }
 </style>

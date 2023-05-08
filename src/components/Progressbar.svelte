@@ -34,7 +34,7 @@
     border-radius: 10px;
     overflow: hidden;
     position: relative;
-    margin: 1rem 0;
+    margin: 0;
   }
 
   .progress-bar__background {

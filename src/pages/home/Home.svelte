@@ -26,7 +26,7 @@
   import purseIcon from "../../assets/icons/purse.png";
   import heartIcon from "../../assets/icons/heart.png";
   import brainIcon from "../../assets/icons/brain.png";
-  import peopleIcon from "../../assets/icons/people.png";
+  import dollsIcon from "../../assets/icons/dolls.png";
   import checkmarkIcon from "../../assets/icons/check_mark.png";
   import fileboxIcon from "../../assets/icons/file_box.png";
   import loadingIcon from "../../assets/icons/loading.png";
@@ -36,6 +36,8 @@
   import timerclockIcon from "../../assets/icons/timer_clock.png";
   import warningIcon from "../../assets/icons/warning.png";
   import Gear from "../../components/icons/Gear.svelte";
+  import { MetricTypes } from "../../domain/metrics";
+
   // import Prover from "src/components/details/Prover.svelte";
   // import Node from "src/components/details/Node.svelte";
   // import Proposer from "src/components/details/Proposer.svelte";
@@ -48,19 +50,13 @@
   // export let feeTokenSymbol: string;
   // export let oracleProverAddress: string;
 
-  // Retrieve a single metric value from Prometheus
-  // const peers = getSingleMetric({
-  //   url: "http://localhost:9090/api/v1",
-  //   name: "node_cpu_seconds_total",
-  //   label: "mode",
-  //   value: "system",
-  // });
-
   const NodeTypes = {
     Node: 0,
     Proposer: 1,
     Prover: 2,
   };
+
+  // ToDO: strip this interface to the necesary items?
   interface Systeminfo {
     mem: {
       total: number;
@@ -115,7 +111,12 @@
       mount: string;
       rw: boolean;
     };
+    docker: {
+      started: number;
+      state: string;
+    };
   }
+
   interface SysteminformationMetrics {
     memUsedGB: number;
     memUsedPerc: number;
@@ -123,6 +124,8 @@
     filestorageFreeGB: number;
     filestorageUsedGB: number;
     filestorageUsedPerc: number;
+    runtime: number;
+    runtimeMetricType;
   }
 
   // Prometheus metrics
@@ -182,6 +185,7 @@
         },
       });
       systeminfo = await response.json();
+      console.log(systeminfo);
 
       const usedMemoryGB =
         (systeminfo.mem.total - systeminfo.mem.available) / 1024 / 1024 / 1024;
@@ -199,6 +203,13 @@
         1024;
       const usedPercentage = systeminfo.disk[0].use;
 
+      const currentTime: number = Math.floor(Date.now() / 1000);
+      const secondsElapsed: number = currentTime - systeminfo.docker.started;
+      const runtimeInHours = secondsElapsed / 3600;
+      const runtime =
+        runtimeInHours >= 1 ? runtimeInHours : runtimeInHours * 60;
+      console.log(currentTime, secondsElapsed, runtimeInHours);
+
       systeminformationMetrics = {
         memUsedGB: Number(usedMemoryGB.toFixed(2)),
         memUsedPerc: Number(usedMemoryPercent.toFixed(2)),
@@ -206,6 +217,9 @@
         filestorageFreeGB: Number(freeSpaceGB.toFixed(2)),
         filestorageUsedGB: Number(usedSpace.toFixed(2)),
         filestorageUsedPerc: Number(usedPercentage.toFixed(2)),
+        runtime: Number(runtime.toFixed(2)),
+        runtimeMetricType:
+          runtimeInHours >= 1 ? MetricTypes.hours : MetricTypes.minutes,
       };
     } catch (error) {
       console.error("Error fetching system info", error);
@@ -301,11 +315,13 @@
   </div>
 
   <!-- Progress Bar -->
-  <Progressbar
-    progress={syncingProgress}
-    showPercentage={true}
-    finishedMessage="Synced!"
-  />
+  <div class="my-4">
+    <Progressbar
+      progress={syncingProgress}
+      showPercentage={true}
+      finishedMessage="Synced!"
+    />
+  </div>
 
   <!-- Temporary generic metrics to try things out -->
   <!-- <div class="gap-1 text-center my-10">
@@ -339,7 +355,8 @@
     <div class="mt-[1px] flex flex-wrap">
       <Card
         title="Memory"
-        body="{systeminformationMetrics?.memUsedGB} GB"
+        body={`${systeminformationMetrics?.memUsedGB}`}
+        bodyMetricType={MetricTypes.gigabyte}
         subBody="{systeminformationMetrics?.memUsedPerc} %"
         icon={brainIcon}
         loadingbar={true}
@@ -347,7 +364,8 @@
       />
       <Card
         title="CPU"
-        body="{systeminformationMetrics?.cpuUsedPerc} %"
+        body={`${systeminformationMetrics?.cpuUsedPerc}`}
+        bodyMetricType={MetricTypes.percentage}
         icon={heartIcon}
         loadingbar={true}
         progress={systeminformationMetrics?.cpuUsedPerc}
@@ -355,27 +373,30 @@
       <Card
         title="Peers"
         body={peers}
-        subBody="connected"
-        icon={peopleIcon}
-        loadingbar={false}
-      />
-      <Card
-        title="Runtime"
-        body="10 Hrs"
-        icon={timerclockIcon}
+        bodyMetricType={MetricTypes.peers}
+        icon={dollsIcon}
         loadingbar={false}
       />
       <Card
         title="Storage"
-        body="{systeminformationMetrics?.filestorageUsedGB} GB"
+        body={`${systeminformationMetrics?.filestorageUsedGB}`}
+        bodyMetricType={MetricTypes.gigabyte}
         subBody="{systeminformationMetrics?.filestorageUsedPerc} %"
         icon={fileboxIcon}
         loadingbar={true}
         progress={systeminformationMetrics?.filestorageUsedPerc}
       />
       <Card
+        title="Runtime"
+        body={`${systeminformationMetrics?.runtime}`}
+        bodyMetricType={systeminformationMetrics?.runtimeMetricType}
+        icon={timerclockIcon}
+        loadingbar={false}
+      />
+      <Card
         title="Wallet"
-        body="0.487 ETH"
+        body="0.487"
+        bodyMetricType={MetricTypes.ethereum}
         icon={purseIcon}
         loadingbar={false}
       />

@@ -11,6 +11,8 @@ app.get('/metrics', async (req, res) => {
     const mem = await si.mem();
     const cpu = await si.currentLoad();
     const disk = await si.fsSize();
+    const dockerContainers = await si.dockerContainers();
+    const docker = dockerContainers.find(dc => dc.name === "simple-taiko-node-taiko_client_driver-1");
 
     // const usedMemoryGB = (mem.total - mem.available) / 1024 / 1024 / 1024;
     // const usedMemoryPercent = ((mem.total - mem.available) / mem.total) * 100;
@@ -35,7 +37,27 @@ app.get('/metrics', async (req, res) => {
         // cpuUsedPerc: cpuPercent.toFixed(2),
         mem,
         cpu,
-        disk
+        disk,
+        docker
+    };
+
+    res.json(metrics);
+
+});
+app.get('/metrics2', async (req, res) => {
+    // const test = await si.dockerAll();
+    const test = await si.dockerAll();
+
+    // const usedMemoryGB = (mem.total - mem.available) / 1024 / 1024 / 1024;
+    // const usedMemoryPercent = ((mem.total - mem.available) / mem.total) * 100;
+    // const cpuPercent = cpu.currentLoad;
+
+
+    const metrics = {
+        // memUsedGB: usedMemoryGB.toFixed(2),
+        // memUsedPerc: usedMemoryPercent.toFixed(2),
+        // cpuUsedPerc: cpuPercent.toFixed(2),
+        test
     };
 
     res.json(metrics);
