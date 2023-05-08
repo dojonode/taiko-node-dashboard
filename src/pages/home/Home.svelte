@@ -61,11 +61,68 @@
     Proposer: 1,
     Prover: 2,
   };
-
+  interface Systeminfo {
+    mem: {
+      total: number;
+      free: number;
+      used: number;
+      active: number;
+      available: number;
+      buffers: number;
+      cached: number;
+      slab: number;
+      buffcache: number;
+      swaptotal: number;
+      swapused: number;
+      swapfree: number;
+    };
+    cpu: {
+      avgLoad: number;
+      currentLoad: number;
+      currentLoadUser: number;
+      currentLoadSystem: number;
+      currentLoadNice: number;
+      currentLoadIdle: number;
+      currentLoadIrq: number;
+      rawCurrentLoad: number;
+      rawCurrentLoadUser: number;
+      rawCurrentLoadSystem: number;
+      rawCurrentLoadNice: number;
+      rawCurrentLoadIdle: number;
+      rawCurrentLoadIrq: number;
+      cpus: {
+        load: number;
+        loadUser: number;
+        loadSystem: number;
+        loadNice: number;
+        loadIdle: number;
+        loadIrq: number;
+        rawLoad: number;
+        rawLoadUser: number;
+        rawLoadSystem: number;
+        rawLoadNice: number;
+        rawLoadIdle: number;
+        rawLoadIrq: number;
+      }[];
+    };
+    disk: {
+      fs: string;
+      type: string;
+      size: number;
+      used: number;
+      available: number;
+      use: number;
+      mount: string;
+      rw: boolean;
+    };
+  }
   interface SysteminformationMetrics {
     memUsedGB: number;
     memUsedPerc: number;
     cpuUsedPerc: number;
+    filestorageFreeGB: number;
+    filestorageUsedGB: number;
+    filestorageUsedPerc: number;
   }
 
   // Prometheus metrics
@@ -82,21 +139,13 @@
   let interval: NodeJS.Timer;
   let imageRef;
   let settingsOpen: boolean = false;
+  let systeminfo: Systeminfo;
   let systeminformationMetrics: SysteminformationMetrics = null;
+  let rotationAngle = 0; // used to rotate the taiko logo
 
   const myNode = new Web3("http://localhost:8545");
   const taikoL2 = new Web3("https://l2rpc.a2.taiko.xyz");
   const taikoL1 = new Web3("https://l1rpc.a2.taiko.xyz");
-
-  // fetch("http://localhost:3009/metrics")
-  //   .then((response) => response.json())
-  //   .then((data) => {
-  //     console.log("dataaa", data);
-  //     systeminformationMetrics = data;
-  //   })
-  //   .catch((error) => console.log(error));
-  // console.log(systeminformationMetrics);
-  // console.log("hi??");
 
   async function fetchMetric() {
     // Fetch metrics from API endpoint
@@ -122,10 +171,9 @@
     // console.log(await taikoL2.eth.getNodeInfo());
   }
 
-  let rotationAngle = 0;
+  // This function will fetch from the nodejs api that exposes system metrics using the npm package systeminformation
   const fetchSystemInfo = async () => {
     try {
-      console.log("trying??");
       const response = await fetch("http://localhost:3009/metrics", {
         headers: {
           "Access-Control-Allow-Origin": "*",
@@ -133,9 +181,32 @@
             "Origin, X-Requested-With, Content-Type, Accept",
         },
       });
-      console.log(response);
-      systeminformationMetrics = await response.json();
-      console.log(systeminformationMetrics);
+      systeminfo = await response.json();
+
+      const usedMemoryGB =
+        (systeminfo.mem.total - systeminfo.mem.available) / 1024 / 1024 / 1024;
+      const usedMemoryPercent =
+        ((systeminfo.mem.total - systeminfo.mem.available) /
+          systeminfo.mem.total) *
+        100;
+      const cpuPercent = systeminfo.cpu.currentLoad;
+
+      const usedSpace = systeminfo.disk[0].used / 1024 / 1024 / 1024;
+      const freeSpaceGB =
+        (systeminfo.disk[0].size - systeminfo.disk[0].used) /
+        1024 /
+        1024 /
+        1024;
+      const usedPercentage = systeminfo.disk[0].use;
+
+      systeminformationMetrics = {
+        memUsedGB: Number(usedMemoryGB.toFixed(2)),
+        memUsedPerc: Number(usedMemoryPercent.toFixed(2)),
+        cpuUsedPerc: Number(cpuPercent.toFixed(2)),
+        filestorageFreeGB: Number(freeSpaceGB.toFixed(2)),
+        filestorageUsedGB: Number(usedSpace.toFixed(2)),
+        filestorageUsedPerc: Number(usedPercentage.toFixed(2)),
+      };
     } catch (error) {
       console.error("Error fetching system info", error);
     }
@@ -167,35 +238,34 @@
 
   onMount(async () => {
     // Interval to fetch metrics every second
-    // interval = setInterval(async () => {
-    //   try {
-    //     // fetchMetric();
-    //     // Try fetching all the prometheus metrics, in case something goes wrong, we set all the properties to "" so the cards are empty/show error
-    //     // ToDO: in case 1 metric fails, all the metrics are erased => any better solutions?
-    //     try {
-    //       const [peersData, systemMemoryUsedData] = await Promise.all([
-    //         queryPrometheus("p2p_peers"),
-    //         queryPrometheus("system_memory_used"),
-    //       ]);
-    //       peers = peersData.data.result[0].value[1];
-    //       // Convert bits to MegaBytes
-    //       // ToDO: support gigabytes
-    //       let systemMemoryUsedMB =
-    //         systemMemoryUsedData.data.result[0].value[1] / 8000000;
-    //       systemMemoryUsed = `${systemMemoryUsedMB.toFixed(0)} MB`;
-    //     } catch (error) {
-    //       // ToDO: Show alerts/notifications when something went wrong fetching the prometheus metric(s)?
-    //       peers = "";
-    //       systemMemoryUsed = "";
-    //     }
-    //     if (syncingProgress < 100) {
-    //       syncingProgress++;
-    //     }
-    //   } catch (e) {
-    //     console.log("or here?");
-    //     console.error(e);
-    //   }
-    // }, 1000);
+    interval = setInterval(async () => {
+      try {
+        // fetchMetric();
+        // Try fetching all the prometheus metrics, in case something goes wrong, we set all the properties to "" so the cards are empty/show error
+        // ToDO: in case 1 metric fails, all the metrics are erased => any better solutions?
+        try {
+          const [peersData, systemMemoryUsedData] = await Promise.all([
+            queryPrometheus("p2p_peers"),
+            queryPrometheus("system_memory_used"),
+          ]);
+          peers = peersData.data.result[0].value[1];
+          // Convert bits to MegaBytes
+          // ToDO: support gigabytes
+          let systemMemoryUsedMB =
+            systemMemoryUsedData.data.result[0].value[1] / 8000000;
+          systemMemoryUsed = `${systemMemoryUsedMB.toFixed(0)} MB`;
+        } catch (error) {
+          // ToDO: Show alerts/notifications when something went wrong fetching the prometheus metric(s)?
+          peers = "";
+          systemMemoryUsed = "";
+        }
+        if (syncingProgress < 100) {
+          syncingProgress++;
+        }
+      } catch (e) {
+        console.error(e);
+      }
+    }, 1000);
   });
 
   onDestroy(() => {
@@ -297,11 +367,11 @@
       />
       <Card
         title="Storage"
-        body="500 GB"
-        subBody="25%"
+        body="{systeminformationMetrics?.filestorageUsedGB} GB"
+        subBody="{systeminformationMetrics?.filestorageUsedPerc} %"
         icon={fileboxIcon}
         loadingbar={true}
-        progress={25}
+        progress={systeminformationMetrics?.filestorageUsedPerc}
       />
       <Card
         title="Wallet"
