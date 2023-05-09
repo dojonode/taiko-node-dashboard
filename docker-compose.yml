@@ -1,0 +1,16 @@
+version: "3.9"
+
+services:
+  taiko-node-status:
+    image: taiko-node-status:latest
+    build:
+      context: .
+    ports:
+      - "8080:80"
+  node:
+    build:
+      context: ./systeminformation
+      dockerfile: Dockerfile
+    ports:
+      - "3009:3009"
+    pid: host

@@ -1,6 +1,6 @@
 {
-  "name": "@taiko/status-page",
-  "version": "0.5.0",
+  "name": "@wolfderechter/taiko-node-status",
+  "version": "0.0.2",
   "private": true,
   "type": "module",
   "scripts": {
