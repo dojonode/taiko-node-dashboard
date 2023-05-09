@@ -12,6 +12,7 @@ app.get('/metrics', async (req, res) => {
     const cpu = await si.currentLoad();
     const disk = await si.fsSize();
     const dockerContainers = await si.dockerContainers();
+    console.log(dockerContainers);
     const docker = dockerContainers.find(dc => dc.name === "simple-taiko-node-taiko_client_driver-1");
 
     // const usedMemoryGB = (mem.total - mem.available) / 1024 / 1024 / 1024;
@@ -38,7 +39,7 @@ app.get('/metrics', async (req, res) => {
         mem,
         cpu,
         disk,
-        docker
+        dockerContainers
     };
 
     res.json(metrics);

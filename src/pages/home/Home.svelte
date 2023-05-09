@@ -1,25 +1,11 @@
 <script lang="ts">
-  import { getLatestSyncedHeader } from "../../utils/getLatestSyncedHeader";
-  import { watchHeaderSynced } from "../../utils/watchHeaderSynced";
-  import { getPendingTransactions } from "../../utils/getPendingTransactions";
-  import { getBlockFee } from "../../utils/getBlockFee";
-  import { getAvailableSlots } from "../../utils/getAvailableSlots";
-  import { getPendingBlocks } from "../../utils/getPendingBlocks";
-  import { getLastVerifiedBlockId } from "../../utils/getLastVerifiedBlockId";
-  import { getNextBlockId } from "../../utils/getNextBlockId";
-  import { getGasPrice } from "../../utils/getGasPrice";
-  import { getQueuedTransactions } from "../../utils/getQueuedTransactions";
   import { onDestroy, onMount } from "svelte";
-  import { getProofReward } from "../../utils/getProofReward";
   import { queryPrometheus } from "../../utils/prometheus";
-  import { getStateVariables } from "../../utils/getStateVariables";
-  import { truncateString } from "../../utils/truncateString";
-  import TaikoL1 from "../../constants/abi/TaikoL1";
   import DetailsModal from "../../components/DetailsModal.svelte";
-  import { addressSubsection } from "../../utils/addressSubsection";
   import Web3 from "web3";
   import Card from "../../components/Card.svelte";
   import Progressbar from "../../components/Progressbar.svelte";
+  import taikoLogo from "../../assets/TaikoLogo.png";
   import purseIcon from "../../assets/icons/Purse.png";
   import heartIcon from "../../assets/icons/Heart.png";
   import brainIcon from "../../assets/icons/Brain.png";
@@ -211,11 +197,11 @@
       const usedPercentage = systeminfo.disk[0].use;
 
       const currentTime: number = Math.floor(Date.now() / 1000);
-      const secondsElapsed: number = currentTime - systeminfo.docker.started;
-      const runtimeInHours = secondsElapsed / 3600;
-      const runtime =
-        runtimeInHours >= 1 ? runtimeInHours : runtimeInHours * 60;
-      console.log(currentTime, secondsElapsed, runtimeInHours);
+      // const secondsElapsed: number = currentTime - systeminfo.docker.started;
+      // const runtimeInHours = secondsElapsed / 3600;
+      // const runtime =
+      //   runtimeInHours >= 1 ? runtimeInHours : runtimeInHours * 60;
+      // console.log(currentTime, secondsElapsed, runtimeInHours);
 
       systeminformationMetrics = {
         memUsedGB: Number(usedMemoryGB.toFixed(2)),
@@ -224,9 +210,11 @@
         filestorageFreeGB: Number(freeSpaceGB.toFixed(2)),
         filestorageUsedGB: Number(usedSpace.toFixed(2)),
         filestorageUsedPerc: Number(usedPercentage.toFixed(2)),
-        runtime: Number(runtime.toFixed(2)),
-        runtimeMetricType:
-          runtimeInHours >= 1 ? MetricTypes.hours : MetricTypes.minutes,
+        runtime: 4,
+        runtimeMetricType: MetricTypes.hours,
+        // runtime: Number(runtime.toFixed(2)),
+        // runtimeMetricType:
+        //   runtimeInHours >= 1 ? MetricTypes.hours : MetricTypes.minutes,
       };
     } catch (error) {
       console.error("Error fetching system info", error);
@@ -297,7 +285,7 @@
   <div class="text-center relative">
     <img
       bind:this={imageRef}
-      src="./src/assets/TaikoLogo.png"
+      src={taikoLogo}
       class="taikoImg"
       alt=""
       width="230px"
