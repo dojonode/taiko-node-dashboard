@@ -7,4 +7,5 @@ export const MetricTypes = {
   taiko: "TKO",
   hours: "hours",
   minutes: "minutes",
+  blockheight: "blocks",
 };

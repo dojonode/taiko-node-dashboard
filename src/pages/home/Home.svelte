@@ -1,7 +1,5 @@
 <script lang="ts">
-  import { BigNumber, Contract, ethers, providers } from "ethers";
   import { getLatestSyncedHeader } from "../../utils/getLatestSyncedHeader";
-  import StatusIndicator from "../../components/StatusIndicator.svelte";
   import { watchHeaderSynced } from "../../utils/watchHeaderSynced";
   import { getPendingTransactions } from "../../utils/getPendingTransactions";
   import { getBlockFee } from "../../utils/getBlockFee";
@@ -14,7 +12,6 @@
   import { onDestroy, onMount } from "svelte";
   import { getProofReward } from "../../utils/getProofReward";
   import { queryPrometheus } from "../../utils/prometheus";
-  import type { Status, StatusIndicatorProp } from "../../domain/status";
   import { getStateVariables } from "../../utils/getStateVariables";
   import { truncateString } from "../../utils/truncateString";
   import TaikoL1 from "../../constants/abi/TaikoL1";
@@ -23,18 +20,19 @@
   import Web3 from "web3";
   import Card from "../../components/Card.svelte";
   import Progressbar from "../../components/Progressbar.svelte";
-  import purseIcon from "../../assets/icons/purse.png";
-  import heartIcon from "../../assets/icons/heart.png";
-  import brainIcon from "../../assets/icons/brain.png";
-  import dollsIcon from "../../assets/icons/dolls.png";
-  import checkmarkIcon from "../../assets/icons/check_mark.png";
-  import fileboxIcon from "../../assets/icons/file_box.png";
-  import loadingIcon from "../../assets/icons/loading.png";
-  import medalIcon from "../../assets/icons/medal.png";
-  import packageIcon from "../../assets/icons/package.png";
-  import recyclingIcon from "../../assets/icons/recycling.png";
-  import timerclockIcon from "../../assets/icons/timer_clock.png";
-  import warningIcon from "../../assets/icons/warning.png";
+  import purseIcon from "../../assets/icons/Purse.png";
+  import heartIcon from "../../assets/icons/Heart.png";
+  import brainIcon from "../../assets/icons/Brain.png";
+  import dollsIcon from "../../assets/icons/Dolls.png";
+  import checkmarkIcon from "../../assets/icons/Check_Mark.png";
+  import fileboxIcon from "../../assets/icons/File_Box.png";
+  import loadingIcon from "../../assets/icons/Loading.png";
+  import medalIcon from "../../assets/icons/Medal.png";
+  import chainIcon from "../../assets/icons/Chain.png";
+  import packageIcon from "../../assets/icons/Package.png";
+  import recyclingIcon from "../../assets/icons/Recycling.png";
+  import timerclockIcon from "../../assets/icons/Timer_Clock.png";
+  import warningIcon from "../../assets/icons/Warning.png";
   import Gear from "../../components/icons/Gear.svelte";
   import { MetricTypes } from "../../domain/metrics";
 
@@ -125,7 +123,7 @@
     filestorageUsedGB: number;
     filestorageUsedPerc: number;
     runtime: number;
-    runtimeMetricType;
+    runtimeMetricType: any;
   }
 
   // Prometheus metrics
@@ -147,17 +145,26 @@
   let rotationAngle = 0; // used to rotate the taiko logo
 
   const myNode = new Web3("http://localhost:8545");
-  const taikoL2 = new Web3("https://l2rpc.a2.taiko.xyz");
-  const taikoL1 = new Web3("https://l1rpc.a2.taiko.xyz");
+  // Temporary RPC while waiting for next testnet, using an alchemy rpc
+  const ethRPC = new Web3(import.meta.env.VITE_L1_RPC_URL);
+
+  // Will be used by default
+  const L2TaikoRPC = new Web3("https://l2rpc.a2.taiko.xyz");
+  const L1TaikoRPC = new Web3("https://l1rpc.a2.taiko.xyz");
 
   async function fetchMetric() {
     // Fetch metrics from API endpoint
     // L1Balance =
     //   parseInt(
-    //     await taikoL1.eth.getBalance(
+    //     await ethRPC.eth.getBalance(
     //       "0x2b253d77323abc934f43dcd896636d38ac84972e"
     //     )
     //   ) / 1000000000000000000;
+    // console.log(L1Balance);
+
+    // ToDO: use the L2TaikoRPC and compare once testnet is live, check for a difference during syncing?
+    blockNumber = await myNode.eth.getBlockNumber();
+
     // L2Balance =
     //   parseInt(
     //     await taikoL2.eth.getBalance(
@@ -249,7 +256,7 @@
         break;
     }
   }
-
+  fetchMetric();
   onMount(async () => {
     // Interval to fetch metrics every second
     interval = setInterval(async () => {
@@ -258,20 +265,19 @@
         // Try fetching all the prometheus metrics, in case something goes wrong, we set all the properties to "" so the cards are empty/show error
         // ToDO: in case 1 metric fails, all the metrics are erased => any better solutions?
         try {
-          const [peersData, systemMemoryUsedData] = await Promise.all([
+          const [peersData] = await Promise.all([
             queryPrometheus("p2p_peers"),
-            queryPrometheus("system_memory_used"),
+            // queryPrometheus("system_memory_used"),
           ]);
           peers = peersData.data.result[0].value[1];
-          // Convert bits to MegaBytes
-          // ToDO: support gigabytes
-          let systemMemoryUsedMB =
-            systemMemoryUsedData.data.result[0].value[1] / 8000000;
-          systemMemoryUsed = `${systemMemoryUsedMB.toFixed(0)} MB`;
+          // using the node to fetch systemmemory leads to inaccurate results, that's why we use the NodeJS api
+          // let systemMemoryUsedMB =
+          //   systemMemoryUsedData.data.result[0].value[1] / 8000000;
+          // systemMemoryUsed = `${systemMemoryUsedMB.toFixed(0)} MB`;
         } catch (error) {
           // ToDO: Show alerts/notifications when something went wrong fetching the prometheus metric(s)?
           peers = "";
-          systemMemoryUsed = "";
+          // systemMemoryUsed = "";
         }
         if (syncingProgress < 100) {
           syncingProgress++;
@@ -357,7 +363,8 @@
         title="Memory"
         body={`${systeminformationMetrics?.memUsedGB}`}
         bodyMetricType={MetricTypes.gigabyte}
-        subBody="{systeminformationMetrics?.memUsedPerc} %"
+        subBody={`${systeminformationMetrics?.memUsedPerc}`}
+        subBodyMetricType={MetricTypes.percentage}
         icon={brainIcon}
         loadingbar={true}
         progress={systeminformationMetrics?.memUsedPerc}
@@ -381,7 +388,8 @@
         title="Storage"
         body={`${systeminformationMetrics?.filestorageUsedGB}`}
         bodyMetricType={MetricTypes.gigabyte}
-        subBody="{systeminformationMetrics?.filestorageUsedPerc} %"
+        subBody={`${systeminformationMetrics?.filestorageUsedPerc}`}
+        subBodyMetricType={MetricTypes.percentage}
         icon={fileboxIcon}
         loadingbar={true}
         progress={systeminformationMetrics?.filestorageUsedPerc}
@@ -394,9 +402,18 @@
         loadingbar={false}
       />
       <Card
+        title="Blockheight"
+        body={`${blockNumber}`}
+        bodyMetricType={MetricTypes.blockheight}
+        icon={chainIcon}
+        loadingbar={false}
+      />
+      <Card
         title="Wallet"
-        body="0.487"
+        body={`0.323`}
         bodyMetricType={MetricTypes.ethereum}
+        subBody={`0.344`}
+        subBodyMetricType={MetricTypes.ethereum}
         icon={purseIcon}
         loadingbar={false}
       />

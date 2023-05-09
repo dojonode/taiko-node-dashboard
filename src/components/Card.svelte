@@ -1,11 +1,14 @@
 <script lang="ts">
   import Progressbar from "./Progressbar.svelte";
   import { MetricTypes } from "../domain/metrics";
+  import ethIcon from "../assets/icons/Ethereum.png";
+  import taikoIcon from "../assets/TaikoLogo.png";
 
   export let title: string = null;
   export let body: string = null;
   export let bodyMetricType = null;
   export let subBody: string = null;
+  export let subBodyMetricType = null;
   export let icon: string = null;
   export let loadingbar: boolean = null;
   export let progress: number = null;
@@ -61,25 +64,43 @@
         <img src={icon} alt="icon" class="card-icon" />
       </div>
 
-      <div class="div2 flex flex-col my-auto">
+      <!-- ToDO: Clean up this mess -->
+      <div class="div2 flex flex-col my-auto w-[80%]">
         {#if body !== "undefined" && body !== undefined && body !== null && body !== "null" && body !== ""}
-          {body}
-          {#if bodyMetricType && subBody === null && bodyMetricType === MetricTypes.percentage}
-            <span class="modal-sub-body">[ {bodyMetricType} ]</span>
-          {:else if bodyMetricType && subBody === null}
-            <span class="modal-sub-body">{bodyMetricType}</span>
-          {:else}
-            {bodyMetricType}
-          {/if}
-          <!-- {#if bodyMetricType === MetricTypes.peers}
-            <span class="modal-sub-body">{bodyMetricType}</span>
-          {:else if bodyMetricType}
-            {bodyMetricType}
-          {/if} -->
+          <!-- Wallet -->
+          <div
+            class="flex items-center {bodyMetricType === MetricTypes.ethereum &&
+            subBodyMetricType === MetricTypes.ethereum
+              ? 'justify-between'
+              : 'flex-col'}"
+          >
+            {#if bodyMetricType === MetricTypes.ethereum && subBodyMetricType === MetricTypes.ethereum}
+              <img src={ethIcon} class="w-[15px]" alt="ethereum icon" />
+            {/if}
+            {body}
+
+            {#if bodyMetricType && subBody === null && bodyMetricType === MetricTypes.percentage}
+              <span class="modal-sub-body">[ {bodyMetricType} ]</span>
+            {:else if bodyMetricType && subBody === null}
+              <span class="modal-sub-body">{bodyMetricType}</span>
+            {:else}
+              {bodyMetricType}
+            {/if}
+          </div>
 
           {#if subBody}
-            <div class="modal-sub-body">
+            <div
+              class="modal-sub-body flex items-center {bodyMetricType ===
+                MetricTypes.ethereum &&
+              subBodyMetricType === MetricTypes.ethereum
+                ? 'justify-between'
+                : 'justify-center'}"
+            >
+              {#if bodyMetricType === MetricTypes.ethereum && subBodyMetricType === MetricTypes.ethereum}
+                <img src={taikoIcon} class="w-[15px]" alt="taiko icon" />
+              {/if}
               {subBody}
+              {subBodyMetricType}
             </div>
           {/if}
         {/if}
@@ -208,27 +229,23 @@
     font-weight: bold;
   }
 
-  .modal-body {
+  /* .modal-body {
     margin-bottom: 25px;
     text-align: center;
     font-size: 15px;
-  }
+  } */
 
   .modal-sub-body {
     color: #b3b3b3;
     font-size: 14px;
   }
 
-  .parent {
-    /* display: flex; */
-  }
-
   .cardIcon {
     width: 45px;
   }
-  .div1 {
+  /* .div1 {
     width: 40px;
-  }
+  } */
   .div2 {
     text-align: center;
     padding-top: 5px;
