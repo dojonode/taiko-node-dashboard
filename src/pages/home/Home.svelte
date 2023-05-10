@@ -157,9 +157,10 @@
     //       "0x2b253d77323abc934f43dcd896636d38ac84972e"
     //     )
     //   ) / 1000000000000000000;
-    // syncingStatus = await myNode.eth.isSyncing();
-    // syncingProgress =
-    //   (syncingStatus.currentBlock / syncingStatus.highestBlock) * 100;
+    syncingStatus = await myNode.eth.isSyncing();
+    syncingProgress =
+      (syncingStatus.currentBlock / syncingStatus.highestBlock) * 100;
+    console.log(syncingStatus);
     // blockNumber = await taikoL2.eth.getBlockNumber();
     // console.log(await myNode.eth.getNodeInfo());
     // // returns: Geth/v1.10.26-stable/linux-amd64/go1.18.10
@@ -311,7 +312,7 @@
   <!-- Progress Bar -->
   <div class="my-4">
     <Progressbar
-      progress={syncingProgress}
+      progress={syncingStatus ? syncingProgress : 100}
       showPercentage={true}
       finishedMessage="Synced!"
     />
