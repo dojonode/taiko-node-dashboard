@@ -125,10 +125,13 @@
   let nodeType = NodeTypes.Node;
   let themeMode = "light";
   let interval: NodeJS.Timer;
-  let imageRef;
   let settingsOpen: boolean = false;
   let systeminfo: Systeminfo;
   let systeminformationMetrics: SysteminformationMetrics = null;
+  let imageRef;
+
+  // layout variables
+  let bigLayout = true;
   let rotationAngle = 0; // used to rotate the taiko logo
 
   // ToDO: figure out what RPCs will be used by default, give the user an option in the settings to switch to a new RPC
@@ -346,7 +349,7 @@
     />
   </div>
 
-  <div class="max-w-[552px] relative">
+  <div class="{bigLayout ? 'max-w-[46rem]' : 'max-w-[35rem]'} relative">
     <button
       class="w-6 h-6 absolute right-[7px] top-[-37px] cursor-pointer"
       on:click={() => (settingsOpen = true)}
@@ -468,6 +471,26 @@
         </div>
       </div>
       <div class="flex justify-between items-center font-bold">
+        Layout:
+        <div class="inline-flex">
+          <button
+            class:active={!bigLayout}
+            on:click={() => (bigLayout = false)}
+            class="layout bg-zinc-50 hover:bg-zinc-200 text-zinc-800 py-2 px-4 mx-1 rounded-l"
+          >
+            compact
+          </button>
+          <button
+            class:active={bigLayout}
+            on:click={() => (bigLayout = true)}
+            class="layout bg-zinc-50 hover:bg-zinc-200 text-zinc-800 py-2 px-4 mx-1 rounded-r"
+          >
+            wide
+          </button>
+        </div>
+      </div>
+      <!-- Theme switcher -->
+      <!-- <div class="flex justify-between items-center font-bold">
         Theme:
         <div class="inline-flex">
           <button
@@ -492,7 +515,7 @@
             Paper
           </button>
         </div>
-      </div>
+      </div> -->
       <!-- <button
         class="bg-white hover:bg-gray-100 text-gray-800 font-semibold py-2 px-4 border w-[33%] mx-auto mt-5 border-gray-400 rounded shadow"
         >Save</button
@@ -531,8 +554,10 @@
     transition: transform 0.5s ease-in-out;
   }
 
-  .theme.active {
-    background-color: rgb(212 212 216);
-    /* background-color: rgb(228 228 231); */
+  .layout.active {
+    background-color: rgb(255, 250, 207);
   }
+  /* .theme.active {
+    background-color: rgb(212 212 216);
+  } */
 </style>
