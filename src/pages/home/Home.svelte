@@ -95,10 +95,7 @@
       mount: string;
       rw: boolean;
     };
-    docker: {
-      started: number;
-      state: string;
-    };
+    startTime: number;
   }
 
   interface SysteminformationMetrics {
@@ -119,8 +116,12 @@
   let blockNumber;
   let syncingStatus;
   let syncingProgress = 0;
+  let L1Wallet;
+  let L2Wallet;
   let L1Balance;
   let L2Balance;
+  let addressProposedBlocks;
+  let addressProvenBlocks;
   let nodeType = NodeTypes.Node;
   let themeMode = "light";
   let interval: NodeJS.Timer;
@@ -130,26 +131,32 @@
   let systeminformationMetrics: SysteminformationMetrics = null;
   let rotationAngle = 0; // used to rotate the taiko logo
 
+  // ToDO: figure out what RPCs will be used by default, give the user an option in the settings to switch to a new RPC
   const myNode = new Web3("http://localhost:8545");
   // Temporary RPC while waiting for next testnet, using an alchemy rpc
-  const ethRPC = new Web3(import.meta.env.VITE_L1_RPC_URL);
-
+  const ethRPC = new Web3("https://eth.llamarpc.com");
+  // const ethRPC = new Web3(import.meta.env.L1_ENDPOINT_WS);
   // Will be used by default
-  const L2TaikoRPC = new Web3("https://l2rpc.a2.taiko.xyz");
-  const L1TaikoRPC = new Web3("https://l1rpc.a2.taiko.xyz");
+  const L2TaikoRPC = new Web3("https://l2rpc.a3.taiko.xyz");
+  const L1TaikoRPC = new Web3("https://l1rpc.a3.taiko.xyz");
 
   async function fetchMetric() {
     // Fetch metrics from API endpoint
-    // L1Balance =
-    //   parseInt(
-    //     await ethRPC.eth.getBalance(
-    //       "0x2b253d77323abc934f43dcd896636d38ac84972e"
-    //     )
-    //   ) / 1000000000000000000;
-    // console.log(L1Balance);
+    if (L1Wallet) {
+      L1Balance =
+        parseInt(await ethRPC.eth.getBalance(L1Wallet)) / 1000000000000000000;
+    } else {
+      L1Balance = null;
+    }
+    if (L2Wallet) {
+      L2Balance =
+        parseInt(await ethRPC.eth.getBalance(L2Wallet)) / 1000000000000000000;
+    } else {
+      L2Balance = null;
+    }
 
     // ToDO: use the L2TaikoRPC and compare once testnet is live, check for a difference during syncing?
-    blockNumber = await myNode.eth.getBlockNumber();
+    // blockNumber = await myNode.eth.getBlockNumber();
 
     // L2Balance =
     //   parseInt(
@@ -169,6 +176,28 @@
   }
 
   // This function will fetch from the nodejs api that exposes system metrics using the npm package systeminformation
+  const fetchAddressEvents = async () => {
+    try {
+      const response = await fetch(
+        "https://eventindexer.a3.taiko.xyz/uniqueProvers",
+        {
+          headers: {
+            "Access-Control-Allow-Origin": "*",
+            "Access-Control-Allow-Headers":
+              "Origin, X-Requested-With, Content-Type, Accept",
+          },
+        }
+      );
+      let addressEvent = await response.json();
+      // if event === proposed
+      // addressProposedBlocks = addressEvent.count
+      // else if event === proven
+      // addressProvenBlocks = addressEvent.count
+      console.log(addressEvent);
+    } catch (error) {
+      console.error("Error fetching system info", error);
+    }
+  };
   const fetchSystemInfo = async () => {
     try {
       const response = await fetch("http://localhost:3009/metrics", {
@@ -198,11 +227,11 @@
       const usedPercentage = systeminfo.disk[0].use;
 
       const currentTime: number = Math.floor(Date.now() / 1000);
-      // const secondsElapsed: number = currentTime - systeminfo.docker.started;
-      // const runtimeInHours = secondsElapsed / 3600;
-      // const runtime =
-      //   runtimeInHours >= 1 ? runtimeInHours : runtimeInHours * 60;
-      // console.log(currentTime, secondsElapsed, runtimeInHours);
+      const secondsElapsed: number = currentTime - systeminfo.startTime;
+      const runtimeInHours = secondsElapsed / 3600;
+      const runtime =
+        runtimeInHours >= 1 ? runtimeInHours : runtimeInHours * 60;
+      console.log(currentTime, secondsElapsed, runtimeInHours);
 
       systeminformationMetrics = {
         memUsedGB: Number(usedMemoryGB.toFixed(2)),
@@ -211,17 +240,14 @@
         filestorageFreeGB: Number(freeSpaceGB.toFixed(2)),
         filestorageUsedGB: Number(usedSpace.toFixed(2)),
         filestorageUsedPerc: Number(usedPercentage.toFixed(2)),
-        runtime: 4,
-        runtimeMetricType: MetricTypes.hours,
-        // runtime: Number(runtime.toFixed(2)),
-        // runtimeMetricType:
-        //   runtimeInHours >= 1 ? MetricTypes.hours : MetricTypes.minutes,
+        runtime: Number(runtime.toFixed(0)),
+        runtimeMetricType:
+          runtimeInHours >= 1 ? MetricTypes.hours : MetricTypes.minutes,
       };
     } catch (error) {
       console.error("Error fetching system info", error);
     }
   };
-  fetchSystemInfo();
   function switchNodeType(type) {
     if (nodeType === type) return;
 
@@ -245,12 +271,13 @@
         break;
     }
   }
-  fetchMetric();
+  // fetchMetric();
   onMount(async () => {
     // Interval to fetch metrics every second
     interval = setInterval(async () => {
       try {
-        // fetchMetric();
+        fetchMetric();
+        // fetchSystemInfo();
         // Try fetching all the prometheus metrics, in case something goes wrong, we set all the properties to "" so the cards are empty/show error
         // ToDO: in case 1 metric fails, all the metrics are erased => any better solutions?
         try {
@@ -274,7 +301,7 @@
       } catch (e) {
         console.error(e);
       }
-    }, 1000);
+    }, 3000);
   });
 
   onDestroy(() => {
@@ -313,32 +340,12 @@
   <div class="my-4">
     <Progressbar
       progress={syncingStatus ? syncingProgress : 100}
+      precision={0}
       showPercentage={true}
       finishedMessage="Synced!"
     />
   </div>
 
-  <!-- Temporary generic metrics to try things out -->
-  <!-- <div class="gap-1 text-center my-10">
-    {#if peers}
-      <p>Peers: {peers}</p>
-    {/if}
-    {#if blockNumber}
-      <p>Total blocks: {blockNumber}</p>
-    {/if}
-    {#if syncingStatus}
-      <p>Node block: {syncingStatus.currentBlock}</p>
-      <p>
-        Progress: {syncingProgress.toFixed(2)}%
-      </p>
-    {:else}
-      <p>Synced!</p>
-    {/if}
-    {#if L1Balance && L2Balance}
-      <p>L1 Balance: {L1Balance.toFixed(6)} ETH</p>
-      <p>L2 Balance: {L2Balance.toFixed(6)} ETH</p>
-    {/if}
-  </div> -->
   <div class="max-w-[552px] relative">
     <button
       class="w-6 h-6 absolute right-[7px] top-[-37px] cursor-pointer"
@@ -399,31 +406,39 @@
       />
       <Card
         title="Wallet"
-        body={`0.323`}
+        body={L1Balance?.toFixed(3)}
         bodyMetricType={MetricTypes.ethereum}
-        subBody={`0.344`}
+        subBody={L2Balance?.toFixed(3)}
         subBodyMetricType={MetricTypes.ethereum}
         icon={purseIcon}
         loadingbar={false}
       />
-      <Card
+      {#if nodeType === NodeTypes.Proposer}
+        <Card
+          title="Proposed"
+          body={`${10}`}
+          bodyMetricType={MetricTypes.proposer}
+          icon={packageIcon}
+          loadingbar={false}
+        />
+      {:else if nodeType === NodeTypes.Prover}
+        <Card
+          title="Proven"
+          body={`${10}`}
+          bodyMetricType={MetricTypes.prover}
+          icon={packageIcon}
+          loadingbar={false}
+        />
+      {/if}
+      <!-- <Card
         title="Earned"
         body="4.588"
         bodyMetricType={MetricTypes.taiko}
         icon={medalIcon}
         loadingbar={false}
-      />
+      /> -->
     </div>
   </div>
-
-  <!-- Show the node details/metrics -->
-  <!-- {#if nodeType === nodeTypes.Prover}
-    <Prover />
-  {:else if nodeType === nodeTypes.Proposer}
-    <Proposer />
-  {:else if nodeType === nodeTypes.Node}
-    <Node />
-  {/if} -->
 </div>
 
 {#if settingsOpen}
@@ -438,6 +453,7 @@
           <input
             class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
             type="text"
+            bind:value={L1Wallet}
           />
         </div>
       </div>
@@ -447,17 +463,12 @@
           <input
             class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
             type="text"
+            bind:value={L2Wallet}
           />
         </div>
       </div>
       <div class="flex justify-between items-center font-bold">
         Theme:
-        <!-- <div class="">
-          <button class="mx-1">Light</button>
-          <button class="mx-1">Dark</button>
-          <button class="mx-1">Paper</button>
-          
-        </div> -->
         <div class="inline-flex">
           <button
             class:active={themeMode === "light"}
@@ -482,10 +493,10 @@
           </button>
         </div>
       </div>
-      <button
+      <!-- <button
         class="bg-white hover:bg-gray-100 text-gray-800 font-semibold py-2 px-4 border w-[33%] mx-auto mt-5 border-gray-400 rounded shadow"
         >Save</button
-      >
+      > -->
     </div>
   </DetailsModal>
 {/if}
