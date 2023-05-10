@@ -8,4 +8,7 @@ export const MetricTypes = {
   hours: "hours",
   minutes: "minutes",
   blockheight: "blocks",
+  proposer: "blocks",
+  prover: "blocks",
+  total: "",
 };

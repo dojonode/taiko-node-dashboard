@@ -5,9 +5,12 @@ services:
     image: taiko-node-status:latest
     build:
       context: .
+    env_file:
+      - .env
     ports:
-      - "8080:80"
-  node:
+      - "8082:80"
+  taiko-node-systeminfo:
+    image: taiko-node-systeminfo:latest
     build:
       context: ./systeminformation
       dockerfile: Dockerfile
