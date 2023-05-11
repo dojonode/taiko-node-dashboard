@@ -30,7 +30,7 @@
   @tailwind utilities;
 
   main {
-    font-family: "Inter", sans-serif;
+    font-family: "Jost", sans-serif;
   }
 
   .green {

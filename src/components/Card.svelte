@@ -226,7 +226,7 @@
     color: #fc0fc0;
     font-size: 18px;
     font-size: large;
-    font-weight: bold;
+    font-weight: 500;
   }
 
   /* .modal-body {
