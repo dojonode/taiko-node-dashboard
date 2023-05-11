@@ -1,6 +1,6 @@
 {
-  "name": "systeminformation",
-  "version": "1.0.0",
+  "name": "@wolfderechter/taiko-node-systeminfo",
+  "version": "1.0.2",
   "description": "",
   "main": "index.js",
   "scripts": {

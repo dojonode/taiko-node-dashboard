@@ -1,25 +1,11 @@
 <script lang="ts">
-  import { getLatestSyncedHeader } from "../../utils/getLatestSyncedHeader";
-  import { watchHeaderSynced } from "../../utils/watchHeaderSynced";
-  import { getPendingTransactions } from "../../utils/getPendingTransactions";
-  import { getBlockFee } from "../../utils/getBlockFee";
-  import { getAvailableSlots } from "../../utils/getAvailableSlots";
-  import { getPendingBlocks } from "../../utils/getPendingBlocks";
-  import { getLastVerifiedBlockId } from "../../utils/getLastVerifiedBlockId";
-  import { getNextBlockId } from "../../utils/getNextBlockId";
-  import { getGasPrice } from "../../utils/getGasPrice";
-  import { getQueuedTransactions } from "../../utils/getQueuedTransactions";
   import { onDestroy, onMount } from "svelte";
-  import { getProofReward } from "../../utils/getProofReward";
   import { queryPrometheus } from "../../utils/prometheus";
-  import { getStateVariables } from "../../utils/getStateVariables";
-  import { truncateString } from "../../utils/truncateString";
-  import TaikoL1 from "../../constants/abi/TaikoL1";
   import DetailsModal from "../../components/DetailsModal.svelte";
-  import { addressSubsection } from "../../utils/addressSubsection";
   import Web3 from "web3";
   import Card from "../../components/Card.svelte";
   import Progressbar from "../../components/Progressbar.svelte";
+  import taikoLogo from "../../assets/TaikoLogo.png";
   import purseIcon from "../../assets/icons/Purse.png";
   import heartIcon from "../../assets/icons/Heart.png";
   import brainIcon from "../../assets/icons/Brain.png";
@@ -109,10 +95,7 @@
       mount: string;
       rw: boolean;
     };
-    docker: {
-      started: number;
-      state: string;
-    };
+    startTime: number;
   }
 
   interface SysteminformationMetrics {
@@ -126,6 +109,15 @@
     runtimeMetricType: any;
   }
 
+  // ToDO: figure out what RPCs will be used by default, give the user an option in the settings to switch to a new RPC
+  const myNode = new Web3("http://localhost:8545");
+  // Temporary RPC while waiting for next testnet, using an alchemy rpc
+  const ethRPC = new Web3("https://eth.llamarpc.com");
+  // const ethRPC = new Web3(import.meta.env.L1_ENDPOINT_WS);
+  // Will be used by default
+  const L2TaikoRPC = new Web3("https://l2rpc.a3.taiko.xyz");
+  const L1TaikoRPC = new Web3("https://l1rpc.a3.taiko.xyz");
+
   // Prometheus metrics
   let peers = null;
   let systemMemoryUsed = null;
@@ -133,34 +125,51 @@
   let blockNumber;
   let syncingStatus;
   let syncingProgress = 0;
+  const nodeWallet = ethRPC.eth.accounts.privateKeyToAccount(
+    import.meta.env.VITE_PRIVATE_KEY
+  );
+  let L1Wallet = nodeWallet.address;
+  let L2Wallet = nodeWallet.address;
   let L1Balance;
   let L2Balance;
-  let nodeType = NodeTypes.Node;
+  let addressProposedBlocksCount;
+  let addressProvenBlocksCount;
+  // set the nodeType to what is used within the .env file
+  let enableProver: boolean = JSON.parse(import.meta.env.VITE_ENABLE_PROVER);
+  let enableProposer: boolean = JSON.parse(
+    import.meta.env.VITE_ENABLE_PROPOSER
+  );
+  let nodeType = enableProver
+    ? NodeTypes.Prover
+    : enableProposer
+    ? NodeTypes.Proposer
+    : NodeTypes.Node;
+
   let themeMode = "light";
   let interval: NodeJS.Timer;
-  let imageRef;
   let settingsOpen: boolean = false;
   let systeminfo: Systeminfo;
   let systeminformationMetrics: SysteminformationMetrics = null;
+  let imageRef;
+
+  // layout variables
+  let bigLayout = true;
   let rotationAngle = 0; // used to rotate the taiko logo
-
-  const myNode = new Web3("http://localhost:8545");
-  // Temporary RPC while waiting for next testnet, using an alchemy rpc
-  const ethRPC = new Web3(import.meta.env.VITE_L1_RPC_URL);
-
-  // Will be used by default
-  const L2TaikoRPC = new Web3("https://l2rpc.a2.taiko.xyz");
-  const L1TaikoRPC = new Web3("https://l1rpc.a2.taiko.xyz");
 
   async function fetchMetric() {
     // Fetch metrics from API endpoint
-    // L1Balance =
-    //   parseInt(
-    //     await ethRPC.eth.getBalance(
-    //       "0x2b253d77323abc934f43dcd896636d38ac84972e"
-    //     )
-    //   ) / 1000000000000000000;
-    // console.log(L1Balance);
+    if (L1Wallet) {
+      L1Balance =
+        parseInt(await ethRPC.eth.getBalance(L1Wallet)) / 1000000000000000000;
+    } else {
+      L1Balance = null;
+    }
+    if (L2Wallet) {
+      L2Balance =
+        parseInt(await ethRPC.eth.getBalance(L2Wallet)) / 1000000000000000000;
+    } else {
+      L2Balance = null;
+    }
 
     // ToDO: use the L2TaikoRPC and compare once testnet is live, check for a difference during syncing?
     blockNumber = await myNode.eth.getBlockNumber();
@@ -171,9 +180,10 @@
     //       "0x2b253d77323abc934f43dcd896636d38ac84972e"
     //     )
     //   ) / 1000000000000000000;
-    // syncingStatus = await myNode.eth.isSyncing();
-    // syncingProgress =
-    //   (syncingStatus.currentBlock / syncingStatus.highestBlock) * 100;
+    syncingStatus = await myNode.eth.isSyncing();
+    syncingProgress =
+      (syncingStatus.currentBlock / syncingStatus.highestBlock) * 100;
+    // console.log(syncingStatus);
     // blockNumber = await taikoL2.eth.getBlockNumber();
     // console.log(await myNode.eth.getNodeInfo());
     // // returns: Geth/v1.10.26-stable/linux-amd64/go1.18.10
@@ -182,6 +192,28 @@
   }
 
   // This function will fetch from the nodejs api that exposes system metrics using the npm package systeminformation
+  const fetchAddressEvents = async () => {
+    try {
+      const response = await fetch(
+        "https://eventindexer.a3.taiko.xyz/uniqueProvers",
+        {
+          headers: {
+            "Access-Control-Allow-Origin": "*",
+            "Access-Control-Allow-Headers":
+              "Origin, X-Requested-With, Content-Type, Accept",
+          },
+        }
+      );
+      let addressEvent = await response.json();
+      // if event === proposed
+      // addressProposedBlocks = addressEvent.count
+      // else if event === proven
+      // addressProvenBlocks = addressEvent.count
+      // console.log(addressEvent);
+    } catch (error) {
+      console.error("Error fetching system info", error);
+    }
+  };
   const fetchSystemInfo = async () => {
     try {
       const response = await fetch("http://localhost:3009/metrics", {
@@ -192,7 +224,7 @@
         },
       });
       systeminfo = await response.json();
-      console.log(systeminfo);
+      // console.log(systeminfo);
 
       const usedMemoryGB =
         (systeminfo.mem.total - systeminfo.mem.available) / 1024 / 1024 / 1024;
@@ -211,11 +243,10 @@
       const usedPercentage = systeminfo.disk[0].use;
 
       const currentTime: number = Math.floor(Date.now() / 1000);
-      const secondsElapsed: number = currentTime - systeminfo.docker.started;
+      const secondsElapsed: number = currentTime - systeminfo.startTime;
       const runtimeInHours = secondsElapsed / 3600;
       const runtime =
         runtimeInHours >= 1 ? runtimeInHours : runtimeInHours * 60;
-      console.log(currentTime, secondsElapsed, runtimeInHours);
 
       systeminformationMetrics = {
         memUsedGB: Number(usedMemoryGB.toFixed(2)),
@@ -224,7 +255,7 @@
         filestorageFreeGB: Number(freeSpaceGB.toFixed(2)),
         filestorageUsedGB: Number(usedSpace.toFixed(2)),
         filestorageUsedPerc: Number(usedPercentage.toFixed(2)),
-        runtime: Number(runtime.toFixed(2)),
+        runtime: Number(runtime.toFixed(0)),
         runtimeMetricType:
           runtimeInHours >= 1 ? MetricTypes.hours : MetricTypes.minutes,
       };
@@ -232,11 +263,10 @@
       console.error("Error fetching system info", error);
     }
   };
-  fetchSystemInfo();
   function switchNodeType(type) {
     if (nodeType === type) return;
 
-    syncingProgress = 0;
+    // syncingProgress = 0;
     rotationAngle += 120;
     imageRef.style.transformOrigin = "center 130px";
     // imageRef.style.transformOrigin = "center 115px";
@@ -256,12 +286,13 @@
         break;
     }
   }
-  fetchMetric();
+  // fetchMetric();
   onMount(async () => {
     // Interval to fetch metrics every second
     interval = setInterval(async () => {
       try {
-        // fetchMetric();
+        fetchMetric();
+        fetchSystemInfo();
         // Try fetching all the prometheus metrics, in case something goes wrong, we set all the properties to "" so the cards are empty/show error
         // ToDO: in case 1 metric fails, all the metrics are erased => any better solutions?
         try {
@@ -279,13 +310,13 @@
           peers = "";
           // systemMemoryUsed = "";
         }
-        if (syncingProgress < 100) {
-          syncingProgress++;
-        }
+        // if (syncingProgress < 100) {
+        // syncingProgress++;
+        // }
       } catch (e) {
         console.error(e);
       }
-    }, 1000);
+    }, 3000);
   });
 
   onDestroy(() => {
@@ -297,7 +328,7 @@
   <div class="text-center relative">
     <img
       bind:this={imageRef}
-      src="./src/assets/TaikoLogo.png"
+      src={taikoLogo}
       class="taikoImg"
       alt=""
       width="230px"
@@ -323,34 +354,14 @@
   <!-- Progress Bar -->
   <div class="my-4">
     <Progressbar
-      progress={syncingProgress}
+      progress={syncingStatus ? syncingProgress : 100}
+      precision={2}
       showPercentage={true}
       finishedMessage="Synced!"
     />
   </div>
 
-  <!-- Temporary generic metrics to try things out -->
-  <!-- <div class="gap-1 text-center my-10">
-    {#if peers}
-      <p>Peers: {peers}</p>
-    {/if}
-    {#if blockNumber}
-      <p>Total blocks: {blockNumber}</p>
-    {/if}
-    {#if syncingStatus}
-      <p>Node block: {syncingStatus.currentBlock}</p>
-      <p>
-        Progress: {syncingProgress.toFixed(2)}%
-      </p>
-    {:else}
-      <p>Synced!</p>
-    {/if}
-    {#if L1Balance && L2Balance}
-      <p>L1 Balance: {L1Balance.toFixed(6)} ETH</p>
-      <p>L2 Balance: {L2Balance.toFixed(6)} ETH</p>
-    {/if}
-  </div> -->
-  <div class="max-w-[552px] relative">
+  <div class="{bigLayout ? 'max-w-[46rem]' : 'max-w-[35rem]'} relative">
     <button
       class="w-6 h-6 absolute right-[7px] top-[-37px] cursor-pointer"
       on:click={() => (settingsOpen = true)}
@@ -360,7 +371,7 @@
 
     <div class="mt-[1px] flex flex-wrap">
       <Card
-        title="Memory"
+        title="memory"
         body={`${systeminformationMetrics?.memUsedGB}`}
         bodyMetricType={MetricTypes.gigabyte}
         subBody={`${systeminformationMetrics?.memUsedPerc}`}
@@ -370,7 +381,7 @@
         progress={systeminformationMetrics?.memUsedPerc}
       />
       <Card
-        title="CPU"
+        title="cpu"
         body={`${systeminformationMetrics?.cpuUsedPerc}`}
         bodyMetricType={MetricTypes.percentage}
         icon={heartIcon}
@@ -378,14 +389,14 @@
         progress={systeminformationMetrics?.cpuUsedPerc}
       />
       <Card
-        title="Peers"
+        title="peers"
         body={peers}
         bodyMetricType={MetricTypes.peers}
         icon={dollsIcon}
         loadingbar={false}
       />
       <Card
-        title="Storage"
+        title="storage"
         body={`${systeminformationMetrics?.filestorageUsedGB}`}
         bodyMetricType={MetricTypes.gigabyte}
         subBody={`${systeminformationMetrics?.filestorageUsedPerc}`}
@@ -395,46 +406,62 @@
         progress={systeminformationMetrics?.filestorageUsedPerc}
       />
       <Card
-        title="Runtime"
+        title="runtime"
         body={`${systeminformationMetrics?.runtime}`}
         bodyMetricType={systeminformationMetrics?.runtimeMetricType}
         icon={timerclockIcon}
         loadingbar={false}
       />
       <Card
-        title="Blockheight"
+        title="blockheight"
         body={`${blockNumber}`}
         bodyMetricType={MetricTypes.blockheight}
         icon={chainIcon}
         loadingbar={false}
       />
-      <Card
-        title="Wallet"
-        body={`0.323`}
-        bodyMetricType={MetricTypes.ethereum}
-        subBody={`0.344`}
-        subBodyMetricType={MetricTypes.ethereum}
-        icon={purseIcon}
-        loadingbar={false}
-      />
-      <Card
+      <!-- node is a proposer -->
+      {#if nodeType === NodeTypes.Proposer}
+        <Card
+          title="proposed"
+          body={`${10}`}
+          bodyMetricType={MetricTypes.proposer}
+          icon={packageIcon}
+          loadingbar={false}
+        />
+        <!-- node is a prover -->
+      {:else if nodeType === NodeTypes.Prover}
+        <Card
+          title="proven"
+          body={`${10}`}
+          bodyMetricType={MetricTypes.prover}
+          icon={packageIcon}
+          loadingbar={false}
+        />
+      {/if}
+
+      <!-- node is either a prover or a proposr -->
+      {#if nodeType === NodeTypes.Proposer || nodeType === NodeTypes.Prover}
+        <Card
+          title="wallet"
+          body={L1Balance?.toFixed(3)}
+          bodyMetricType={MetricTypes.ethereum}
+          subBody={L2Balance?.toFixed(3)}
+          subBodyMetricType={MetricTypes.ethereum}
+          icon={purseIcon}
+          loadingbar={false}
+          {L1Wallet}
+          {L2Wallet}
+        />
+      {/if}
+      <!-- <Card
         title="Earned"
         body="4.588"
         bodyMetricType={MetricTypes.taiko}
         icon={medalIcon}
         loadingbar={false}
-      />
+      /> -->
     </div>
   </div>
-
-  <!-- Show the node details/metrics -->
-  <!-- {#if nodeType === nodeTypes.Prover}
-    <Prover />
-  {:else if nodeType === nodeTypes.Proposer}
-    <Proposer />
-  {:else if nodeType === nodeTypes.Node}
-    <Node />
-  {/if} -->
 </div>
 
 {#if settingsOpen}
@@ -449,6 +476,7 @@
           <input
             class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
             type="text"
+            bind:value={L1Wallet}
           />
         </div>
       </div>
@@ -458,17 +486,32 @@
           <input
             class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
             type="text"
+            bind:value={L2Wallet}
           />
         </div>
       </div>
       <div class="flex justify-between items-center font-bold">
+        Layout:
+        <div class="inline-flex">
+          <button
+            class:active={!bigLayout}
+            on:click={() => (bigLayout = false)}
+            class="layout bg-zinc-50 hover:bg-zinc-200 text-zinc-800 py-2 px-4 mx-1 rounded-l"
+          >
+            compact
+          </button>
+          <button
+            class:active={bigLayout}
+            on:click={() => (bigLayout = true)}
+            class="layout bg-zinc-50 hover:bg-zinc-200 text-zinc-800 py-2 px-4 mx-1 rounded-r"
+          >
+            wide
+          </button>
+        </div>
+      </div>
+      <!-- Theme switcher -->
+      <!-- <div class="flex justify-between items-center font-bold">
         Theme:
-        <!-- <div class="">
-          <button class="mx-1">Light</button>
-          <button class="mx-1">Dark</button>
-          <button class="mx-1">Paper</button>
-          
-        </div> -->
         <div class="inline-flex">
           <button
             class:active={themeMode === "light"}
@@ -492,11 +535,11 @@
             Paper
           </button>
         </div>
-      </div>
-      <button
+      </div> -->
+      <!-- <button
         class="bg-white hover:bg-gray-100 text-gray-800 font-semibold py-2 px-4 border w-[33%] mx-auto mt-5 border-gray-400 rounded shadow"
         >Save</button
-      >
+      > -->
     </div>
   </DetailsModal>
 {/if}
@@ -504,7 +547,7 @@
 <style>
   .nodeTypes {
     color: gray;
-    font-weight: lighter;
+    font-weight: 400;
     z-index: 1;
     position: relative;
   }
@@ -516,7 +559,7 @@
     background-color: #ff9fe9;
     color: white; */
     color: #ff9fe9;
-    font-weight: bold;
+    font-weight: 700;
   }
 
   .nodeTypes .bar {
@@ -531,8 +574,10 @@
     transition: transform 0.5s ease-in-out;
   }
 
-  .theme.active {
-    background-color: rgb(212 212 216);
-    /* background-color: rgb(228 228 231); */
+  .layout.active {
+    background-color: rgb(255, 250, 207);
   }
+  /* .theme.active {
+    background-color: rgb(212 212 216);
+  } */
 </style>

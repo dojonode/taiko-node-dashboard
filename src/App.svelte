@@ -3,15 +3,14 @@
   import Router from "svelte-spa-router";
   import Home from "./pages/home/Home.svelte";
   import { setupI18n } from "./i18n";
-  import { ethers } from "ethers";
   setupI18n({ withLocale: "en" });
 
-  const l1Provider = new ethers.providers.JsonRpcProvider(
-    import.meta.env.VITE_L1_RPC_URL
-  );
-  const l2Provider = new ethers.providers.JsonRpcProvider(
-    import.meta.env.VITE_L2_RPC_URL
-  );
+  // const l1Provider = new ethers.providers.JsonRpcProvider(
+  //   import.meta.env.VITE_L1_RPC_URL
+  // );
+  // const l2Provider = new ethers.providers.JsonRpcProvider(
+  //   import.meta.env.VITE_L2_RPC_URL
+  // );
 
   const routes = {
     "/": wrap({
@@ -31,7 +30,7 @@
   @tailwind utilities;
 
   main {
-    font-family: "Inter", sans-serif;
+    font-family: "Jost", sans-serif;
   }
 
   .green {
