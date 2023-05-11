@@ -271,6 +271,8 @@
   .div2 {
     text-align: center;
     padding-top: 5px;
+    color: #420d4794;
+    font-weight: 500;
   }
   .div3 {
     width: 100%;

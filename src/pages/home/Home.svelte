@@ -547,7 +547,7 @@
 <style>
   .nodeTypes {
     color: gray;
-    font-weight: lighter;
+    font-weight: 400;
     z-index: 1;
     position: relative;
   }
@@ -559,7 +559,7 @@
     background-color: #ff9fe9;
     color: white; */
     color: #ff9fe9;
-    font-weight: bold;
+    font-weight: 700;
   }
 
   .nodeTypes .bar {
