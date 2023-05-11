@@ -449,6 +449,8 @@
           subBodyMetricType={MetricTypes.ethereum}
           icon={purseIcon}
           loadingbar={false}
+          {L1Wallet}
+          {L2Wallet}
         />
       {/if}
       <!-- <Card
