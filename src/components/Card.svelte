@@ -12,6 +12,10 @@
   export let icon: string = null;
   export let loadingbar: boolean = null;
   export let progress: number = null;
+
+  // Used only by the wallet card
+  export let L1Wallet: string = null;
+  export let L2Wallet: string = null;
 </script>
 
 <!-- only populate the card once the body gets filled -->
@@ -74,16 +78,27 @@
               ? 'justify-between'
               : 'flex-col'}"
           >
+            <!-- Card is a wallet card -->
             {#if bodyMetricType === MetricTypes.ethereum && subBodyMetricType === MetricTypes.ethereum}
               <img src={ethIcon} class="w-[15px]" alt="ethereum icon" />
-            {/if}
-            {body}
-
-            {#if bodyMetricType && subBody === null && bodyMetricType === MetricTypes.percentage}
+              <a
+                href="https://sepolia.etherscan.io/address/{L1Wallet}"
+                target="”_blank”"
+              >
+                {body}
+                {bodyMetricType}
+              </a>
+              <!-- Card has only a percentage, so the percentage gets shown on the second row with brackets (cpu)-->
+            {:else if bodyMetricType && subBody === null && bodyMetricType === MetricTypes.percentage}
+              {body}
               <span class="modal-sub-body">[ {bodyMetricType} ]</span>
+              <!-- Normal cards that require 1 row (proposed/proven and runtime )-->
             {:else if bodyMetricType && subBody === null}
+              {body}
               <span class="modal-sub-body">{bodyMetricType}</span>
+              <!-- Normal cards that require 2 rows (memory and storage)-->
             {:else}
+              {body}
               {bodyMetricType}
             {/if}
           </div>
@@ -98,9 +113,18 @@
             >
               {#if bodyMetricType === MetricTypes.ethereum && subBodyMetricType === MetricTypes.ethereum}
                 <img src={taikoIcon} class="w-[15px]" alt="taiko icon" />
+                <!-- ToDO: change to taiko explorer -->
+                <a
+                  href="https://sepolia.etherscan.io/address/{L2Wallet}"
+                  target="”_blank”"
+                >
+                  {subBody}
+                  {subBodyMetricType}
+                </a>
+              {:else}
+                {body}
+                {bodyMetricType}
               {/if}
-              {subBody}
-              {subBodyMetricType}
             </div>
           {/if}
         {/if}
