@@ -109,6 +109,15 @@
     runtimeMetricType: any;
   }
 
+  // ToDO: figure out what RPCs will be used by default, give the user an option in the settings to switch to a new RPC
+  const myNode = new Web3("http://localhost:8545");
+  // Temporary RPC while waiting for next testnet, using an alchemy rpc
+  const ethRPC = new Web3("https://eth.llamarpc.com");
+  // const ethRPC = new Web3(import.meta.env.L1_ENDPOINT_WS);
+  // Will be used by default
+  const L2TaikoRPC = new Web3("https://l2rpc.a3.taiko.xyz");
+  const L1TaikoRPC = new Web3("https://l1rpc.a3.taiko.xyz");
+
   // Prometheus metrics
   let peers = null;
   let systemMemoryUsed = null;
@@ -116,13 +125,26 @@
   let blockNumber;
   let syncingStatus;
   let syncingProgress = 0;
-  let L1Wallet;
-  let L2Wallet;
+  const nodeWallet = ethRPC.eth.accounts.privateKeyToAccount(
+    import.meta.env.VITE_PRIVATE_KEY
+  );
+  let L1Wallet = nodeWallet.address;
+  let L2Wallet = nodeWallet.address;
   let L1Balance;
   let L2Balance;
-  let addressProposedBlocks;
-  let addressProvenBlocks;
-  let nodeType = NodeTypes.Node;
+  let addressProposedBlocksCount;
+  let addressProvenBlocksCount;
+  // set the nodeType to what is used within the .env file
+  let enableProver: boolean = JSON.parse(import.meta.env.VITE_ENABLE_PROVER);
+  let enableProposer: boolean = JSON.parse(
+    import.meta.env.VITE_ENABLE_PROPOSER
+  );
+  let nodeType = enableProver
+    ? NodeTypes.Prover
+    : enableProposer
+    ? NodeTypes.Proposer
+    : NodeTypes.Node;
+
   let themeMode = "light";
   let interval: NodeJS.Timer;
   let settingsOpen: boolean = false;
@@ -133,15 +155,6 @@
   // layout variables
   let bigLayout = true;
   let rotationAngle = 0; // used to rotate the taiko logo
-
-  // ToDO: figure out what RPCs will be used by default, give the user an option in the settings to switch to a new RPC
-  const myNode = new Web3("http://localhost:8545");
-  // Temporary RPC while waiting for next testnet, using an alchemy rpc
-  const ethRPC = new Web3("https://eth.llamarpc.com");
-  // const ethRPC = new Web3(import.meta.env.L1_ENDPOINT_WS);
-  // Will be used by default
-  const L2TaikoRPC = new Web3("https://l2rpc.a3.taiko.xyz");
-  const L1TaikoRPC = new Web3("https://l1rpc.a3.taiko.xyz");
 
   async function fetchMetric() {
     // Fetch metrics from API endpoint
@@ -159,7 +172,7 @@
     }
 
     // ToDO: use the L2TaikoRPC and compare once testnet is live, check for a difference during syncing?
-    // blockNumber = await myNode.eth.getBlockNumber();
+    blockNumber = await myNode.eth.getBlockNumber();
 
     // L2Balance =
     //   parseInt(
@@ -170,7 +183,7 @@
     syncingStatus = await myNode.eth.isSyncing();
     syncingProgress =
       (syncingStatus.currentBlock / syncingStatus.highestBlock) * 100;
-    console.log(syncingStatus);
+    // console.log(syncingStatus);
     // blockNumber = await taikoL2.eth.getBlockNumber();
     // console.log(await myNode.eth.getNodeInfo());
     // // returns: Geth/v1.10.26-stable/linux-amd64/go1.18.10
@@ -196,7 +209,7 @@
       // addressProposedBlocks = addressEvent.count
       // else if event === proven
       // addressProvenBlocks = addressEvent.count
-      console.log(addressEvent);
+      // console.log(addressEvent);
     } catch (error) {
       console.error("Error fetching system info", error);
     }
@@ -211,7 +224,7 @@
         },
       });
       systeminfo = await response.json();
-      console.log(systeminfo);
+      // console.log(systeminfo);
 
       const usedMemoryGB =
         (systeminfo.mem.total - systeminfo.mem.available) / 1024 / 1024 / 1024;
@@ -234,7 +247,6 @@
       const runtimeInHours = secondsElapsed / 3600;
       const runtime =
         runtimeInHours >= 1 ? runtimeInHours : runtimeInHours * 60;
-      console.log(currentTime, secondsElapsed, runtimeInHours);
 
       systeminformationMetrics = {
         memUsedGB: Number(usedMemoryGB.toFixed(2)),
@@ -254,7 +266,7 @@
   function switchNodeType(type) {
     if (nodeType === type) return;
 
-    syncingProgress = 0;
+    // syncingProgress = 0;
     rotationAngle += 120;
     imageRef.style.transformOrigin = "center 130px";
     // imageRef.style.transformOrigin = "center 115px";
@@ -280,7 +292,7 @@
     interval = setInterval(async () => {
       try {
         fetchMetric();
-        // fetchSystemInfo();
+        fetchSystemInfo();
         // Try fetching all the prometheus metrics, in case something goes wrong, we set all the properties to "" so the cards are empty/show error
         // ToDO: in case 1 metric fails, all the metrics are erased => any better solutions?
         try {
@@ -298,9 +310,9 @@
           peers = "";
           // systemMemoryUsed = "";
         }
-        if (syncingProgress < 100) {
-          syncingProgress++;
-        }
+        // if (syncingProgress < 100) {
+        // syncingProgress++;
+        // }
       } catch (e) {
         console.error(e);
       }
@@ -343,7 +355,7 @@
   <div class="my-4">
     <Progressbar
       progress={syncingStatus ? syncingProgress : 100}
-      precision={0}
+      precision={2}
       showPercentage={true}
       finishedMessage="Synced!"
     />
@@ -359,7 +371,7 @@
 
     <div class="mt-[1px] flex flex-wrap">
       <Card
-        title="Memory"
+        title="memory"
         body={`${systeminformationMetrics?.memUsedGB}`}
         bodyMetricType={MetricTypes.gigabyte}
         subBody={`${systeminformationMetrics?.memUsedPerc}`}
@@ -369,7 +381,7 @@
         progress={systeminformationMetrics?.memUsedPerc}
       />
       <Card
-        title="CPU"
+        title="cpu"
         body={`${systeminformationMetrics?.cpuUsedPerc}`}
         bodyMetricType={MetricTypes.percentage}
         icon={heartIcon}
@@ -377,14 +389,14 @@
         progress={systeminformationMetrics?.cpuUsedPerc}
       />
       <Card
-        title="Peers"
+        title="peers"
         body={peers}
         bodyMetricType={MetricTypes.peers}
         icon={dollsIcon}
         loadingbar={false}
       />
       <Card
-        title="Storage"
+        title="storage"
         body={`${systeminformationMetrics?.filestorageUsedGB}`}
         bodyMetricType={MetricTypes.gigabyte}
         subBody={`${systeminformationMetrics?.filestorageUsedPerc}`}
@@ -394,42 +406,48 @@
         progress={systeminformationMetrics?.filestorageUsedPerc}
       />
       <Card
-        title="Runtime"
+        title="runtime"
         body={`${systeminformationMetrics?.runtime}`}
         bodyMetricType={systeminformationMetrics?.runtimeMetricType}
         icon={timerclockIcon}
         loadingbar={false}
       />
       <Card
-        title="Blockheight"
+        title="blockheight"
         body={`${blockNumber}`}
         bodyMetricType={MetricTypes.blockheight}
         icon={chainIcon}
         loadingbar={false}
       />
-      <Card
-        title="Wallet"
-        body={L1Balance?.toFixed(3)}
-        bodyMetricType={MetricTypes.ethereum}
-        subBody={L2Balance?.toFixed(3)}
-        subBodyMetricType={MetricTypes.ethereum}
-        icon={purseIcon}
-        loadingbar={false}
-      />
+      <!-- node is a proposer -->
       {#if nodeType === NodeTypes.Proposer}
         <Card
-          title="Proposed"
+          title="proposed"
           body={`${10}`}
           bodyMetricType={MetricTypes.proposer}
           icon={packageIcon}
           loadingbar={false}
         />
+        <!-- node is a prover -->
       {:else if nodeType === NodeTypes.Prover}
         <Card
-          title="Proven"
+          title="proven"
           body={`${10}`}
           bodyMetricType={MetricTypes.prover}
           icon={packageIcon}
+          loadingbar={false}
+        />
+      {/if}
+
+      <!-- node is either a prover or a proposr -->
+      {#if nodeType === NodeTypes.Proposer || nodeType === NodeTypes.Prover}
+        <Card
+          title="wallet"
+          body={L1Balance?.toFixed(3)}
+          bodyMetricType={MetricTypes.ethereum}
+          subBody={L2Balance?.toFixed(3)}
+          subBodyMetricType={MetricTypes.ethereum}
+          icon={purseIcon}
           loadingbar={false}
         />
       {/if}
