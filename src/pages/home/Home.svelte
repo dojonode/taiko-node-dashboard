@@ -111,6 +111,7 @@
   let systemMemoryUsed = null;
 
   let blockNumber;
+  let gasPrice;
   let syncingStatus;
   let syncingProgress = 0;
   const nodeWallet = ethRPC.eth.accounts.privateKeyToAccount(
@@ -147,18 +148,23 @@
   async function fetchMetric() {
     // Fetch metrics from API endpoint
     if (L1Wallet) {
-      L1Balance =
-        parseInt(await ethRPC.eth.getBalance(L1Wallet)) / 1000000000000000000;
+      L1Balance = Number(
+        ethRPC.utils.fromWei(await ethRPC.eth.getBalance(L1Wallet), "ether")
+      );
     } else {
       L1Balance = null;
     }
     if (L2Wallet) {
-      L2Balance =
-        parseInt(await ethRPC.eth.getBalance(L2Wallet)) / 1000000000000000000;
+      L2Balance = Number(
+        ethRPC.utils.fromWei(await ethRPC.eth.getBalance(L2Wallet), "ether")
+      );
     } else {
       L2Balance = null;
     }
 
+    gasPrice = Number(
+      ethRPC.utils.fromWei(await ethRPC.eth.getGasPrice(), "gwei")
+    );
     // ToDO: use the L2TaikoRPC and compare once testnet is live, check for a difference during syncing?
     blockNumber = await myNode.eth.getBlockNumber();
     syncingStatus = await myNode.eth.isSyncing();
@@ -290,7 +296,7 @@
       } catch (e) {
         console.error(e);
       }
-    }, 3000);
+    }, 5000);
   });
 
   onDestroy(() => {
@@ -390,6 +396,13 @@
         title="blockheight"
         body={`${blockNumber}`}
         bodyMetricType={MetricTypes.blockheight}
+        icon={chainIcon}
+        loadingbar={false}
+      />
+      <Card
+        title="Gas"
+        body={`${gasPrice?.toFixed(2)}`}
+        bodyMetricType={MetricTypes.gas}
         icon={chainIcon}
         loadingbar={false}
       />

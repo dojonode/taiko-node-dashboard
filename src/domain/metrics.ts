@@ -11,4 +11,5 @@ export const MetricTypes = {
   proposer: "blocks",
   prover: "blocks",
   total: "",
+  gas: "gwei",
 };
