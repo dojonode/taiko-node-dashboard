@@ -18,7 +18,7 @@
   export let L2Wallet: string = null;
 </script>
 
-<div class="modal shadow-md">
+<div class="card cursor-pointer modal shadow-md">
   <h3 class="modal-title">{title}</h3>
   <div class="flex flex-col h-[125px]">
     <div

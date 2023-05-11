@@ -21,6 +21,7 @@
   import warningIcon from "../../assets/icons/Warning.png";
   import Gear from "../../components/icons/Gear.svelte";
   import { MetricTypes } from "../../domain/metrics";
+  import { Sortable } from "@shopify/draggable";
 
   const NodeTypes = {
     Node: 0,
@@ -274,6 +275,10 @@
   }
   // fetchMetric();
   onMount(async () => {
+    const sortable = new Sortable(document.querySelectorAll("#cards"), {
+      draggable: ".card",
+    });
+
     // Interval to fetch metrics every second
     interval = setInterval(async () => {
       try {
@@ -349,7 +354,7 @@
       <Gear class="fill-[#9baab2]" />
     </button>
 
-    <div class="mt-[1px] flex flex-wrap">
+    <div id="cards" class="mt-[1px] flex flex-wrap">
       <Card
         title="memory"
         body={`${systeminformationMetrics?.memUsedGB}`}
