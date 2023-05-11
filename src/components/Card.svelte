@@ -102,31 +102,29 @@
               {bodyMetricType}
             {/if}
           </div>
-
-          {#if subBody}
-            <div
-              class="modal-sub-body flex items-center {bodyMetricType ===
-                MetricTypes.ethereum &&
-              subBodyMetricType === MetricTypes.ethereum
-                ? 'justify-between'
-                : 'justify-center'}"
-            >
-              {#if bodyMetricType === MetricTypes.ethereum && subBodyMetricType === MetricTypes.ethereum}
-                <img src={taikoIcon} class="w-[15px]" alt="taiko icon" />
-                <!-- ToDO: change to taiko explorer -->
-                <a
-                  href="https://sepolia.etherscan.io/address/{L2Wallet}"
-                  target="”_blank”"
-                >
-                  {subBody}
-                  {subBodyMetricType}
-                </a>
-              {:else}
-                {body}
-                {bodyMetricType}
-              {/if}
-            </div>
-          {/if}
+        {/if}
+        {#if subBody !== "undefined" && subBody !== undefined && subBody !== null && subBody !== "null" && subBody !== ""}
+          <div
+            class="modal-sub-body flex items-center {bodyMetricType ===
+              MetricTypes.ethereum && subBodyMetricType === MetricTypes.ethereum
+              ? 'justify-between'
+              : 'justify-center'}"
+          >
+            {#if bodyMetricType === MetricTypes.ethereum && subBodyMetricType === MetricTypes.ethereum}
+              <img src={taikoIcon} class="w-[15px]" alt="taiko icon" />
+              <!-- ToDO: change to taiko explorer -->
+              <a
+                href="https://sepolia.etherscan.io/address/{L2Wallet}"
+                target="”_blank”"
+              >
+                {subBody}
+                {subBodyMetricType}
+              </a>
+            {:else}
+              {body}
+              {bodyMetricType}
+            {/if}
+          </div>
         {/if}
       </div>
     </div>
