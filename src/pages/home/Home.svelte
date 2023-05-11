@@ -22,18 +22,6 @@
   import Gear from "../../components/icons/Gear.svelte";
   import { MetricTypes } from "../../domain/metrics";
 
-  // import Prover from "src/components/details/Prover.svelte";
-  // import Node from "src/components/details/Node.svelte";
-  // import Proposer from "src/components/details/Proposer.svelte";
-  // export let l1Provider: ethers.providers.JsonRpcProvider;
-  // export let l1TaikoAddress: string;
-  // export let l2Provider: ethers.providers.JsonRpcProvider;
-  // export let l2TaikoAddress: string;
-  // export let l1ExplorerUrl: string;
-  // export let l2ExplorerUrl: string;
-  // export let feeTokenSymbol: string;
-  // export let oracleProverAddress: string;
-
   const NodeTypes = {
     Node: 0,
     Proposer: 1,
@@ -173,13 +161,6 @@
 
     // ToDO: use the L2TaikoRPC and compare once testnet is live, check for a difference during syncing?
     blockNumber = await myNode.eth.getBlockNumber();
-
-    // L2Balance =
-    //   parseInt(
-    //     await taikoL2.eth.getBalance(
-    //       "0x2b253d77323abc934f43dcd896636d38ac84972e"
-    //     )
-    //   ) / 1000000000000000000;
     syncingStatus = await myNode.eth.isSyncing();
     syncingProgress =
       (syncingStatus.currentBlock / syncingStatus.highestBlock) * 100;
@@ -269,7 +250,6 @@
     // syncingProgress = 0;
     rotationAngle += 120;
     imageRef.style.transformOrigin = "center 130px";
-    // imageRef.style.transformOrigin = "center 115px";
     imageRef.style.transform = `rotate(${rotationAngle}deg)`;
 
     switch (type) {
@@ -293,23 +273,17 @@
       try {
         fetchMetric();
         fetchSystemInfo();
+
         // Try fetching all the prometheus metrics, in case something goes wrong, we set all the properties to "" so the cards are empty/show error
         // ToDO: in case 1 metric fails, all the metrics are erased => any better solutions?
         try {
-          const [peersData] = await Promise.all([
-            queryPrometheus("p2p_peers"),
-            // queryPrometheus("system_memory_used"),
-          ]);
-          peers = peersData.data.result[0].value[1];
-          // using the node to fetch systemmemory leads to inaccurate results, that's why we use the NodeJS api
-          // let systemMemoryUsedMB =
-          //   systemMemoryUsedData.data.result[0].value[1] / 8000000;
-          // systemMemoryUsed = `${systemMemoryUsedMB.toFixed(0)} MB`;
+          const [peersData] = await queryPrometheus("p2p_peers"),
+            peers = peersData.data.result[0].value[1];
         } catch (error) {
           // ToDO: Show alerts/notifications when something went wrong fetching the prometheus metric(s)?
           peers = "";
-          // systemMemoryUsed = "";
         }
+
         // if (syncingProgress < 100) {
         // syncingProgress++;
         // }
@@ -577,7 +551,4 @@
   .layout.active {
     background-color: rgb(255, 250, 207);
   }
-  /* .theme.active {
-    background-color: rgb(212 212 216);
-  } */
 </style>
