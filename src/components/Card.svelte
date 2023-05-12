@@ -106,7 +106,7 @@
   .modal {
     align-items: center;
     padding: 10px 20px;
-    margin: 7px;
+    margin: 6px;
     border: 1px solid #f5f5f5;
     border-radius: 20px;
     background-color: #f5f5f5;

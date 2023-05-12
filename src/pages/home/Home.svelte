@@ -464,7 +464,7 @@
     >
       <div class="flex justify-between items-center font-bold">
         Set L1 address:
-        <div class="">
+        <div class="ml-2 w-[75%]">
           <input
             class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
             type="text"
@@ -474,7 +474,7 @@
       </div>
       <div class="flex justify-between items-center font-bold">
         Set L2 address:
-        <div class="">
+        <div class="ml-2 w-[75%]">
           <input
             class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
             type="text"

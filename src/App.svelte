@@ -20,7 +20,7 @@
   };
 </script>
 
-<main class="px-6">
+<main class="px-2 md:px-6">
   <Router {routes} />
 </main>
 
