@@ -81,8 +81,8 @@
                 {subBodyMetricType}
               </a>
             {:else}
-              {body}
-              {bodyMetricType}
+              {subBody}
+              {subBodyMetricType}
             {/if}
           </div>
         {/if}
