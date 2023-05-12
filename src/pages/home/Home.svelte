@@ -17,6 +17,8 @@
   import chainIcon from "../../assets/icons/Chain.png";
   import packageIcon from "../../assets/icons/Package.png";
   import recyclingIcon from "../../assets/icons/Recycling.png";
+  import abacusIcon from "../../assets/icons/Abacus.png";
+  import gasIcon from "../../assets/icons/Gas.png";
   import timerclockIcon from "../../assets/icons/Timer_Clock.png";
   import warningIcon from "../../assets/icons/Warning.png";
   import Gear from "../../components/icons/Gear.svelte";
@@ -115,11 +117,16 @@
   let gasPrice;
   let syncingStatus;
   let syncingProgress = 0;
-  const nodeWallet = ethRPC.eth.accounts.privateKeyToAccount(
+  // nodeAddress is the wallet address read out from the .env file used for the node
+  const nodeAddress = ethRPC.eth.accounts.privateKeyToAccount(
     import.meta.env.VITE_PRIVATE_KEY
-  );
-  let L1Wallet = nodeWallet.address;
-  let L2Wallet = nodeWallet.address;
+  ).address;
+  let useCustomAddress = false;
+  let customAddressL1;
+  let customAddressL2;
+  // reactive declarations of the L1Wallet and L2Wallet that will re-calculate their values each time one of the reactive dependencies (useCustomAddress, customAddressL1, or nodeAddress) changes
+  $: L1Wallet = useCustomAddress ? customAddressL1 : nodeAddress;
+  $: L2Wallet = useCustomAddress ? customAddressL2 : nodeAddress;
   let L1Balance;
   let L2Balance;
   let addressProposedBlocksCount;
@@ -288,8 +295,8 @@
         // Try fetching all the prometheus metrics, in case something goes wrong, we set all the properties to "" so the cards are empty/show error
         // ToDO: in case 1 metric fails, all the metrics are erased => any better solutions?
         try {
-          const [peersData] = await queryPrometheus("p2p_peers"),
-            peers = peersData.data.result[0].value[1];
+          const peersData = await queryPrometheus("p2p_peers");
+          peers = peersData.data.result[0].value[1];
         } catch (error) {
           // ToDO: Show alerts/notifications when something went wrong fetching the prometheus metric(s)?
           peers = "";
@@ -374,13 +381,6 @@
         progress={systeminformationMetrics?.cpuUsedPerc}
       />
       <Card
-        title="peers"
-        body={peers}
-        bodyMetricType={MetricTypes.peers}
-        icon={dollsIcon}
-        loadingbar={false}
-      />
-      <Card
         title="storage"
         body={`${systeminformationMetrics?.filestorageUsedGB}`}
         bodyMetricType={MetricTypes.gigabyte}
@@ -398,19 +398,33 @@
         loadingbar={false}
       />
       <Card
+        title="peers"
+        body={peers}
+        bodyMetricType={MetricTypes.peers}
+        icon={dollsIcon}
+        loadingbar={false}
+      />
+      <Card
         title="blockheight"
         body={`${blockNumber}`}
         bodyMetricType={MetricTypes.blockheight}
         icon={chainIcon}
         loadingbar={false}
       />
-      <Card
-        title="Gas"
-        body={`${gasPrice?.toFixed(2)}`}
-        bodyMetricType={MetricTypes.gas}
-        icon={chainIcon}
-        loadingbar={false}
-      />
+      <!-- node is either a prover or a proposr -->
+      {#if nodeType === NodeTypes.Proposer || nodeType === NodeTypes.Prover}
+        <Card
+          title="wallet"
+          body={L1Balance?.toFixed(3)}
+          bodyMetricType={MetricTypes.ethereum}
+          subBody={L2Balance?.toFixed(3)}
+          subBodyMetricType={MetricTypes.ethereum}
+          icon={purseIcon}
+          loadingbar={false}
+          {L1Wallet}
+          {L2Wallet}
+        />
+      {/if}
       <!-- node is a proposer -->
       {#if nodeType === NodeTypes.Proposer}
         <Card
@@ -426,25 +440,17 @@
           title="proven"
           body={`${10}`}
           bodyMetricType={MetricTypes.prover}
-          icon={packageIcon}
+          icon={abacusIcon}
           loadingbar={false}
         />
       {/if}
-
-      <!-- node is either a prover or a proposr -->
-      {#if nodeType === NodeTypes.Proposer || nodeType === NodeTypes.Prover}
-        <Card
-          title="wallet"
-          body={L1Balance?.toFixed(3)}
-          bodyMetricType={MetricTypes.ethereum}
-          subBody={L2Balance?.toFixed(3)}
-          subBodyMetricType={MetricTypes.ethereum}
-          icon={purseIcon}
-          loadingbar={false}
-          {L1Wallet}
-          {L2Wallet}
-        />
-      {/if}
+      <Card
+        title="Gas"
+        body={`${gasPrice?.toFixed(2)}`}
+        bodyMetricType={MetricTypes.gas}
+        icon={gasIcon}
+        loadingbar={false}
+      />
       <!-- <Card
         title="Earned"
         body="4.588"
@@ -463,25 +469,46 @@
       slot="body"
     >
       <div class="flex justify-between items-center font-bold">
-        Set L1 address:
+        Address used by node:
         <div class="ml-2 w-[75%]">
           <input
             class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
             type="text"
-            bind:value={L1Wallet}
+            value={nodeAddress}
+            disabled
           />
+
+          <div>
+            <input type="checkbox" bind:checked={useCustomAddress} id="" />
+            Use custom address
+          </div>
         </div>
       </div>
-      <div class="flex justify-between items-center font-bold">
-        Set L2 address:
-        <div class="ml-2 w-[75%]">
-          <input
-            class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-            type="text"
-            bind:value={L2Wallet}
-          />
+      {#if useCustomAddress}
+        <div class="flex justify-between items-center font-bold">
+          Set L1 address:
+          <div class="ml-2 w-[75%]">
+            <input
+              class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+              type="text"
+              readonly={!useCustomAddress}
+              bind:value={customAddressL1}
+            />
+          </div>
         </div>
-      </div>
+        <div class="flex justify-between items-center font-bold">
+          Set L2 address:
+          <div class="ml-2 w-[75%]">
+            <input
+              class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+              type="text"
+              readonly={!useCustomAddress}
+              bind:value={customAddressL2}
+            />
+          </div>
+        </div>
+      {/if}
+
       <div class="flex justify-between items-center font-bold">
         Layout:
         <div class="inline-flex">
