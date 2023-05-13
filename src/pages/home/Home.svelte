@@ -1,6 +1,10 @@
 <script lang="ts">
   import { onDestroy, onMount } from "svelte";
   import { queryPrometheus } from "../../utils/prometheus";
+  import {
+    setLocalStorageItem,
+    getLocalStorageItem,
+  } from "../../utils/localstorage";
   import DetailsModal from "../../components/DetailsModal.svelte";
   import Web3 from "web3";
   import Card from "../../components/Card.svelte";
@@ -23,6 +27,10 @@
   import warningIcon from "../../assets/icons/Warning.png";
   import Gear from "../../components/icons/Gear.svelte";
   import { MetricTypes } from "../../domain/metrics";
+  import type {
+    Systeminfo,
+    SysteminformationMetricsInterface,
+  } from "../../domain/types";
   import { Sortable } from "@shopify/draggable";
 
   const NodeTypes = {
@@ -30,75 +38,6 @@
     Proposer: 1,
     Prover: 2,
   };
-
-  // ToDO: strip this interface to the necesary items?
-  interface Systeminfo {
-    mem: {
-      total: number;
-      free: number;
-      used: number;
-      active: number;
-      available: number;
-      buffers: number;
-      cached: number;
-      slab: number;
-      buffcache: number;
-      swaptotal: number;
-      swapused: number;
-      swapfree: number;
-    };
-    cpu: {
-      avgLoad: number;
-      currentLoad: number;
-      currentLoadUser: number;
-      currentLoadSystem: number;
-      currentLoadNice: number;
-      currentLoadIdle: number;
-      currentLoadIrq: number;
-      rawCurrentLoad: number;
-      rawCurrentLoadUser: number;
-      rawCurrentLoadSystem: number;
-      rawCurrentLoadNice: number;
-      rawCurrentLoadIdle: number;
-      rawCurrentLoadIrq: number;
-      cpus: {
-        load: number;
-        loadUser: number;
-        loadSystem: number;
-        loadNice: number;
-        loadIdle: number;
-        loadIrq: number;
-        rawLoad: number;
-        rawLoadUser: number;
-        rawLoadSystem: number;
-        rawLoadNice: number;
-        rawLoadIdle: number;
-        rawLoadIrq: number;
-      }[];
-    };
-    disk: {
-      fs: string;
-      type: string;
-      size: number;
-      used: number;
-      available: number;
-      use: number;
-      mount: string;
-      rw: boolean;
-    };
-    startTime: number;
-  }
-
-  interface SysteminformationMetrics {
-    memUsedGB: number;
-    memUsedPerc: number;
-    cpuUsedPerc: number;
-    filestorageFreeGB: number;
-    filestorageUsedGB: number;
-    filestorageUsedPerc: number;
-    runtime: number;
-    runtimeMetricType: any;
-  }
 
   // ToDO: figure out what RPCs will be used by default, give the user an option in the settings to switch to a new RPC
   const myNode = new Web3("http://localhost:8545");
@@ -142,16 +81,16 @@
     ? NodeTypes.Proposer
     : NodeTypes.Node;
 
-  let themeMode = "light";
   let interval: NodeJS.Timer;
-  let settingsOpen: boolean = false;
   let systeminfo: Systeminfo;
-  let systeminformationMetrics: SysteminformationMetrics = null;
-  let imageRef;
+  let systeminformationMetrics: SysteminformationMetricsInterface = null;
 
   // layout variables
-  let bigLayout = true;
+  let bigLayout = false;
   let rotationAngle = 0; // used to rotate the taiko logo
+  let themeMode = "light";
+  let settingsOpen: boolean = false;
+  let imageRef;
 
   async function fetchMetric() {
     // Fetch metrics from API endpoint
@@ -263,7 +202,7 @@
 
     // syncingProgress = 0;
     rotationAngle += 120;
-    imageRef.style.transformOrigin = "center 130px";
+    // imageRef.style.transformOrigin = "center 130px";
     imageRef.style.transform = `rotate(${rotationAngle}deg)`;
 
     switch (type) {
@@ -282,6 +221,10 @@
   }
   // fetchMetric();
   onMount(async () => {
+    useCustomAddress = JSON.parse(getLocalStorageItem("useCustomAddress"));
+    customAddressL1 = getLocalStorageItem("customAddressL1");
+    customAddressL2 = getLocalStorageItem("customAddressL2");
+
     const sortable = new Sortable(document.querySelectorAll("#cards"), {
       draggable: ".card",
     });
@@ -318,13 +261,7 @@
 
 <div class="flex flex-col items-center pt-4">
   <div class="text-center relative">
-    <img
-      bind:this={imageRef}
-      src={taikoLogo}
-      class="taikoImg"
-      alt=""
-      width="230px"
-    />
+    <img bind:this={imageRef} src={taikoLogo} class="taikoImg mx-auto" alt="" />
     <div class="nodeTypes flex justify-evenly mt-4">
       <button
         class:active={nodeType === NodeTypes.Node}
@@ -353,15 +290,20 @@
     />
   </div>
 
-  <div class="{bigLayout ? 'max-w-[46rem]' : 'max-w-[35rem]'} relative">
+  <div
+    class="{bigLayout
+      ? 'max-w-[46rem]'
+      : 'max-w-[35rem]'} relative sm:justify-center"
+  >
     <button
+      id="settingsBtn"
       class="w-6 h-6 absolute right-[7px] top-[-37px] cursor-pointer"
       on:click={() => (settingsOpen = true)}
     >
       <Gear class="fill-[#9baab2]" />
     </button>
 
-    <div id="cards" class="mt-[1px] flex flex-wrap">
+    <div id="cards" class="mt-[1px] flex flex-wrap justify-center">
       <Card
         title="memory"
         body={`${systeminformationMetrics?.memUsedGB}`}
@@ -451,13 +393,23 @@
         icon={gasIcon}
         loadingbar={false}
       />
+      <!-- Invisble cards that push any incomplete rows of cards to the left -->
+      <div class="invisible">
+        <Card />
+      </div>
+      <div class="invisible">
+        <Card />
+      </div>
+      <div class="invisible">
+        <Card />
+      </div>
       <!-- <Card
-        title="Earned"
-        body="4.588"
-        bodyMetricType={MetricTypes.taiko}
-        icon={medalIcon}
-        loadingbar={false}
-      /> -->
+          title="Earned"
+          body="4.588"
+          bodyMetricType={MetricTypes.taiko}
+          icon={medalIcon}
+          loadingbar={false}
+        /> -->
     </div>
   </div>
 </div>
@@ -479,7 +431,15 @@
           />
 
           <div>
-            <input type="checkbox" bind:checked={useCustomAddress} id="" />
+            <input
+              type="checkbox"
+              bind:checked={useCustomAddress}
+              on:change={() =>
+                setLocalStorageItem(
+                  "useCustomAddress",
+                  String(useCustomAddress)
+                )}
+            />
             Use custom address
           </div>
         </div>
@@ -493,6 +453,8 @@
               type="text"
               readonly={!useCustomAddress}
               bind:value={customAddressL1}
+              on:change={() =>
+                setLocalStorageItem("customAddressL1", customAddressL1)}
             />
           </div>
         </div>
@@ -504,6 +466,8 @@
               type="text"
               readonly={!useCustomAddress}
               bind:value={customAddressL2}
+              on:change={() =>
+                setLocalStorageItem("customAddressL2", customAddressL2)}
             />
           </div>
         </div>
@@ -569,6 +533,9 @@
     font-weight: 400;
     z-index: 1;
     position: relative;
+    width: 200px;
+    margin-left: auto;
+    margin-right: auto;
   }
 
   .nodeTypes .active {
@@ -591,9 +558,24 @@
 
   .taikoImg {
     transition: transform 0.5s ease-in-out;
+    transform-origin: center 130px;
+    width: 230px;
   }
 
   .layout.active {
     background-color: rgb(255, 250, 207);
+  }
+
+  @media (max-width: 550px) {
+    .taikoImg {
+      width: 130px;
+      transform-origin: center 74px;
+    }
+
+    /* #settingsBtn {
+      display: block;
+      margin-left: 95%;
+      margin-right: 5%;
+    } */
   }
 </style>

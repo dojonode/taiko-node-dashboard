@@ -138,4 +138,10 @@
     color: #420d4794;
     font-weight: 500;
   }
+
+  @media (max-width: 750px) {
+    .modal {
+      margin: 4px;
+    }
+  }
 </style>
