@@ -21,7 +21,8 @@ export const NodeTypes = {
 };
 
 export const Themes = {
-  Light: 0,
-  Dark: 1,
-  Paper: 2,
+  Original: "original",
+  Light: "light",
+  Dark: "dark",
+  Paper: "paper",
 };

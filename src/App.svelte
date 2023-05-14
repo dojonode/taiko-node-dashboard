@@ -3,8 +3,9 @@
   import Router from "svelte-spa-router";
   import Home from "./pages/home/Home.svelte";
   import { setupI18n } from "./i18n";
-  setupI18n({ withLocale: "en" });
+  import { currentTheme } from "./components/ThemeSwitcher.svelte";
 
+  setupI18n({ withLocale: "en" });
   // const l1Provider = new ethers.providers.JsonRpcProvider(
   //   import.meta.env.VITE_L1_RPC_URL
   // );
@@ -20,7 +21,7 @@
   };
 </script>
 
-<main class="px-2 md:px-6">
+<main class="px-2 md:px-6" data-theme={$currentTheme}>
   <Router {routes} />
 </main>
 
@@ -31,17 +32,5 @@
 
   main {
     font-family: "Jost", sans-serif;
-  }
-
-  .green {
-    color: #7cfc00;
-  }
-
-  .red {
-    color: #ff9494;
-  }
-
-  .yellow {
-    color: #eed202;
   }
 </style>

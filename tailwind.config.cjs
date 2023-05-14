@@ -1,16 +1,23 @@
+const { createThemes } = require('tw-colors');
+
 module.exports = {
   content: ["./src/**/*.{html,js,svelte,ts}"],
-  plugins: [],
-  theme: {
-    extend: {
-      colors: {
-        "dark-1": "var(--color-dark-1)",
-        "dark-2": "var(--color-dark-2)",
-        "dark-3": "var(--color-dark-3)",
-        "dark-4": "var(--color-dark-4)",
-        "dark-5": "var(--color-dark-5)",
-        "dark-6": "var(--color-dark-6)",
-      }
-    }
-  },
+  plugins: [
+    createThemes({
+      original: {
+        primaryColor: "#fc0fc0", //taiko pink
+        secondaryColor: "#ff9fe9", //taiko soft pink
+        backgroundColor: "#f5f5f5", //main background
+        cardBackgroundColor: "#f5f5f5", //card background
+        bodyColor: "#420d4794",
+        subBodyColor: "#b3b3b3",
+        settingsBtnColor: "#9baab2",
+        settingsBackgroundColor: "#f4cfff",
+        settingsButtonColorActive: "#fffacf",
+      },
+      light: {},
+      paper: {},
+      dark: {},
+    })
+  ],
 };

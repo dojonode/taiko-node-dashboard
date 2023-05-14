@@ -75,7 +75,7 @@
     "prom-client": "^14.2.0",
     "svelte-i18n": "^3.5.1",
     "svelte-spa-router": "^3.2.0",
-    "svelte-themer": "^0.5.5",
+    "tw-colors": "^1.2.6",
     "web3": "^1.9.0"
   }
 }

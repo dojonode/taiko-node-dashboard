@@ -8,6 +8,7 @@
   import DetailsModal from "../../components/DetailsModal.svelte";
   import Web3 from "web3";
   import Card from "../../components/Card.svelte";
+  import ThemeSwitcher from "../../components/ThemeSwitcher.svelte";
   import Progressbar from "../../components/Progressbar.svelte";
   import taikoLogo from "../../assets/TaikoLogo.png";
   import purseIcon from "../../assets/icons/Purse.png";
@@ -496,6 +497,7 @@
         </div>
       </div>
       <!-- Theme switcher -->
+      <ThemeSwitcher />
       <!-- <div class="flex justify-between items-center font-bold">
         Theme:
         <div class="inline-flex">
