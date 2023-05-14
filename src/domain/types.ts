@@ -8,7 +8,7 @@ export interface SysteminformationMetricsInterface {
   runtime: number;
   runtimeMetricType: any;
 }
-// ToDO: strip this interface to the necesary items?
+// TODO: strip this interface to the necesary items?
 export interface Systeminfo {
   mem: {
     total: number;

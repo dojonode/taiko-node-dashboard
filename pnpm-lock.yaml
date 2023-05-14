@@ -52,6 +52,9 @@ dependencies:
   svelte-spa-router:
     specifier: ^3.2.0
     version: 3.3.0
+  svelte-themer:
+    specifier: ^0.5.5
+    version: 0.5.5(svelte@3.53.1)
   web3:
     specifier: ^1.9.0
     version: 1.9.0
@@ -9255,6 +9258,15 @@ packages:
     resolution: {integrity: sha512-cwRNe7cxD43sCvSfEeaKiNZg3FCizGxeMcf7CPiWRP3jKXjEma3vxyyuDtPOam6nWbVxl9TNM3hlE/i87ZlqcQ==}
     dependencies:
       regexparam: 2.0.1
+    dev: false
+
+  /svelte-themer@0.5.5(svelte@3.53.1):
+    resolution: {integrity: sha512-mhW1Vth6WQgFGt9UYwjM9MsalNzSFhWoi7y1X7geQ5aELmKNGKR5CA6PlbD8uvOpbaqX09+487OZ/T6hxaMFlA==}
+    engines: {node: '>=14', pnpm: '>=3'}
+    peerDependencies:
+      svelte: ^3.46.3
+    dependencies:
+      svelte: 3.53.1
     dev: false
 
   /svelte@3.53.1:

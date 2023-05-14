@@ -26,20 +26,13 @@
   import timerclockIcon from "../../assets/icons/Timer_Clock.png";
   import warningIcon from "../../assets/icons/Warning.png";
   import Gear from "../../components/icons/Gear.svelte";
-  import { MetricTypes } from "../../domain/metrics";
+  import { MetricTypes, NodeTypes, Themes } from "../../domain/enums";
   import type {
     Systeminfo,
     SysteminformationMetricsInterface,
   } from "../../domain/types";
   import { Sortable } from "@shopify/draggable";
-
-  const NodeTypes = {
-    Node: 0,
-    Proposer: 1,
-    Prover: 2,
-  };
-
-  // ToDO: figure out what RPCs will be used by default, give the user an option in the settings to switch to a new RPC
+  // TODO: figure out what RPCs will be used by default, give the user an option in the settings to switch to a new RPC
   const myNode = new Web3("http://localhost:8545");
   // Temporary RPC while waiting for next testnet, using an alchemy rpc
   const ethRPC = new Web3("https://eth.llamarpc.com");
@@ -57,9 +50,18 @@
   let syncingStatus;
   let syncingProgress = 0;
   // nodeAddress is the wallet address read out from the .env file used for the node
-  const nodeAddress = ethRPC.eth.accounts.privateKeyToAccount(
-    import.meta.env.VITE_PRIVATE_KEY
-  ).address;
+  let nodeAddress;
+
+  // If we find a private key variable in the .env we use this for the nodeAddress
+  if (import.meta.env.VITE_PRIVATE_KEY) {
+    nodeAddress = ethRPC.eth.accounts.privateKeyToAccount(
+      import.meta.env.VITE_PRIVATE_KEY
+    ).address;
+  } else {
+    // no private key found, so no default wallet
+    nodeAddress = null;
+  }
+
   let useCustomAddress = false;
   let customAddressL1;
   let customAddressL2;
@@ -112,7 +114,7 @@
     gasPrice = Number(
       ethRPC.utils.fromWei(await ethRPC.eth.getGasPrice(), "gwei")
     );
-    // ToDO: use the L2TaikoRPC and compare once testnet is live, check for a difference during syncing?
+    // TODO: use the L2TaikoRPC and compare once testnet is live, check for a difference during syncing?
     blockNumber = await myNode.eth.getBlockNumber();
     syncingStatus = await myNode.eth.isSyncing();
     syncingProgress =
@@ -236,12 +238,12 @@
         fetchSystemInfo();
 
         // Try fetching all the prometheus metrics, in case something goes wrong, we set all the properties to "" so the cards are empty/show error
-        // ToDO: in case 1 metric fails, all the metrics are erased => any better solutions?
+        // TODO: in case 1 metric fails, all the metrics are erased => any better solutions?
         try {
           const peersData = await queryPrometheus("p2p_peers");
           peers = peersData.data.result[0].value[1];
         } catch (error) {
-          // ToDO: Show alerts/notifications when something went wrong fetching the prometheus metric(s)?
+          // TODO: Show alerts/notifications when something went wrong fetching the prometheus metric(s)?
           peers = "";
         }
 
@@ -424,10 +426,11 @@
         Address used by node:
         <div class="ml-2 w-[75%]">
           <input
-            class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+            class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline placeholder:font-normal"
             type="text"
             value={nodeAddress}
             disabled
+            placeholder="no address found"
           />
 
           <div>

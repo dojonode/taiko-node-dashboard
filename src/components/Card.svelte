@@ -1,6 +1,6 @@
 <script lang="ts">
   import Progressbar from "./Progressbar.svelte";
-  import { MetricTypes } from "../domain/metrics";
+  import { MetricTypes } from "../domain/enums";
   import ethIcon from "../assets/icons/Ethereum.png";
   import taikoIcon from "../assets/TaikoLogo.png";
 
@@ -28,7 +28,7 @@
         <img src={icon} alt="icon" class="card-icon" />
       </div>
 
-      <!-- ToDO: Try to clean up this mess? -->
+      <!-- TODO: Try to clean up this mess? -->
       <div class="bodyArea flex flex-col my-auto w-[80%]">
         {#if body !== "undefined" && body !== undefined && body !== null && body !== "null" && body !== ""}
           <!-- Wallet -->
@@ -72,7 +72,7 @@
           >
             {#if bodyMetricType === MetricTypes.ethereum && subBodyMetricType === MetricTypes.ethereum}
               <img src={taikoIcon} class="w-[15px]" alt="taiko icon" />
-              <!-- ToDO: change to taiko explorer -->
+              <!-- TODO: change to taiko explorer -->
               <a
                 href="https://sepolia.etherscan.io/address/{L2Wallet}"
                 target="”_blank”"
