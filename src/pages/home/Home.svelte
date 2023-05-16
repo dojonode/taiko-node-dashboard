@@ -270,12 +270,12 @@
         class:active={nodeType === NodeTypes.Node}
         on:click={() => switchNodeType(NodeTypes.Node)}>node</button
       >
-      <span class="bar" />
+      <span class="bar">|</span>
       <button
         class:active={nodeType === NodeTypes.Proposer}
         on:click={() => switchNodeType(NodeTypes.Proposer)}>proposer</button
       >
-      <span class="bar" />
+      <span class="bar">|</span>
       <button
         class:active={nodeType === NodeTypes.Prover}
         on:click={() => switchNodeType(NodeTypes.Prover)}>prover</button
@@ -303,7 +303,7 @@
       class="w-6 h-6 absolute right-[7px] top-[-37px] cursor-pointer"
       on:click={() => (settingsOpen = true)}
     >
-      <Gear class="fill-[#9baab2]" />
+      <Gear class="fill-[hsl(var(--twc-settingsBtnColor))]" />
     </button>
 
     <div id="cards" class="mt-[1px] flex flex-wrap justify-center">
@@ -427,15 +427,16 @@
         Address used by node:
         <div class="ml-2 w-[75%]">
           <input
-            class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline placeholder:font-normal"
+            class="shadow appearance-none border rounded w-full py-2 px-3 text-[hsl(var(--twc-settingsSecondaryTextColor))] leading-tight focus:outline-none focus:shadow-outline placeholder:font-normal"
             type="text"
             value={nodeAddress}
             disabled
             placeholder="no address found"
           />
 
-          <div>
+          <div class="text-[hsl(var(--twc-settingsSecondaryTextColor))]">
             <input
+              class="accent-[hsl(var(--twc-settingsButtonColorActive))]"
               type="checkbox"
               bind:checked={useCustomAddress}
               on:change={() =>
@@ -453,7 +454,7 @@
           Set L1 address:
           <div class="ml-2 w-[75%]">
             <input
-              class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+              class="shadow appearance-none border rounded w-full py-2 px-3 text-[hsl(var(--twc-settingsSecondaryTextColor))] leading-tight focus:outline-none focus:shadow-outline"
               type="text"
               readonly={!useCustomAddress}
               bind:value={customAddressL1}
@@ -466,7 +467,7 @@
           Set L2 address:
           <div class="ml-2 w-[75%]">
             <input
-              class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+              class="shadow appearance-none border rounded w-full py-2 px-3 text-[hsl(var(--twc-settingsSecondaryTextColor))] leading-tight focus:outline-none focus:shadow-outline"
               type="text"
               readonly={!useCustomAddress}
               bind:value={customAddressL2}
@@ -483,14 +484,14 @@
           <button
             class:active={!bigLayout}
             on:click={() => (bigLayout = false)}
-            class="layout bg-zinc-50 hover:bg-zinc-200 text-zinc-800 py-2 px-4 mx-1 rounded-l"
+            class="layout bg-zinc-50 hover:bg-zinc-100 text-zinc-800 py-2 px-4 mx-1 rounded-l"
           >
             compact
           </button>
           <button
             class:active={bigLayout}
             on:click={() => (bigLayout = true)}
-            class="layout bg-zinc-50 hover:bg-zinc-200 text-zinc-800 py-2 px-4 mx-1 rounded-r"
+            class="layout bg-zinc-50 hover:bg-zinc-100 text-zinc-800 py-2 px-4 mx-1 rounded-r"
           >
             wide
           </button>
@@ -498,36 +499,6 @@
       </div>
       <!-- Theme switcher -->
       <ThemeSwitcher />
-      <!-- <div class="flex justify-between items-center font-bold">
-        Theme:
-        <div class="inline-flex">
-          <button
-            class:active={themeMode === "light"}
-            on:click={() => (themeMode = "light")}
-            class="theme bg-zinc-50 hover:bg-zinc-200 text-zinc-800 py-2 px-4 mx-1 rounded-l"
-          >
-            Light
-          </button>
-          <button
-            class:active={themeMode === "dark"}
-            on:click={() => (themeMode = "dark")}
-            class="theme bg-zinc-50 hover:bg-zinc-200 text-zinc-800 py-2 px-4 mx-1 rounded-r"
-          >
-            Dark
-          </button>
-          <button
-            class:active={themeMode === "paper"}
-            on:click={() => (themeMode = "paper")}
-            class="theme bg-zinc-50 hover:bg-zinc-200 text-zinc-800 py-2 px-4 mx-1 rounded-r"
-          >
-            Paper
-          </button>
-        </div>
-      </div> -->
-      <!-- <button
-        class="bg-white hover:bg-gray-100 text-gray-800 font-semibold py-2 px-4 border w-[33%] mx-auto mt-5 border-gray-400 rounded shadow"
-        >Save</button
-      > -->
     </div>
   </DetailsModal>
 {/if}
@@ -544,21 +515,15 @@
   }
 
   .nodeTypes .active {
-    /* border: 1px solid #ff9fe9;
-    border-radius: 5px;
-    padding: 1px 10px;
-    background-color: #ff9fe9;
-    color: white; */
-    color: #ff9fe9;
+    color: hsl(var(--twc-secondaryColor));
     font-weight: 700;
   }
 
   .nodeTypes .bar {
     margin-top: auto;
     margin-bottom: auto;
-    width: 2px;
-    height: 15px;
-    background-color: gray;
+    color: hsl(var(--twc-tertiaryColor));
+    font-weight: 400;
   }
 
   .taikoImg {
@@ -576,11 +541,5 @@
       width: 130px;
       transform-origin: center 74px;
     }
-
-    /* #settingsBtn {
-      display: block;
-      margin-left: 95%;
-      margin-right: 5%;
-    } */
   }
 </style>

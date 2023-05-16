@@ -44,7 +44,8 @@
     left: 0;
     width: 100%;
     height: 100%;
-    background-color: #e0e0e0;
+    background-color: hsl(var(--twc-progressBarBackgroundColor));
+    /* background-color: #e0e0e0; */
     border-radius: 10px;
   }
 
@@ -53,11 +54,10 @@
     top: 0;
     left: 0;
     height: 100%;
-    background-color: #ff9fe9;
+    background-color: hsl(var(--twc-secondaryColor));
     border-radius: 10px;
     transition: width 0.4s ease-in-out;
     width: 0%;
-    z-index: 1;
   }
 
   .progress-bar__text {

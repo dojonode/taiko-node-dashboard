@@ -2,12 +2,20 @@
   import { onMount } from "svelte";
   import { Themes } from "../domain/enums";
   import { writable } from "svelte/store";
+  import {
+    setLocalStorageItem,
+    getLocalStorageItem,
+  } from "../utils/localstorage";
 
   // Create a svelte store with the default theme of original
-  export const currentTheme = writable(Themes.Original);
+  let foundTheme = getLocalStorageItem("theme");
+  export const currentTheme = writable(
+    foundTheme ? foundTheme : Themes.Original
+  );
 
   function changeTheme(newTheme) {
     currentTheme.set(newTheme);
+    setLocalStorageItem("theme", newTheme);
   }
 </script>
 
@@ -29,18 +37,18 @@
       Light
     </button>
     <button
-      class:active={$currentTheme === Themes.Dark}
-      on:click={() => changeTheme(Themes.Dark)}
-      class="theme py-2 px-4 mx-1 rounded-r"
-    >
-      Dark
-    </button>
-    <button
       class:active={$currentTheme === Themes.Paper}
       on:click={() => changeTheme(Themes.Paper)}
       class="theme py-2 px-4 mx-1 rounded-r"
     >
       Paper
+    </button>
+    <button
+      class:active={$currentTheme === Themes.Dark}
+      on:click={() => changeTheme(Themes.Dark)}
+      class="theme py-2 px-4 mx-1 rounded-r"
+    >
+      Dark
     </button>
   </div>
 </div>

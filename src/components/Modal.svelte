@@ -20,7 +20,7 @@
   }}
 />
 <div
-  class="modal bg-[#f4cfff] absolute top-[50%] left-[50%] z-50 translate-x-[-50%] translate-y-[-50%] rounded-[20px] md:w-[500px] w-[350px] shadow-2xl"
+  class="modal bg-[hsl(var(--twc-settingsBackgroundColor))] absolute top-[50%] left-[50%] z-50 translate-x-[-50%] translate-y-[-50%] rounded-[20px] md:w-[500px] w-[350px] shadow-2xl"
   class:modal-open={isOpen}
 >
   <div class="modal-box bg-dark-2">
@@ -41,9 +41,19 @@
     </div>
   </div>
 </div>
+<div class="background z-0" />
 
 <style>
   .modal {
     align-items: center;
+  }
+  .background {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(0, 0, 0, 0.4);
+    backdrop-filter: blur(3px);
   }
 </style>

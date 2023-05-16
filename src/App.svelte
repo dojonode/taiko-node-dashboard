@@ -19,9 +19,15 @@
       userData: {},
     }),
   };
+
+  // Change the document body data-theme value on theme changes
+  const body = document.body;
+  currentTheme.subscribe((value) => {
+    body.setAttribute("data-theme", value);
+  });
 </script>
 
-<main class="px-2 md:px-6" data-theme={$currentTheme}>
+<main class="px-2 md:px-6">
   <Router {routes} />
 </main>
 
@@ -32,5 +38,9 @@
 
   main {
     font-family: "Jost", sans-serif;
+    background-color: hsl(var(--twc-backgroundColor));
+  }
+  body {
+    background-color: hsl(var(--twc-backgroundColor));
   }
 </style>

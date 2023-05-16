@@ -29,7 +29,7 @@
       </div>
 
       <!-- TODO: Try to clean up this mess? -->
-      <div class="bodyArea flex flex-col my-auto w-[80%]">
+      <div class="bodyArea flex flex-col my-auto w-[90%]">
         {#if body !== "undefined" && body !== undefined && body !== null && body !== "null" && body !== ""}
           <!-- Wallet -->
           <div
@@ -40,7 +40,11 @@
           >
             <!-- Card is a wallet card -->
             {#if bodyMetricType === MetricTypes.ethereum && subBodyMetricType === MetricTypes.ethereum}
-              <img src={ethIcon} class="w-[15px]" alt="ethereum icon" />
+              <img
+                src={ethIcon}
+                class="w-[15px] ml-[5px]"
+                alt="ethereum icon"
+              />
               <a
                 href="https://sepolia.etherscan.io/address/{L1Wallet}"
                 target="”_blank”"
@@ -71,7 +75,7 @@
               : 'justify-center'}"
           >
             {#if bodyMetricType === MetricTypes.ethereum && subBodyMetricType === MetricTypes.ethereum}
-              <img src={taikoIcon} class="w-[15px]" alt="taiko icon" />
+              <img src={taikoIcon} class="w-[15px] ml-[5px]" alt="taiko icon" />
               <!-- TODO: change to taiko explorer -->
               <a
                 href="https://sepolia.etherscan.io/address/{L2Wallet}"
@@ -107,9 +111,9 @@
     align-items: center;
     padding: 10px 20px;
     margin: 6px;
-    border: 1px solid #f5f5f5;
+    border: 1px solid hsl(var(--twc-cardBackgroundColor));
     border-radius: 20px;
-    background-color: #f5f5f5;
+    background-color: hsl(var(--twc-cardBackgroundColor));
     aspect-ratio: 1/1;
     height: 170px;
   }
@@ -117,14 +121,14 @@
   .modal-title {
     margin-bottom: 10px;
     text-align: center;
-    color: #fc0fc0;
+    color: hsl(var(--twc-cardTitleColor));
     font-size: 18px;
     font-size: large;
     font-weight: 500;
   }
 
   .modal-sub-body {
-    color: #b3b3b3;
+    color: hsl(var(--twc-cardSubBodyColor));
     font-size: 14px;
   }
 
@@ -135,7 +139,7 @@
   .bodyArea {
     text-align: center;
     padding-top: 5px;
-    color: #420d4794;
+    color: hsl(var(--twc-cardBodyTextColor));
     font-weight: 500;
   }
 
