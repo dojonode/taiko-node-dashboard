@@ -24,8 +24,8 @@
     <div
       class="flex content-between items-center h-[100px] justify-around flex-col"
     >
-      <div class="cardIcon">
-        <img src={icon} alt="icon" class="card-icon" />
+      <div class="w-[45px]">
+        <img src={icon} alt="icon" />
       </div>
 
       <!-- TODO: Try to clean up this mess? -->
@@ -130,10 +130,6 @@
   .modal-sub-body {
     color: hsl(var(--twc-cardSubBodyColor));
     font-size: 14px;
-  }
-
-  .cardIcon {
-    width: 45px;
   }
 
   .bodyArea {

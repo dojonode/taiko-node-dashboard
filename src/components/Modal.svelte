@@ -41,7 +41,7 @@
     </div>
   </div>
 </div>
-<div class="background z-0" />
+<div class="background z-[1]" />
 
 <style>
   .modal {

@@ -26,21 +26,56 @@
   import gasIcon from "../../assets/icons/Gas.png";
   import timerclockIcon from "../../assets/icons/Timer_Clock.png";
   import warningIcon from "../../assets/icons/Warning.png";
+  import antennaIcon from "../../assets/icons/Antenna.png";
   import Gear from "../../components/icons/Gear.svelte";
   import { MetricTypes, NodeTypes, Themes } from "../../domain/enums";
+  import { Sortable } from "@shopify/draggable";
+  import toast, { Toaster } from "svelte-french-toast";
   import type {
     Systeminfo,
     SysteminformationMetricsInterface,
   } from "../../domain/types";
-  import { Sortable } from "@shopify/draggable";
-  // TODO: figure out what RPCs will be used by default, give the user an option in the settings to switch to a new RPC
-  const myNode = new Web3("http://localhost:8545");
-  // Temporary RPC while waiting for next testnet, using an alchemy rpc
-  const ethRPC = new Web3("https://eth.llamarpc.com");
-  // const ethRPC = new Web3(import.meta.env.L1_ENDPOINT_WS);
-  // Will be used by default
-  const L2TaikoRPC = new Web3("https://l2rpc.a3.taiko.xyz");
-  const L1TaikoRPC = new Web3("https://l1rpc.a3.taiko.xyz");
+  import {
+    ETH_RPC_API_URL,
+    L1_TAIKO_RPC_API_URL,
+    L2_TAIKO_RPC_API_URL,
+    MYNODE_API_URL,
+    PROMETHEUS_API_URL,
+    SYSTEMINFO_API_URL,
+  } from "../../domain/constants";
+
+  let myNode;
+  let ethRPC;
+
+  // if localstorage items exist, use those to initialze, else use the variables from the constants.ts file
+
+  let CUSTOM_ETH_RPC_API_URL =
+    getLocalStorageItem("CUSTOM_ETH_RPC_API_URL") || ETH_RPC_API_URL;
+  let CUSTOM_L1_TAIKO_RPC_API_URL =
+    getLocalStorageItem("CUSTOM_L1_TAIKO_RPC_API_URL") || L1_TAIKO_RPC_API_URL;
+  let CUSTOM_L2_TAIKO_RPC_API_URL =
+    getLocalStorageItem("CUSTOM_L2_TAIKO_RPC_API_URL") || L2_TAIKO_RPC_API_URL;
+  let CUSTOM_MYNODE_API_URL =
+    getLocalStorageItem("CUSTOM_MYNODE_API_URL") || MYNODE_API_URL;
+  let CUSTOM_PROMETHEUS_API_URL =
+    getLocalStorageItem("CUSTOM_PROMETHEUS_API_URL") || PROMETHEUS_API_URL;
+  let CUSTOM_SYSTEMINFO_API_URL =
+    getLocalStorageItem("CUSTOM_SYSTEMINFO_API_URL") || SYSTEMINFO_API_URL;
+
+  function initConnections() {
+    try {
+      // TODO: figure out what RPCs will be used by default, give the user an option in the settings to switch to a new RPC
+      myNode = new Web3(CUSTOM_MYNODE_API_URL);
+      // Temporary RPC while waiting for next testnet, using an alchemy rpc
+      ethRPC = new Web3(CUSTOM_ETH_RPC_API_URL);
+      // Use the following RPCs by default?
+      // const L2TaikoRPC = new Web3(L1_TAIKO_RPC_API_URL);
+      // const L1TaikoRPC = new Web3(L2_TAIKO_RPC_API_URL);
+    } catch (error) {
+      console.error(error);
+    }
+  }
+  initConnections();
 
   // Prometheus metrics
   let peers = null;
@@ -55,7 +90,7 @@
 
   // If we find a private key variable in the .env we use this for the nodeAddress
   if (import.meta.env.VITE_PRIVATE_KEY) {
-    nodeAddress = ethRPC.eth.accounts.privateKeyToAccount(
+    nodeAddress = ethRPC?.eth.accounts.privateKeyToAccount(
       import.meta.env.VITE_PRIVATE_KEY
     ).address;
   } else {
@@ -93,39 +128,55 @@
   let rotationAngle = 0; // used to rotate the taiko logo
   let themeMode = "light";
   let settingsOpen: boolean = false;
+  let connectionsOpen: boolean = false;
   let imageRef;
 
-  async function fetchMetric() {
-    // Fetch metrics from API endpoint
-    if (L1Wallet) {
-      L1Balance = Number(
-        ethRPC.utils.fromWei(await ethRPC.eth.getBalance(L1Wallet), "ether")
-      );
-    } else {
-      L1Balance = null;
-    }
-    if (L2Wallet) {
-      L2Balance = Number(
-        ethRPC.utils.fromWei(await ethRPC.eth.getBalance(L2Wallet), "ether")
-      );
-    } else {
-      L2Balance = null;
-    }
+  let fetchMetricsOnce = true;
+  async function fetchMetrics() {
+    try {
+      // Fetch metrics from API endpoint
+      if (L1Wallet) {
+        L1Balance = Number(
+          ethRPC?.utils.fromWei(await ethRPC?.eth.getBalance(L1Wallet), "ether")
+        );
+      } else {
+        L1Balance = null;
+      }
+      if (L2Wallet) {
+        L2Balance = Number(
+          ethRPC?.utils.fromWei(await ethRPC?.eth.getBalance(L2Wallet), "ether")
+        );
+      } else {
+        L2Balance = null;
+      }
 
-    gasPrice = Number(
-      ethRPC.utils.fromWei(await ethRPC.eth.getGasPrice(), "gwei")
-    );
-    // TODO: use the L2TaikoRPC and compare once testnet is live, check for a difference during syncing?
-    blockNumber = await myNode.eth.getBlockNumber();
-    syncingStatus = await myNode.eth.isSyncing();
-    syncingProgress =
-      (syncingStatus.currentBlock / syncingStatus.highestBlock) * 100;
-    // console.log(syncingStatus);
-    // blockNumber = await taikoL2.eth.getBlockNumber();
-    // console.log(await myNode.eth.getNodeInfo());
-    // // returns: Geth/v1.10.26-stable/linux-amd64/go1.18.10
-    // // can maybe be used to check for updates?
-    // console.log(await taikoL2.eth.getNodeInfo());
+      gasPrice = Number(
+        ethRPC?.utils.fromWei(await ethRPC?.eth.getGasPrice(), "gwei")
+      );
+      // TODO: use the L2TaikoRPC and compare once testnet is live, check for a difference during syncing?
+      blockNumber = await myNode.eth.getBlockNumber();
+      syncingStatus = await myNode.eth.isSyncing();
+      syncingProgress =
+        (syncingStatus.currentBlock / syncingStatus.highestBlock) * 100;
+      // console.log(syncingStatus);
+      // blockNumber = await taikoL2.eth.getBlockNumber();
+      // console.log(await myNode.eth.getNodeInfo());
+      // // returns: Geth/v1.10.26-stable/linux-amd64/go1.18.10
+      // // can maybe be used to check for updates?
+      // console.log(await taikoL2.eth.getNodeInfo());
+    } catch (error) {
+      if (fetchMetricsOnce) {
+        console.error("Error while fetching RPC metrics", error);
+
+        // toast.error(
+        //   `Couldn't fetch metrics on ${ETH_RPC_API_URL} or ${MYNODE_API_URL}`,
+        //   {
+        //     position: "top-center",
+        //   }
+        // );
+        fetchMetricsOnce = false;
+      }
+    }
   }
 
   // This function will fetch from the nodejs api that exposes system metrics using the npm package systeminformation
@@ -151,9 +202,11 @@
       console.error("Error fetching system info", error);
     }
   };
-  const fetchSystemInfo = async () => {
+
+  let fetchSystemInfoOnce = true;
+  async function fetchSystemInfo() {
     try {
-      const response = await fetch("http://localhost:3009/metrics", {
+      const response = await fetch(CUSTOM_SYSTEMINFO_API_URL, {
         headers: {
           "Access-Control-Allow-Origin": "*",
           "Access-Control-Allow-Headers":
@@ -161,7 +214,6 @@
         },
       });
       systeminfo = await response.json();
-      // console.log(systeminfo);
 
       const usedMemoryGB =
         (systeminfo.mem.total - systeminfo.mem.available) / 1024 / 1024 / 1024;
@@ -197,7 +249,34 @@
           runtimeInHours >= 1 ? MetricTypes.hours : MetricTypes.minutes,
       };
     } catch (error) {
-      console.error("Error fetching system info", error);
+      if (fetchSystemInfoOnce) {
+        console.error("Error while fetching systeminfo", error);
+
+        // toast.error(`Couldn't reach systeminfo on ${SYSTEMINFO_API_URL}`, {
+        //   position: "top-center",
+        // });
+        fetchSystemInfoOnce = false;
+      }
+    }
+  }
+  let fetchPrometheusOnce = true;
+
+  const fetchPrometheus = async () => {
+    try {
+      const peersData = await queryPrometheus("p2p_peers");
+      peers = peersData.data.result[0].value[1];
+    } catch (error) {
+      // TODO: Show alerts/notifications when something went wrong fetching the prometheus metric(s)?  maybe double check the endpoint and change it in settings
+      peers = "";
+
+      if (fetchPrometheusOnce) {
+        console.error("Error while fetching prometheus", error);
+
+        // toast.error(`Couldn't reach prometheus on ${PROMETHEUS_API_URL}`, {
+        //   position: "top-center",
+        // });
+        fetchPrometheusOnce = false;
+      }
     }
   };
   function switchNodeType(type) {
@@ -222,7 +301,7 @@
         break;
     }
   }
-  // fetchMetric();
+  // fetchMetrics();
   onMount(async () => {
     useCustomAddress = JSON.parse(getLocalStorageItem("useCustomAddress"));
     customAddressL1 = getLocalStorageItem("customAddressL1");
@@ -235,18 +314,9 @@
     // Interval to fetch metrics every second
     interval = setInterval(async () => {
       try {
-        fetchMetric();
+        fetchMetrics();
         fetchSystemInfo();
-
-        // Try fetching all the prometheus metrics, in case something goes wrong, we set all the properties to "" so the cards are empty/show error
-        // TODO: in case 1 metric fails, all the metrics are erased => any better solutions?
-        try {
-          const peersData = await queryPrometheus("p2p_peers");
-          peers = peersData.data.result[0].value[1];
-        } catch (error) {
-          // TODO: Show alerts/notifications when something went wrong fetching the prometheus metric(s)?
-          peers = "";
-        }
+        fetchPrometheus();
 
         // if (syncingProgress < 100) {
         // syncingProgress++;
@@ -262,6 +332,7 @@
   });
 </script>
 
+<Toaster />
 <div class="flex flex-col items-center pt-4">
   <div class="text-center relative">
     <img bind:this={imageRef} src={taikoLogo} class="taikoImg mx-auto" alt="" />
@@ -298,6 +369,14 @@
       ? 'max-w-[46rem]'
       : 'max-w-[35rem]'} relative sm:justify-center"
   >
+    <button
+      id="connectionsBtn"
+      class="w-6 h-6 absolute right-[40px] top-[-37px] cursor-pointer"
+      on:click={() => (connectionsOpen = true)}
+    >
+      <img src={antennaIcon} alt="antenna icon" />
+    </button>
+
     <button
       id="settingsBtn"
       class="w-6 h-6 absolute right-[7px] top-[-37px] cursor-pointer"
@@ -502,6 +581,89 @@
     </div>
   </DetailsModal>
 {/if}
+{#if connectionsOpen}
+  <DetailsModal title={"Connections"} bind:isOpen={connectionsOpen}>
+    <div
+      class="grid grid-cols-1 gap-6 mx-5 my-10 max-h-96 overflow-y-auto"
+      slot="body"
+    >
+      <div class="flex justify-between items-center font-bold">
+        Prometheus:
+        <div class="ml-2 w-72 flex items-center">
+          <input
+            class="shadow appearance-none border rounded w-full py-2 px-3 text-[hsl(var(--twc-settingsSecondaryTextColor))] leading-tight focus:outline-none focus:shadow-outline"
+            type="search"
+            bind:value={CUSTOM_PROMETHEUS_API_URL}
+            placeholder={PROMETHEUS_API_URL}
+            on:change={() => {
+              setLocalStorageItem(
+                "CUSTOM_PROMETHEUS_API_URL",
+                CUSTOM_PROMETHEUS_API_URL
+              );
+            }}
+          />
+          <img src={loadingIcon} alt="icon" class="w-[30px] ml-2" />
+        </div>
+      </div>
+      <div class="flex justify-between items-center font-bold">
+        Systeminformation:
+        <div class="ml-2 w-72 flex items-center">
+          <input
+            class="shadow appearance-none border rounded w-full py-2 px-3 text-[hsl(var(--twc-settingsSecondaryTextColor))] leading-tight focus:outline-none focus:shadow-outline"
+            type="text"
+            bind:value={CUSTOM_SYSTEMINFO_API_URL}
+            placeholder={SYSTEMINFO_API_URL}
+            on:change={() => {
+              setLocalStorageItem(
+                "CUSTOM_SYSTEMINFO_API_URL",
+                CUSTOM_SYSTEMINFO_API_URL
+              );
+            }}
+          />
+          <img src={loadingIcon} alt="icon" class="w-[30px] ml-2" />
+        </div>
+      </div>
+      <div class="flex justify-between items-center font-bold">
+        Node:
+        <div class="ml-2 w-72 flex items-center">
+          <input
+            class="shadow appearance-none border rounded w-full py-2 px-3 text-[hsl(var(--twc-settingsSecondaryTextColor))] leading-tight focus:outline-none focus:shadow-outline"
+            type="text"
+            bind:value={CUSTOM_MYNODE_API_URL}
+            placeholder={MYNODE_API_URL}
+            on:change={() => {
+              setLocalStorageItem(
+                "CUSTOM_MYNODE_API_URL",
+                CUSTOM_MYNODE_API_URL
+              );
+              initConnections();
+            }}
+          />
+          <img src={warningIcon} alt="icon" class="w-[30px] ml-2" />
+        </div>
+      </div>
+      <div class="flex justify-between items-center font-bold">
+        ETH RPC:
+        <div class="ml-2 w-72 flex items-center">
+          <input
+            class="shadow appearance-none border rounded w-full py-2 px-3 text-[hsl(var(--twc-settingsSecondaryTextColor))] leading-tight focus:outline-none focus:shadow-outline"
+            type="text"
+            bind:value={CUSTOM_ETH_RPC_API_URL}
+            placeholder={ETH_RPC_API_URL}
+            on:change={() => {
+              setLocalStorageItem(
+                "CUSTOM_ETH_RPC_API_URL",
+                CUSTOM_ETH_RPC_API_URL
+              );
+              initConnections();
+            }}
+          />
+          <img src={checkmarkIcon} alt="icon" class="w-[30px] ml-2" />
+        </div>
+      </div>
+    </div>
+  </DetailsModal>
+{/if}
 
 <style>
   .nodeTypes {
@@ -534,6 +696,10 @@
 
   .layout.active {
     background-color: rgb(255, 250, 207);
+  }
+
+  input {
+    background-color: hsl(var(--twc-settingsInputBackgroundColor));
   }
 
   @media (max-width: 550px) {

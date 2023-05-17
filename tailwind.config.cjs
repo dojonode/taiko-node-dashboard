@@ -16,6 +16,7 @@ module.exports = {
         cardSubBodyColor: "#b3b3b3",
         settingsBtnColor: "#9baab2",
         settingsBackgroundColor: "#f4cfff",
+        settingsInputBackgroundColor: "#f9e7ff",
         settingsButtonColorActive: "#fffacf", //yellow accent color
         settingsSecondaryTextColor: "#374151", // blueish gray color
       },
@@ -31,6 +32,7 @@ module.exports = {
         cardSubBodyColor: "#9A989F",
         settingsBtnColor: "#9baab2",
         settingsBackgroundColor: "#f4cfff",
+        settingsInputBackgroundColor: "#f9e7ff",
         settingsButtonColorActive: "#fffacf",
         settingsSecondaryTextColor: "#374151",
       },
@@ -47,6 +49,7 @@ module.exports = {
         cardSubBodyColor: "#BDC0BA",
         settingsBtnColor: "#9baab2",
         settingsBackgroundColor: "#f4cfff",
+        settingsInputBackgroundColor: "#f9e7ff",
         settingsButtonColorActive: "#fffacf",
         settingsSecondaryTextColor: "#374151",
       },
