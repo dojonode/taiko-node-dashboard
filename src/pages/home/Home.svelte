@@ -46,6 +46,11 @@
 
   let myNode;
   let ethRPC;
+  let fetchMetricsError = false;
+  let fetchSystemInfoError = false;
+  let fetchPrometheusError = false;
+  let fetchMyNodeError = false;
+  let fetchEthRPCError = false;
 
   // if localstorage items exist, use those to initialze, else use the variables from the constants.ts file
 
@@ -67,12 +72,38 @@
       // TODO: figure out what RPCs will be used by default, give the user an option in the settings to switch to a new RPC
       myNode = new Web3(CUSTOM_MYNODE_API_URL);
       // Temporary RPC while waiting for next testnet, using an alchemy rpc
-      ethRPC = new Web3(CUSTOM_ETH_RPC_API_URL);
+      // ethRPC = new Web3(CUSTOM_ETH_RPC_API_URL);
       // Use the following RPCs by default?
       // const L2TaikoRPC = new Web3(L1_TAIKO_RPC_API_URL);
       // const L1TaikoRPC = new Web3(L2_TAIKO_RPC_API_URL);
+      myNode.eth.net
+        .isListening()
+        .then((s) => {
+          fetchMyNodeError = false;
+          console.log("we gooood");
+        })
+        .catch((e) => {
+          console.log("errorrrrrrr", e);
+          fetchMyNodeError = true;
+        });
     } catch (error) {
       console.error(error);
+      fetchMyNodeError = true;
+    }
+    try {
+      ethRPC = new Web3(CUSTOM_ETH_RPC_API_URL);
+      // check if the rpc is connected succesfully
+      ethRPC.eth.net
+        .isListening()
+        .then((s) => {
+          fetchEthRPCError = false;
+        })
+        .catch((e) => {
+          fetchEthRPCError = true;
+        });
+    } catch (error) {
+      console.error(error);
+      fetchEthRPCError = true;
     }
   }
   initConnections();
@@ -83,7 +114,7 @@
 
   let blockNumber;
   let gasPrice;
-  let syncingStatus;
+  let syncingStatus = null;
   let syncingProgress = 0;
   // nodeAddress is the wallet address read out from the .env file used for the node
   let nodeAddress;
@@ -131,7 +162,6 @@
   let connectionsOpen: boolean = false;
   let imageRef;
 
-  let fetchMetricsOnce = true;
   async function fetchMetrics() {
     try {
       // Fetch metrics from API endpoint
@@ -164,8 +194,9 @@
       // // returns: Geth/v1.10.26-stable/linux-amd64/go1.18.10
       // // can maybe be used to check for updates?
       // console.log(await taikoL2.eth.getNodeInfo());
+      fetchMetricsError = false;
     } catch (error) {
-      if (fetchMetricsOnce) {
+      if (!fetchMetricsError) {
         console.error("Error while fetching RPC metrics", error);
 
         // toast.error(
@@ -174,7 +205,7 @@
         //     position: "top-center",
         //   }
         // );
-        fetchMetricsOnce = false;
+        fetchMetricsError = true;
       }
     }
   }
@@ -203,7 +234,6 @@
     }
   };
 
-  let fetchSystemInfoOnce = true;
   async function fetchSystemInfo() {
     try {
       const response = await fetch(CUSTOM_SYSTEMINFO_API_URL, {
@@ -248,34 +278,35 @@
         runtimeMetricType:
           runtimeInHours >= 1 ? MetricTypes.hours : MetricTypes.minutes,
       };
+      fetchSystemInfoError = false;
     } catch (error) {
-      if (fetchSystemInfoOnce) {
+      if (!fetchSystemInfoError) {
         console.error("Error while fetching systeminfo", error);
 
         // toast.error(`Couldn't reach systeminfo on ${SYSTEMINFO_API_URL}`, {
         //   position: "top-center",
         // });
-        fetchSystemInfoOnce = false;
+        fetchSystemInfoError = true;
       }
     }
   }
-  let fetchPrometheusOnce = true;
 
   const fetchPrometheus = async () => {
     try {
       const peersData = await queryPrometheus("p2p_peers");
       peers = peersData.data.result[0].value[1];
+      fetchPrometheusError = false;
     } catch (error) {
       // TODO: Show alerts/notifications when something went wrong fetching the prometheus metric(s)?  maybe double check the endpoint and change it in settings
       peers = "";
 
-      if (fetchPrometheusOnce) {
+      if (!fetchPrometheusError) {
         console.error("Error while fetching prometheus", error);
 
         // toast.error(`Couldn't reach prometheus on ${PROMETHEUS_API_URL}`, {
         //   position: "top-center",
         // });
-        fetchPrometheusOnce = false;
+        fetchPrometheusError = true;
       }
     }
   };
@@ -317,6 +348,9 @@
         fetchMetrics();
         fetchSystemInfo();
         fetchPrometheus();
+        // If we had errors connecting to node, we will occasionaly re-try initializing connections
+        if(fetchMyNodeError)
+          initConnections();
 
         // if (syncingProgress < 100) {
         // syncingProgress++;
@@ -360,7 +394,7 @@
       progress={syncingStatus ? syncingProgress : 100}
       precision={2}
       showPercentage={true}
-      finishedMessage="Synced!"
+      finishedMessage={syncingStatus !== null ? "Synced!" : "Node not found"}
     />
   </div>
 
@@ -374,7 +408,17 @@
       class="w-6 h-6 absolute right-[40px] top-[-37px] cursor-pointer"
       on:click={() => (connectionsOpen = true)}
     >
-      <img src={antennaIcon} alt="antenna icon" />
+      <img
+        src={antennaIcon}
+        class={fetchMetricsError ||
+        fetchSystemInfoError ||
+        fetchPrometheusError ||
+        fetchMyNodeError ||
+        fetchEthRPCError
+          ? "animateConnections"
+          : ""}
+        alt="antenna icon"
+      />
     </button>
 
     <button
@@ -602,7 +646,11 @@
               );
             }}
           />
-          <img src={loadingIcon} alt="icon" class="w-[30px] ml-2" />
+          <img
+            src={fetchPrometheusError ? warningIcon : checkmarkIcon}
+            alt="icon"
+            class="w-[30px] ml-2"
+          />
         </div>
       </div>
       <div class="flex justify-between items-center font-bold">
@@ -620,7 +668,11 @@
               );
             }}
           />
-          <img src={loadingIcon} alt="icon" class="w-[30px] ml-2" />
+          <img
+            src={fetchSystemInfoError ? warningIcon : checkmarkIcon}
+            alt="icon"
+            class="w-[30px] ml-2"
+          />
         </div>
       </div>
       <div class="flex justify-between items-center font-bold">
@@ -639,7 +691,11 @@
               initConnections();
             }}
           />
-          <img src={warningIcon} alt="icon" class="w-[30px] ml-2" />
+          <img
+            src={fetchMyNodeError ? warningIcon : checkmarkIcon}
+            alt="icon"
+            class="w-[30px] ml-2"
+          />
         </div>
       </div>
       <div class="flex justify-between items-center font-bold">
@@ -658,7 +714,11 @@
               initConnections();
             }}
           />
-          <img src={checkmarkIcon} alt="icon" class="w-[30px] ml-2" />
+          <img
+            src={fetchEthRPCError ? warningIcon : checkmarkIcon}
+            alt="icon"
+            class="w-[30px] ml-2"
+          />
         </div>
       </div>
     </div>
@@ -700,6 +760,53 @@
 
   input {
     background-color: hsl(var(--twc-settingsInputBackgroundColor));
+  }
+
+  .animateConnections {
+    /* Add your animation styles here */
+    animation: animateConnections 1.5s infinite;
+  }
+
+  @keyframes animateConnections {
+    0% {
+      transform: rotate(0deg);
+    }
+    8.0% {
+      transform: rotate(0deg);
+    }
+    12.0% {
+      transform: rotate(35deg);
+    }
+    16.0% {
+      transform: rotate(-30deg);
+    }
+    20.0% {
+      transform: rotate(0deg);
+    }
+    23.0% {
+      transform: rotate(28deg);
+    }
+    26.0% {
+      transform: rotate(-20deg);
+    }
+    29.0% {
+      transform: rotate(0deg);
+    }
+    31.0% {
+      transform: rotate(16deg);
+    }
+    33.0% {
+      transform: rotate(-12deg);
+    }
+    35.0% {
+      transform: rotate(0deg);
+    }
+    37.0% {
+      transform: rotate(-6deg);
+    }
+    39.0% {
+      transform: rotate(0deg);
+    }
   }
 
   @media (max-width: 550px) {
