@@ -74,7 +74,6 @@
     "progressbar.js": "^1.1.0",
     "prom-client": "^14.2.0",
     "svelte-french-toast": "1.0.4-beta.0",
-    "svelte-i18n": "^3.5.1",
     "svelte-spa-router": "^3.2.0",
     "tw-colors": "^1.2.6",
     "web3": "^1.9.0"

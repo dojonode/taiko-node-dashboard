@@ -15,9 +15,8 @@ module.exports = {
         cardBodyTextColor: "#6b6b6b",
         cardSubBodyColor: "#b3b3b3",
         settingsBtnColor: "#9baab2",
-        settingsBackgroundColor: "#f4cfff",
-        settingsInputBackgroundColor: "#f9e7ff",
-        settingsButtonColorActive: "#fffacf", //yellow accent color
+        settingsInputBackgroundColor: "#ebebeb",
+        settingsPrimaryTextColor: "#000", // black
         settingsSecondaryTextColor: "#374151", // blueish gray color
       },
       paper: {
@@ -31,9 +30,8 @@ module.exports = {
         cardBodyTextColor: "#1A1B1B",
         cardSubBodyColor: "#9A989F",
         settingsBtnColor: "#9baab2",
-        settingsBackgroundColor: "#f4cfff",
-        settingsInputBackgroundColor: "#f9e7ff",
-        settingsButtonColorActive: "#fffacf",
+        settingsInputBackgroundColor: "#ebebeb",
+        settingsPrimaryTextColor: "#000", // black
         settingsSecondaryTextColor: "#374151",
       },
       light: {},
@@ -48,10 +46,9 @@ module.exports = {
         cardBodyTextColor: "#FFFFFD",
         cardSubBodyColor: "#BDC0BA",
         settingsBtnColor: "#9baab2",
-        settingsBackgroundColor: "#f4cfff",
-        settingsInputBackgroundColor: "#f9e7ff",
-        settingsButtonColorActive: "#fffacf",
-        settingsSecondaryTextColor: "#374151",
+        settingsInputBackgroundColor: "#9c9c9c",
+        settingsPrimaryTextColor: "#fafafa", // white
+        settingsSecondaryTextColor: "#fff",
       },
     })
   ],

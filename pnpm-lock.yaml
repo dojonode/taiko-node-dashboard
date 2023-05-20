@@ -49,9 +49,6 @@ dependencies:
   svelte-french-toast:
     specifier: 1.0.4-beta.0
     version: registry.npmmirror.com/svelte-french-toast@1.0.4-beta.0(svelte@3.53.1)
-  svelte-i18n:
-    specifier: ^3.5.1
-    version: 3.6.0(svelte@3.53.1)
   svelte-spa-router:
     specifier: ^3.2.0
     version: 3.3.0
@@ -8502,22 +8499,6 @@ packages:
     dependencies:
       svelte: 3.53.1
     dev: true
-
-  /svelte-i18n@3.6.0(svelte@3.53.1):
-    resolution: {integrity: sha512-qvvcMqHVCXJ5pHoQR5uGzWAW5vS3qB9mBq+W6veLZ6jkrzZGOziR+wyOUJsc59BupMh+Ae30qjOndFrRU6v5jA==}
-    engines: {node: '>= 16'}
-    hasBin: true
-    peerDependencies:
-      svelte: ^3.25.1
-    dependencies:
-      cli-color: 2.0.3
-      deepmerge: 4.3.1
-      estree-walker: 2.0.2
-      intl-messageformat: 9.13.0
-      sade: 1.8.1
-      svelte: 3.53.1
-      tiny-glob: 0.2.9
-    dev: false
 
   /svelte-jester@2.3.2(jest@27.5.1)(svelte@3.53.1):
     resolution: {integrity: sha512-JtxSz4FWAaCRBXbPsh4LcDs4Ua7zdXgLC0TZvT1R56hRV0dymmNP+abw67DTPF7sQPyNxWsOKd0Sl7Q8SnP8kg==}

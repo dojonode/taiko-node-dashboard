@@ -20,7 +20,7 @@
   }}
 />
 <div
-  class="modal bg-[hsl(var(--twc-settingsBackgroundColor))] absolute top-[50%] left-[50%] z-50 translate-x-[-50%] translate-y-[-50%] rounded-[20px] md:w-[500px] w-[350px] shadow-2xl"
+  class="modal bg-[hsl(var(--twc-cardBackgroundColor))] text-[hsl(var(--twc-settingsSecondaryTextColor))] absolute top-[50%] left-[50%] z-50 translate-x-[-50%] translate-y-[-50%] rounded-[20px] md:w-[500px] w-[350px] shadow-2xl"
   class:modal-open={isOpen}
 >
   <div class="modal-box bg-dark-2">

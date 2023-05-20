@@ -7,12 +7,11 @@
     getLocalStorageItem,
   } from "../utils/localstorage";
 
-  // Create a svelte store with the default theme of original
+  // Create a svelte store with the theme found in localstorage or the paper default theme
   let foundTheme = getLocalStorageItem("theme");
-  export const currentTheme = writable(
-    foundTheme ? foundTheme : Themes.Original
-  );
+  export const currentTheme = writable(foundTheme ? foundTheme : Themes.Paper);
 
+  // Changing the theme stores the value in localstorage
   function changeTheme(newTheme) {
     currentTheme.set(newTheme);
     setLocalStorageItem("theme", newTheme);
@@ -21,40 +20,41 @@
 
 <div class="flex justify-between items-center font-bold">
   Theme:
-  <div class="inline-flex">
+  <div class="inline-flex text-black">
     <button
       class:active={$currentTheme === Themes.Original}
       on:click={() => changeTheme(Themes.Original)}
-      class="theme py-2 px-4 mx-1 rounded-l"
+      class="theme bg-zinc-50 hover:bg-zinc-100 py-2 px-4 mx-1 rounded-l"
     >
-      Original
+      light
     </button>
-    <button
+    <!-- <button
       class:active={$currentTheme === Themes.Light}
       on:click={() => changeTheme(Themes.Light)}
       class="theme py-2 px-4 mx-1 rounded-l"
     >
-      Light
-    </button>
+      light
+    </button> -->
     <button
       class:active={$currentTheme === Themes.Paper}
       on:click={() => changeTheme(Themes.Paper)}
-      class="theme py-2 px-4 mx-1 rounded-r"
+      class="theme bg-zinc-50 hover:bg-zinc-100 py-2 px-4 mx-1 rounded-r"
     >
-      Paper
+      paper
     </button>
     <button
       class:active={$currentTheme === Themes.Dark}
       on:click={() => changeTheme(Themes.Dark)}
-      class="theme py-2 px-4 mx-1 rounded-r"
+      class="theme bg-zinc-50 hover:bg-zinc-100 py-2 px-4 mx-1 rounded-r"
     >
-      Dark
+      dark
     </button>
   </div>
 </div>
 
 <style>
   .theme.active {
-    background-color: rgb(255, 250, 207);
+    background-color: hsl(var(--twc-primaryColor));
+    color: white;
   }
 </style>

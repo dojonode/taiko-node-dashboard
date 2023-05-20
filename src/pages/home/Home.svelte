@@ -30,7 +30,6 @@
   import Gear from "../../components/icons/Gear.svelte";
   import { MetricTypes, NodeTypes, Themes } from "../../domain/enums";
   import { Sortable } from "@shopify/draggable";
-  import toast, { Toaster } from "svelte-french-toast";
   import type {
     Systeminfo,
     SysteminformationMetricsInterface,
@@ -52,8 +51,7 @@
   let fetchMyNodeError = false;
   let fetchEthRPCError = false;
 
-  // if localstorage items exist, use those to initialze, else use the variables from the constants.ts file
-
+  // if custom localstorage API urls exist, use those, else use the default variables from the constants.ts file
   let CUSTOM_ETH_RPC_API_URL =
     getLocalStorageItem("CUSTOM_ETH_RPC_API_URL") || ETH_RPC_API_URL;
   let CUSTOM_L1_TAIKO_RPC_API_URL =
@@ -67,7 +65,9 @@
   let CUSTOM_SYSTEMINFO_API_URL =
     getLocalStorageItem("CUSTOM_SYSTEMINFO_API_URL") || SYSTEMINFO_API_URL;
 
+  // Initialize the web3 RPC connections with error handling to see if we have provided a valid RPC provider
   function initConnections() {
+    // L2 taiko / Node RPC
     try {
       // TODO: figure out what RPCs will be used by default, give the user an option in the settings to switch to a new RPC
       myNode = new Web3(CUSTOM_MYNODE_API_URL);
@@ -80,16 +80,15 @@
         .isListening()
         .then((s) => {
           fetchMyNodeError = false;
-          console.log("we gooood");
         })
         .catch((e) => {
-          console.log("errorrrrrrr", e);
           fetchMyNodeError = true;
         });
     } catch (error) {
       console.error(error);
       fetchMyNodeError = true;
     }
+    // L1 Ethereum / public RPC
     try {
       ethRPC = new Web3(CUSTOM_ETH_RPC_API_URL);
       // check if the rpc is connected succesfully
@@ -108,18 +107,18 @@
   }
   initConnections();
 
-  // Prometheus metrics
+  // Prometheus metric
   let peers = null;
-  let systemMemoryUsed = null;
 
+  // General metrics
   let blockNumber;
   let gasPrice;
   let syncingStatus = null;
   let syncingProgress = 0;
-  // nodeAddress is the wallet address read out from the .env file used for the node
-  let nodeAddress;
+  let nodeAddress; // the wallet address used by the node/proposer/prover
 
   // If we find a private key variable in the .env we use this for the nodeAddress
+  // TODO: support differnt L1/L2 addresses
   if (import.meta.env.VITE_PRIVATE_KEY) {
     nodeAddress = ethRPC?.eth.accounts.privateKeyToAccount(
       import.meta.env.VITE_PRIVATE_KEY
@@ -129,6 +128,7 @@
     nodeAddress = null;
   }
 
+  // overriding the nodeAddress with a custom address, to check on other addresses or if the default address was not found
   let useCustomAddress = false;
   let customAddressL1;
   let customAddressL2;
@@ -139,7 +139,8 @@
   let L2Balance;
   let addressProposedBlocksCount;
   let addressProvenBlocksCount;
-  // set the nodeType to what is used within the .env file
+
+  // set the correct nodeType to what is used within the .env file
   let enableProver: boolean = JSON.parse(import.meta.env.VITE_ENABLE_PROVER);
   let enableProposer: boolean = JSON.parse(
     import.meta.env.VITE_ENABLE_PROPOSER
@@ -162,6 +163,7 @@
   let connectionsOpen: boolean = false;
   let imageRef;
 
+  // fetch general metrics
   async function fetchMetrics() {
     try {
       // Fetch metrics from API endpoint
@@ -210,7 +212,6 @@
     }
   }
 
-  // This function will fetch from the nodejs api that exposes system metrics using the npm package systeminformation
   const fetchAddressEvents = async () => {
     try {
       const response = await fetch(
@@ -234,6 +235,7 @@
     }
   };
 
+  // fetch from the nodejs api that exposes system metrics using the npm package systeminformation
   async function fetchSystemInfo() {
     try {
       const response = await fetch(CUSTOM_SYSTEMINFO_API_URL, {
@@ -291,6 +293,7 @@
     }
   }
 
+  // Fetch from prometheus
   const fetchPrometheus = async () => {
     try {
       const peersData = await queryPrometheus("p2p_peers");
@@ -310,6 +313,8 @@
       }
     }
   };
+
+  // switching the nodetype, rotates the taiko logo and reveals/hides certain cards
   function switchNodeType(type) {
     if (nodeType === type) return;
 
@@ -332,29 +337,27 @@
         break;
     }
   }
-  // fetchMetrics();
+
   onMount(async () => {
+    // load from localstorage whether we use a custom address and what the l1/l2 address is
     useCustomAddress = JSON.parse(getLocalStorageItem("useCustomAddress"));
     customAddressL1 = getLocalStorageItem("customAddressL1");
     customAddressL2 = getLocalStorageItem("customAddressL2");
 
+    // allows sorting the cards
     const sortable = new Sortable(document.querySelectorAll("#cards"), {
       draggable: ".card",
     });
 
-    // Interval to fetch metrics every second
+    // Interval to fetch metrics every 5 seconds
     interval = setInterval(async () => {
       try {
         fetchMetrics();
         fetchSystemInfo();
         fetchPrometheus();
-        // If we had errors connecting to node, we will occasionaly re-try initializing connections
-        if(fetchMyNodeError)
-          initConnections();
 
-        // if (syncingProgress < 100) {
-        // syncingProgress++;
-        // }
+        // If we had errors connecting to node, we will occasionaly re-try initializing the RPC connections
+        if (fetchMyNodeError) initConnections();
       } catch (e) {
         console.error(e);
       }
@@ -366,7 +369,6 @@
   });
 </script>
 
-<Toaster />
 <div class="flex flex-col items-center pt-4">
   <div class="text-center relative">
     <img bind:this={imageRef} src={taikoLogo} class="taikoImg mx-auto" alt="" />
@@ -543,14 +545,14 @@
 {#if settingsOpen}
   <DetailsModal title={"Settings"} bind:isOpen={settingsOpen}>
     <div
-      class="grid grid-cols-1 gap-6 mx-5 my-10 max-h-96 overflow-y-auto"
+      class="grid grid-cols-1 gap-6 mx-5 my-10 max-h-96 overflow-y-auto text-[hsl(var(--twc-settingsPrimaryTextColor))]"
       slot="body"
     >
       <div class="flex justify-between items-center font-bold">
         Address used by node:
         <div class="ml-2 w-[75%]">
           <input
-            class="shadow appearance-none border rounded w-full py-2 px-3 text-[hsl(var(--twc-settingsSecondaryTextColor))] leading-tight focus:outline-none focus:shadow-outline placeholder:font-normal"
+            class="shadow appearance-none rounded w-full py-2 px-3 text-[hsl(var(--twc-settingsSecondaryTextColor))] leading-tight focus:outline-none focus:shadow-outline placeholder:font-normal"
             type="text"
             value={nodeAddress}
             disabled
@@ -559,7 +561,7 @@
 
           <div class="text-[hsl(var(--twc-settingsSecondaryTextColor))]">
             <input
-              class="accent-[hsl(var(--twc-settingsButtonColorActive))]"
+              class="accent-[hsl(var(--twc-primaryColor))]"
               type="checkbox"
               bind:checked={useCustomAddress}
               on:change={() =>
@@ -568,7 +570,7 @@
                   String(useCustomAddress)
                 )}
             />
-            Use custom address
+            use custom address
           </div>
         </div>
       </div>
@@ -577,7 +579,7 @@
           Set L1 address:
           <div class="ml-2 w-[75%]">
             <input
-              class="shadow appearance-none border rounded w-full py-2 px-3 text-[hsl(var(--twc-settingsSecondaryTextColor))] leading-tight focus:outline-none focus:shadow-outline"
+              class="shadow appearance-none rounded w-full py-2 px-3 text-[hsl(var(--twc-settingsSecondaryTextColor))] leading-tight focus:outline-none focus:shadow-outline"
               type="text"
               readonly={!useCustomAddress}
               bind:value={customAddressL1}
@@ -590,7 +592,7 @@
           Set L2 address:
           <div class="ml-2 w-[75%]">
             <input
-              class="shadow appearance-none border rounded w-full py-2 px-3 text-[hsl(var(--twc-settingsSecondaryTextColor))] leading-tight focus:outline-none focus:shadow-outline"
+              class="shadow appearance-none rounded w-full py-2 px-3 text-[hsl(var(--twc-settingsSecondaryTextColor))] leading-tight focus:outline-none focus:shadow-outline"
               type="text"
               readonly={!useCustomAddress}
               bind:value={customAddressL2}
@@ -603,18 +605,18 @@
 
       <div class="flex justify-between items-center font-bold">
         Layout:
-        <div class="inline-flex">
+        <div class="inline-flex text-black">
           <button
             class:active={!bigLayout}
             on:click={() => (bigLayout = false)}
-            class="layout bg-zinc-50 hover:bg-zinc-100 text-zinc-800 py-2 px-4 mx-1 rounded-l"
+            class="layout bg-zinc-50 hover:bg-zinc-100 py-2 px-4 mx-1 rounded-l"
           >
             compact
           </button>
           <button
             class:active={bigLayout}
             on:click={() => (bigLayout = true)}
-            class="layout bg-zinc-50 hover:bg-zinc-100 text-zinc-800 py-2 px-4 mx-1 rounded-r"
+            class="layout bg-zinc-50 hover:bg-zinc-100 py-2 px-4 mx-1 rounded-r"
           >
             wide
           </button>
@@ -628,14 +630,14 @@
 {#if connectionsOpen}
   <DetailsModal title={"Connections"} bind:isOpen={connectionsOpen}>
     <div
-      class="grid grid-cols-1 gap-6 mx-5 my-10 max-h-96 overflow-y-auto"
+      class="grid grid-cols-1 gap-6 mx-5 my-10 max-h-96 overflow-y-auto text-[hsl(var(--twc-settingsSecondaryTextColor))]"
       slot="body"
     >
       <div class="flex justify-between items-center font-bold">
         Prometheus:
         <div class="ml-2 w-72 flex items-center">
           <input
-            class="shadow appearance-none border rounded w-full py-2 px-3 text-[hsl(var(--twc-settingsSecondaryTextColor))] leading-tight focus:outline-none focus:shadow-outline"
+            class="shadow appearance-none rounded w-full py-2 px-3 leading-tight focus:outline-none focus:shadow-outline"
             type="search"
             bind:value={CUSTOM_PROMETHEUS_API_URL}
             placeholder={PROMETHEUS_API_URL}
@@ -657,7 +659,7 @@
         Systeminformation:
         <div class="ml-2 w-72 flex items-center">
           <input
-            class="shadow appearance-none border rounded w-full py-2 px-3 text-[hsl(var(--twc-settingsSecondaryTextColor))] leading-tight focus:outline-none focus:shadow-outline"
+            class="shadow appearance-none rounded w-full py-2 px-3 leading-tight focus:outline-none focus:shadow-outline"
             type="text"
             bind:value={CUSTOM_SYSTEMINFO_API_URL}
             placeholder={SYSTEMINFO_API_URL}
@@ -679,7 +681,7 @@
         Node:
         <div class="ml-2 w-72 flex items-center">
           <input
-            class="shadow appearance-none border rounded w-full py-2 px-3 text-[hsl(var(--twc-settingsSecondaryTextColor))] leading-tight focus:outline-none focus:shadow-outline"
+            class="shadow appearance-none rounded w-full py-2 px-3 leading-tight focus:outline-none focus:shadow-outline"
             type="text"
             bind:value={CUSTOM_MYNODE_API_URL}
             placeholder={MYNODE_API_URL}
@@ -702,7 +704,7 @@
         ETH RPC:
         <div class="ml-2 w-72 flex items-center">
           <input
-            class="shadow appearance-none border rounded w-full py-2 px-3 text-[hsl(var(--twc-settingsSecondaryTextColor))] leading-tight focus:outline-none focus:shadow-outline"
+            class="shadow appearance-none rounded w-full py-2 px-3 leading-tight focus:outline-none focus:shadow-outline"
             type="text"
             bind:value={CUSTOM_ETH_RPC_API_URL}
             placeholder={ETH_RPC_API_URL}
@@ -755,7 +757,8 @@
   }
 
   .layout.active {
-    background-color: rgb(255, 250, 207);
+    background-color: hsl(var(--twc-primaryColor));
+    color: white;
   }
 
   input {

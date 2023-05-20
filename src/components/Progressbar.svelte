@@ -67,6 +67,6 @@
     transform: translate(-50%, -50%);
     font-size: 12px;
     color: white;
-    z-index: 2;
+    z-index: 1;
   }
 </style>

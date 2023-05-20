@@ -2,10 +2,8 @@
   import { wrap } from "svelte-spa-router/wrap";
   import Router from "svelte-spa-router";
   import Home from "./pages/home/Home.svelte";
-  import { setupI18n } from "./i18n";
   import { currentTheme } from "./components/ThemeSwitcher.svelte";
 
-  setupI18n({ withLocale: "en" });
   // const l1Provider = new ethers.providers.JsonRpcProvider(
   //   import.meta.env.VITE_L1_RPC_URL
   // );
