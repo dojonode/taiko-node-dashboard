@@ -9,6 +9,7 @@ module.exports = {
         secondaryColor: "#ff9fe9", //taiko soft pink
         tertiaryColor: "#808080", //gray color
         backgroundColor: "#ffffff", //main background
+        progressBarTextColor: "#808080",
         progressBarBackgroundColor: "#e0e0e0",
         cardBackgroundColor: "#f5f5f5", //card background
         cardTitleColor: "#fc0fc0",
@@ -24,9 +25,10 @@ module.exports = {
         secondaryColor: "#f8c4cf",
         tertiaryColor: "#808080",
         backgroundColor: "#fffdf3",
+        progressBarTextColor: "#808080",
         progressBarBackgroundColor: "#E0E7EC",
         cardBackgroundColor: "#f5f5f5",
-        cardTitleColor: "#1A1B1B",
+        cardTitleColor: "#808080",
         cardBodyTextColor: "#1A1B1B",
         cardSubBodyColor: "#9A989F",
         settingsBtnColor: "#9baab2",
@@ -38,8 +40,9 @@ module.exports = {
       dark: {
         primaryColor: "#fc0fc0",
         secondaryColor: "#f8c4cf",
-        tertiaryColor: "#808080",
+        tertiaryColor: "#cecece",
         backgroundColor: "#1a1b1b",
+        progressBarTextColor: "#1a1b1b",
         progressBarBackgroundColor: "#707D75",
         cardBackgroundColor: "#444444",
         cardTitleColor: "#FFFFFD",

@@ -113,7 +113,7 @@
   // General metrics
   let blockNumber;
   let gasPrice;
-  let syncingStatus = null;
+  let syncingStatus;
   let syncingProgress = 0;
   let nodeAddress; // the wallet address used by the node/proposer/prover
 
@@ -190,7 +190,8 @@
       syncingStatus = await myNode.eth.isSyncing();
       syncingProgress =
         (syncingStatus.currentBlock / syncingStatus.highestBlock) * 100;
-      // console.log(syncingStatus);
+      console.log(syncingStatus, syncingProgress);
+
       // blockNumber = await taikoL2.eth.getBlockNumber();
       // console.log(await myNode.eth.getNodeInfo());
       // // returns: Geth/v1.10.26-stable/linux-amd64/go1.18.10
@@ -200,7 +201,8 @@
     } catch (error) {
       if (!fetchMetricsError) {
         console.error("Error while fetching RPC metrics", error);
-
+        // indicate that the node is not found
+        syncingStatus = null;
         // toast.error(
         //   `Couldn't fetch metrics on ${ETH_RPC_API_URL} or ${MYNODE_API_URL}`,
         //   {
@@ -391,12 +393,30 @@
   </div>
 
   <!-- Progress Bar -->
+  <!-- 
+    the progress can only be displayed if the syncingrequest has been made and the node can be found
+    -> first check if the request was made: !== undefined
+    -> check if the node is found: !== null
+    -> check if the node is syncing: syncingStatus === true
+     
+    use a -1 value to display the loading or node not found values
+   -->
   <div class="my-4">
     <Progressbar
-      progress={syncingStatus ? syncingProgress : 100}
+      progress={syncingStatus === undefined
+        ? -1
+        : syncingStatus === null
+        ? -1
+        : syncingStatus
+        ? syncingProgress
+        : 100}
       precision={2}
       showPercentage={true}
-      finishedMessage={syncingStatus !== null ? "Synced!" : "Node not found"}
+      finishedMessage={syncingStatus === undefined
+        ? "Loading..."
+        : syncingStatus === null
+        ? "Node not found"
+        : "Synced!"}
     />
   </div>
 
@@ -554,14 +574,13 @@
           <input
             class="shadow appearance-none rounded w-full py-2 px-3 text-[hsl(var(--twc-settingsSecondaryTextColor))] leading-tight focus:outline-none focus:shadow-outline placeholder:font-normal"
             type="text"
-            value={nodeAddress}
+            value={nodeAddress || "no address found"}
             disabled
-            placeholder="no address found"
           />
 
-          <div class="text-[hsl(var(--twc-settingsSecondaryTextColor))]">
+          <div class="text-[hsl(var(--twc-settingsSecondaryTextColor))] mt-1">
             <input
-              class="accent-[hsl(var(--twc-primaryColor))]"
+              class="accent-[hsl(var(--twc-primaryColor))] cursor-pointer"
               type="checkbox"
               bind:checked={useCustomAddress}
               on:change={() =>
@@ -729,7 +748,7 @@
 
 <style>
   .nodeTypes {
-    color: gray;
+    color: hsl(var(--twc-tertiaryColor));
     font-weight: 400;
     z-index: 1;
     position: relative;

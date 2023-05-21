@@ -1,19 +1,11 @@
 version: "3.9"
 
 services:
-  taiko-node-status:
-    image: taiko-node-status:latest
-    build:
-      context: .
-    env_file:
-      - .env
+  taiko-node-dashboard:
+    image: wolfderechter/taiko-node-dashboard:latest
     ports:
       - "8082:80"
   taiko-node-systeminfo:
-    image: taiko-node-systeminfo:latest
-    build:
-      context: ./systeminformation
-      dockerfile: Dockerfile
+    image: wolfderechter/taiko-node-systeminfo:latest
     ports:
       - "3009:3009"
-    pid: host
