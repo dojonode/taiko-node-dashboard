@@ -56,7 +56,7 @@
     top: 0;
     left: 0;
     height: 100%;
-    background-color: hsl(var(--twc-secondaryColor));
+    background-color: hsl(var(--twc-progressBarFillColor));
     border-radius: 10px;
     transition: width 0.4s ease-in-out;
     width: 0%;
@@ -68,7 +68,7 @@
     left: 50%;
     transform: translate(-50%, -50%);
     font-size: 12px;
-    color: hsl(var(--twc-progressBarTextColor));
+    color: hsl(var(--twc-textColor));
     z-index: 1;
   }
 </style>

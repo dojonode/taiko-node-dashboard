@@ -10,7 +10,6 @@
   import Card from "../../components/Card.svelte";
   import ThemeSwitcher from "../../components/ThemeSwitcher.svelte";
   import Progressbar from "../../components/Progressbar.svelte";
-  import taikoLogo from "../../assets/TaikoLogo.png";
   import purseIcon from "../../assets/icons/Purse.png";
   import heartIcon from "../../assets/icons/Heart.png";
   import brainIcon from "../../assets/icons/Brain.png";
@@ -20,6 +19,7 @@
   import loadingIcon from "../../assets/icons/Loading.png";
   import medalIcon from "../../assets/icons/Medal.png";
   import chainIcon from "../../assets/icons/Chain.png";
+  import taikoLogoIcon from "../../assets/taikoLogoIcon.png";
   import packageIcon from "../../assets/icons/Package.png";
   import recyclingIcon from "../../assets/icons/Recycling.png";
   import abacusIcon from "../../assets/icons/Abacus.png";
@@ -28,6 +28,7 @@
   import warningIcon from "../../assets/icons/Warning.png";
   import antennaIcon from "../../assets/icons/Antenna.png";
   import Gear from "../../components/icons/Gear.svelte";
+  import TaikoLogo from "../../components/icons/TaikoLogo.svelte";
   import { MetricTypes, NodeTypes, Themes } from "../../domain/enums";
   import { Sortable } from "@shopify/draggable";
   import type {
@@ -190,7 +191,22 @@
       syncingStatus = await myNode.eth.isSyncing();
       syncingProgress =
         (syncingStatus.currentBlock / syncingStatus.highestBlock) * 100;
-      console.log(syncingStatus, syncingProgress);
+
+      // blockNumber = await taikoL2.eth.getBlockNumber();
+      // console.log(await myNode.eth.getNodeInfo());
+      // // returns: Geth/v1.10.26-stable/linux-amd64/go1.18.10
+      // // can maybe be used to check for updates?
+      // console.log(await taikoL2.eth.getNodeInfo());
+    } catch (error) {
+      console.error("Error while fetching RPC metrics", error);
+    }
+
+    try {
+      // TODO: use the L2TaikoRPC and compare once testnet is live, check for a difference during syncing?
+      blockNumber = await myNode.eth.getBlockNumber();
+      syncingStatus = await myNode.eth.isSyncing();
+      syncingProgress =
+        (syncingStatus.currentBlock / syncingStatus.highestBlock) * 100;
 
       // blockNumber = await taikoL2.eth.getBlockNumber();
       // console.log(await myNode.eth.getNodeInfo());
@@ -200,15 +216,9 @@
       fetchMetricsError = false;
     } catch (error) {
       if (!fetchMetricsError) {
-        console.error("Error while fetching RPC metrics", error);
+        console.error("Error while fetching Node metrics", error);
         // indicate that the node is not found
         syncingStatus = null;
-        // toast.error(
-        //   `Couldn't fetch metrics on ${ETH_RPC_API_URL} or ${MYNODE_API_URL}`,
-        //   {
-        //     position: "top-center",
-        //   }
-        // );
         fetchMetricsError = true;
       }
     }
@@ -373,7 +383,14 @@
 
 <div class="flex flex-col items-center pt-4">
   <div class="text-center relative">
-    <img bind:this={imageRef} src={taikoLogo} class="taikoImg mx-auto" alt="" />
+    <img
+      bind:this={imageRef}
+      src={taikoLogoIcon}
+      class="taikoImg mx-auto"
+      alt=""
+    />
+    <!-- <TaikoLogoIcon class="mx-auto taikoImg rotate-[{rotationAngle}deg]" /> -->
+    <TaikoLogo class="fill-[hsl(var(--twc-textColor))] w-32 mx-auto mt-1" />
     <div class="nodeTypes flex justify-evenly mt-4">
       <button
         class:active={nodeType === NodeTypes.Node}
@@ -413,10 +430,10 @@
       precision={2}
       showPercentage={true}
       finishedMessage={syncingStatus === undefined
-        ? "Loading..."
+        ? "loading..."
         : syncingStatus === null
-        ? "Node not found"
-        : "Synced!"}
+        ? "node not found"
+        : "synced!"}
     />
   </div>
 
@@ -563,24 +580,24 @@
 </div>
 
 {#if settingsOpen}
-  <DetailsModal title={"Settings"} bind:isOpen={settingsOpen}>
+  <DetailsModal title={"settings"} bind:isOpen={settingsOpen}>
     <div
-      class="grid grid-cols-1 gap-6 mx-5 my-10 max-h-96 overflow-y-auto text-[hsl(var(--twc-settingsPrimaryTextColor))]"
+      class="settings grid grid-cols-1 gap-6 mx-5 my-10 max-h-[600px] overflow-y-auto text-[hsl(var(--twc-textColor))] font-semibold"
       slot="body"
     >
-      <div class="flex justify-between items-center font-bold">
-        Address used by node:
-        <div class="ml-2 w-[75%]">
+      <div class="flex flex-col justify-between items-center">
+        address used by node
+        <div class="mt-2 w-[75%]">
           <input
-            class="shadow appearance-none rounded w-full py-2 px-3 text-[hsl(var(--twc-settingsSecondaryTextColor))] leading-tight focus:outline-none focus:shadow-outline placeholder:font-normal"
+            class="shadow appearance-none rounded w-full px-3 focus:outline-none focus:shadow-outline placeholder:font-normal leading-none"
             type="text"
             value={nodeAddress || "no address found"}
             disabled
           />
 
-          <div class="text-[hsl(var(--twc-settingsSecondaryTextColor))] mt-1">
+          <div class="mt-1 font-normal">
             <input
-              class="accent-[hsl(var(--twc-primaryColor))] cursor-pointer"
+              class="accent-[hsl(var(--twc-settingsAccentColor))] cursor-pointer"
               type="checkbox"
               bind:checked={useCustomAddress}
               on:change={() =>
@@ -594,11 +611,11 @@
         </div>
       </div>
       {#if useCustomAddress}
-        <div class="flex justify-between items-center font-bold">
-          Set L1 address:
-          <div class="ml-2 w-[75%]">
+        <div class="flex flex-col justify-between items-center">
+          L1 address
+          <div class="mt-2 w-[75%]">
             <input
-              class="shadow appearance-none rounded w-full py-2 px-3 text-[hsl(var(--twc-settingsSecondaryTextColor))] leading-tight focus:outline-none focus:shadow-outline"
+              class="shadow appearance-none rounded w-full px-3 focus:outline-none focus:shadow-outline leading-none"
               type="text"
               readonly={!useCustomAddress}
               bind:value={customAddressL1}
@@ -607,11 +624,11 @@
             />
           </div>
         </div>
-        <div class="flex justify-between items-center font-bold">
-          Set L2 address:
-          <div class="ml-2 w-[75%]">
+        <div class="flex flex-col justify-between items-center">
+          L2 address
+          <div class="mt-2 w-[75%]">
             <input
-              class="shadow appearance-none rounded w-full py-2 px-3 text-[hsl(var(--twc-settingsSecondaryTextColor))] leading-tight focus:outline-none focus:shadow-outline"
+              class="shadow appearance-none rounded w-full px-3 focus:outline-none focus:shadow-outline leading-none"
               type="text"
               readonly={!useCustomAddress}
               bind:value={customAddressL2}
@@ -621,54 +638,58 @@
           </div>
         </div>
       {/if}
-
-      <div class="flex justify-between items-center font-bold">
-        Layout:
-        <div class="inline-flex text-black">
-          <button
-            class:active={!bigLayout}
-            on:click={() => (bigLayout = false)}
-            class="layout bg-zinc-50 hover:bg-zinc-100 py-2 px-4 mx-1 rounded-l"
-          >
-            compact
-          </button>
-          <button
-            class:active={bigLayout}
-            on:click={() => (bigLayout = true)}
-            class="layout bg-zinc-50 hover:bg-zinc-100 py-2 px-4 mx-1 rounded-r"
-          >
-            wide
-          </button>
+      <div
+        class="flex md:flex-row gap-[15px] md:gap-[50px] flex-col justify-center"
+      >
+        <div class="flex flex-col justify-between items-center">
+          layout
+          <div class="mt-2 inline-flex text-black">
+            <button
+              class:active={!bigLayout}
+              on:click={() => (bigLayout = false)}
+              class="layout py-[2px] px-1 mx-1 rounded-full"
+            >
+              compact
+            </button>
+            <button
+              class:active={bigLayout}
+              on:click={() => (bigLayout = true)}
+              class="layout py-[2px] px-1 mx-1 rounded-full"
+            >
+              wide
+            </button>
+          </div>
         </div>
+        <!-- Theme switcher to change themes -->
+        <ThemeSwitcher />
       </div>
-      <!-- Theme switcher -->
-      <ThemeSwitcher />
     </div>
   </DetailsModal>
 {/if}
 {#if connectionsOpen}
   <DetailsModal title={"Connections"} bind:isOpen={connectionsOpen}>
     <div
-      class="grid grid-cols-1 gap-6 mx-5 my-10 max-h-96 overflow-y-auto text-[hsl(var(--twc-settingsSecondaryTextColor))]"
+      class="grid grid-cols-1 gap-6 mx-5 my-10 max-h-96 overflow-y-auto text-[hsl(var(--twc-textColor))]"
       slot="body"
     >
       <div class="flex justify-between items-center font-bold">
-        Prometheus:
+        Node:
         <div class="ml-2 w-72 flex items-center">
           <input
-            class="shadow appearance-none rounded w-full py-2 px-3 leading-tight focus:outline-none focus:shadow-outline"
-            type="search"
-            bind:value={CUSTOM_PROMETHEUS_API_URL}
-            placeholder={PROMETHEUS_API_URL}
+            class="shadow appearance-none rounded w-full py-2 px-3 leading-tight focus:outline-none focus:shadow-outline mt-1"
+            type="text"
+            bind:value={CUSTOM_MYNODE_API_URL}
+            placeholder={MYNODE_API_URL}
             on:change={() => {
               setLocalStorageItem(
-                "CUSTOM_PROMETHEUS_API_URL",
-                CUSTOM_PROMETHEUS_API_URL
+                "CUSTOM_MYNODE_API_URL",
+                CUSTOM_MYNODE_API_URL
               );
+              initConnections();
             }}
           />
           <img
-            src={fetchPrometheusError ? warningIcon : checkmarkIcon}
+            src={fetchMyNodeError ? warningIcon : checkmarkIcon}
             alt="icon"
             class="w-[30px] ml-2"
           />
@@ -697,23 +718,22 @@
         </div>
       </div>
       <div class="flex justify-between items-center font-bold">
-        Node:
+        Prometheus:
         <div class="ml-2 w-72 flex items-center">
           <input
             class="shadow appearance-none rounded w-full py-2 px-3 leading-tight focus:outline-none focus:shadow-outline"
-            type="text"
-            bind:value={CUSTOM_MYNODE_API_URL}
-            placeholder={MYNODE_API_URL}
+            type="search"
+            bind:value={CUSTOM_PROMETHEUS_API_URL}
+            placeholder={PROMETHEUS_API_URL}
             on:change={() => {
               setLocalStorageItem(
-                "CUSTOM_MYNODE_API_URL",
-                CUSTOM_MYNODE_API_URL
+                "CUSTOM_PROMETHEUS_API_URL",
+                CUSTOM_PROMETHEUS_API_URL
               );
-              initConnections();
             }}
           />
           <img
-            src={fetchMyNodeError ? warningIcon : checkmarkIcon}
+            src={fetchPrometheusError ? warningIcon : checkmarkIcon}
             alt="icon"
             class="w-[30px] ml-2"
           />
@@ -723,7 +743,7 @@
         ETH RPC:
         <div class="ml-2 w-72 flex items-center">
           <input
-            class="shadow appearance-none rounded w-full py-2 px-3 leading-tight focus:outline-none focus:shadow-outline"
+            class="shadow appearance-none rounded w-full py-2 px-3 leading-tight focus:outline-none focus:shadow-outline mb-1"
             type="text"
             bind:value={CUSTOM_ETH_RPC_API_URL}
             placeholder={ETH_RPC_API_URL}
@@ -748,7 +768,7 @@
 
 <style>
   .nodeTypes {
-    color: hsl(var(--twc-tertiaryColor));
+    color: hsl(var(--twc-textColor));
     font-weight: 400;
     z-index: 1;
     position: relative;
@@ -758,30 +778,44 @@
   }
 
   .nodeTypes .active {
-    color: hsl(var(--twc-secondaryColor));
+    color: hsl(var(--twc-nodeTypesColorActive));
     font-weight: 700;
   }
 
   .nodeTypes .bar {
     margin-top: auto;
     margin-bottom: auto;
-    color: hsl(var(--twc-tertiaryColor));
+    color: hsl(var(--twc-textColor));
     font-weight: 400;
   }
 
   .taikoImg {
     transition: transform 0.5s ease-in-out;
-    transform-origin: center 130px;
-    width: 230px;
+    transform-origin: center 94px;
+    width: 170px;
   }
 
+  .layout {
+    border: 2.1px solid hsl(var(--twc-cardBackgroundColor));
+    background-color: hsl(var(--twc-settingsAccentColor));
+    color: hsl(var(--twc-textColor));
+    font-weight: 400;
+    line-height: 1;
+  }
   .layout.active {
-    background-color: hsl(var(--twc-primaryColor));
-    color: white;
+    border: 2.1px solid hsl(var(--twc-primaryColor));
+    background-color: hsl(var(--twc-cardBackgroundColor));
   }
 
-  input {
-    background-color: hsl(var(--twc-settingsInputBackgroundColor));
+  .settings button {
+    width: 75px;
+  }
+
+  .settings input {
+    background-color: hsl(var(--twc-settingsAccentColor));
+    font-weight: 400;
+    text-align: center;
+    border-radius: 999px;
   }
 
   .animateConnections {

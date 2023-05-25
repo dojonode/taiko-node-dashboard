@@ -135,8 +135,8 @@
   .bodyArea {
     text-align: center;
     padding-top: 5px;
-    color: hsl(var(--twc-cardBodyTextColor));
-    font-weight: 500;
+    color: hsl(var(--twc-textColor));
+    font-weight: 400;
   }
 
   @media (max-width: 750px) {
