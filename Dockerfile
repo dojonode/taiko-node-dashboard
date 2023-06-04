@@ -1,5 +1,5 @@
 # Use the official Node.js image as the base image
-FROM node:16-alpine AS Build
+FROM node:20-alpine3.17 AS Build
 
 # Install pnpm
 RUN npm install -g pnpm
@@ -20,7 +20,7 @@ COPY . .
 RUN pnpm run build
 
 # Use a lightweight Nginx image as the base image for the final image
-FROM nginx:1.19-alpine
+FROM nginx:1.25.0
 # Copy the built app from the Build stage to the Nginx web server
 COPY --from=Build /app/dist /usr/share/nginx/html
 

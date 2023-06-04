@@ -243,14 +243,7 @@
             : nodeType === NodeTypes.Prover
             ? "BlockProven"
             : ""
-        }`,
-        {
-          headers: {
-            "Access-Control-Allow-Origin": "*",
-            "Access-Control-Allow-Headers":
-              "Origin, X-Requested-With, Content-Type, Accept",
-          },
-        }
+        }`
       );
       let addressEvent = await response.json();
       if (nodeType === NodeTypes.Proposer)
