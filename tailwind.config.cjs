@@ -5,14 +5,14 @@ module.exports = {
   plugins: [
     createThemes({
       original: {
-        primaryColor: "#fc0fc0", //taiko pink
+        primaryColor: "#e81899", //taiko pink
         secondaryColor: "#ff9fe9", //taiko soft pink
         tertiaryColor: "#808080", //gray color
         backgroundColor: "#ffffff", //main background
         progressBarTextColor: "#808080",
         progressBarBackgroundColor: "#e0e0e0",
         cardBackgroundColor: "#f5f5f5", //card background
-        cardTitleColor: "#fc0fc0",
+        cardTitleColor: "#e81899",
         cardBodyTextColor: "#6b6b6b",
         cardSubBodyColor: "#b3b3b3",
         settingsBtnColor: "#9baab2",
@@ -21,7 +21,7 @@ module.exports = {
         settingsSecondaryTextColor: "#374151", // blueish gray color
       },
       paper: {
-        primaryColor: "#fc0fc0",
+        primaryColor: "#e81899",
         secondaryColor: "#f8c4cf",
         tertiaryColor: "#808080",
         backgroundColor: "#FFF9EB",
@@ -36,7 +36,7 @@ module.exports = {
         settingsBtnColor: "#9baab2",
       },
       light: {
-        primaryColor: "#fc0fc0",
+        primaryColor: "#e81899",
         secondaryColor: "#f8c4cf",
         tertiaryColor: "#808080",
         backgroundColor: "#FFFFFD",
@@ -51,7 +51,7 @@ module.exports = {
         settingsBtnColor: "#9baab2",
       },
       dark: {
-        primaryColor: "#fc0fc0",
+        primaryColor: "#e81899",
         secondaryColor: "#f8c4cf",
         tertiaryColor: "#cecece",
         backgroundColor: "#1a1b1b",
