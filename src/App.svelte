@@ -4,13 +4,6 @@
   import Home from "./pages/home/Home.svelte";
   import { currentTheme } from "./components/ThemeSwitcher.svelte";
 
-  // const l1Provider = new ethers.providers.JsonRpcProvider(
-  //   import.meta.env.VITE_L1_RPC_URL
-  // );
-  // const l2Provider = new ethers.providers.JsonRpcProvider(
-  //   import.meta.env.VITE_L2_RPC_URL
-  // );
-
   const routes = {
     "/": wrap({
       component: Home,

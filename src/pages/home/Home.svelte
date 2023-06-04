@@ -119,10 +119,9 @@
   let nodeAddress; // the wallet address used by the node/proposer/prover
 
   // If we find a private key variable in the .env we use this for the nodeAddress
-  // TODO: support differnt L1/L2 addresses
-  if (import.meta.env.VITE_PRIVATE_KEY) {
+  if (import.meta.env.VITE_L1_PRIVATE_KEY) {
     nodeAddress = ethRPC?.eth.accounts.privateKeyToAccount(
-      import.meta.env.VITE_PRIVATE_KEY
+      import.meta.env.VITE_L1_PRIVATE_KEY
     ).address;
   } else {
     // no private key found, so no default wallet
@@ -136,10 +135,11 @@
   // reactive declarations of the L1Wallet and L2Wallet that will re-calculate their values each time one of the reactive dependencies (useCustomAddress, customAddressL1, or nodeAddress) changes
   $: L1Wallet = useCustomAddress ? customAddressL1 : nodeAddress;
   $: L2Wallet = useCustomAddress ? customAddressL2 : nodeAddress;
+  // TODO: remove any types
   let L1Balance;
   let L2Balance;
-  let addressProposedBlocksCount;
-  let addressProvenBlocksCount;
+  let addressBlockProposed;
+  let addressBlockProven;
 
   // set the correct nodeType to what is used within the .env file
   let enableProver: boolean = JSON.parse(import.meta.env.VITE_ENABLE_PROVER);
@@ -152,6 +152,14 @@
     ? NodeTypes.Proposer
     : NodeTypes.Node;
 
+  // proposers can specify a different L2 wallet to receive fees currently
+  if (
+    import.meta.env.VITE_L2_SUGGESTED_FEE_RECIPIENT &&
+    nodeType === NodeTypes.Proposer
+  ) {
+    L2Wallet = import.meta.env.VITE_L2_SUGGESTED_FEE_RECIPIENT;
+  }
+
   let interval: NodeJS.Timer;
   let systeminfo: Systeminfo;
   let systeminformationMetrics: SysteminformationMetricsInterface = null;
@@ -162,7 +170,7 @@
   let themeMode = "light";
   let settingsOpen: boolean = false;
   let connectionsOpen: boolean = false;
-  let imageRef;
+  let imageRef: HTMLImageElement;
 
   // fetch general metrics
   async function fetchMetrics() {
@@ -226,8 +234,16 @@
 
   const fetchAddressEvents = async () => {
     try {
+      if (nodeType === NodeTypes.Node) return;
+
       const response = await fetch(
-        "https://eventindexer.a3.taiko.xyz/uniqueProvers",
+        `https://eventindexer.internal.taiko.xyz/eventByAddress?address=${L1Wallet}&event=${
+          nodeType === NodeTypes.Proposer
+            ? "BlockProposed"
+            : nodeType === NodeTypes.Prover
+            ? "BlockProven"
+            : ""
+        }`,
         {
           headers: {
             "Access-Control-Allow-Origin": "*",
@@ -237,13 +253,12 @@
         }
       );
       let addressEvent = await response.json();
-      // if event === proposed
-      // addressProposedBlocks = addressEvent.count
-      // else if event === proven
-      // addressProvenBlocks = addressEvent.count
-      // console.log(addressEvent);
+      if (nodeType === NodeTypes.Proposer)
+        addressBlockProposed = addressEvent.count;
+      else if (nodeType === NodeTypes.Prover)
+        addressBlockProven = addressEvent.count;
     } catch (error) {
-      console.error("Error fetching system info", error);
+      console.error(`Error fetching address events for the ${nodeType}`, error);
     }
   };
 
@@ -296,10 +311,6 @@
     } catch (error) {
       if (!fetchSystemInfoError) {
         console.error("Error while fetching systeminfo", error);
-
-        // toast.error(`Couldn't reach systeminfo on ${SYSTEMINFO_API_URL}`, {
-        //   position: "top-center",
-        // });
         fetchSystemInfoError = true;
       }
     }
@@ -312,15 +323,10 @@
       peers = peersData.data.result[0].value[1];
       fetchPrometheusError = false;
     } catch (error) {
-      // TODO: Show alerts/notifications when something went wrong fetching the prometheus metric(s)?  maybe double check the endpoint and change it in settings
       peers = "";
 
       if (!fetchPrometheusError) {
         console.error("Error while fetching prometheus", error);
-
-        // toast.error(`Couldn't reach prometheus on ${PROMETHEUS_API_URL}`, {
-        //   position: "top-center",
-        // });
         fetchPrometheusError = true;
       }
     }
@@ -330,9 +336,8 @@
   function switchNodeType(type) {
     if (nodeType === type) return;
 
-    // syncingProgress = 0;
+    // used to rotate the taiko logo correctly
     rotationAngle += 120;
-    // imageRef.style.transformOrigin = "center 130px";
     imageRef.style.transform = `rotate(${rotationAngle}deg)`;
 
     switch (type) {
@@ -351,12 +356,18 @@
   }
 
   onMount(async () => {
-    // load from localstorage whether we use a custom address and what the l1/l2 address is
-    useCustomAddress = JSON.parse(getLocalStorageItem("useCustomAddress"));
+    // load from localstorage the customAddress, and useCustomAddress but only if the customAddress actually exists
     customAddressL1 = getLocalStorageItem("customAddressL1");
     customAddressL2 = getLocalStorageItem("customAddressL2");
+    if (
+      customAddressL1 != null &&
+      customAddressL2 &&
+      ethRPC.utils.isAddress(customAddressL1)
+    ) {
+      useCustomAddress = JSON.parse(getLocalStorageItem("useCustomAddress"));
+    }
 
-    // allows sorting the cards
+    // used for sorting the cards with drag and drop
     const sortable = new Sortable(document.querySelectorAll("#cards"), {
       draggable: ".card",
     });
@@ -367,6 +378,7 @@
         fetchMetrics();
         fetchSystemInfo();
         fetchPrometheus();
+        fetchAddressEvents();
 
         // If we had errors connecting to node, we will occasionaly re-try initializing the RPC connections
         if (fetchMyNodeError) initConnections();
@@ -536,7 +548,7 @@
       {#if nodeType === NodeTypes.Proposer}
         <Card
           title="proposed"
-          body={`${10}`}
+          body={`${addressBlockProposed}`}
           bodyMetricType={MetricTypes.proposer}
           icon={packageIcon}
           loadingbar={false}
@@ -545,7 +557,7 @@
       {:else if nodeType === NodeTypes.Prover}
         <Card
           title="proven"
-          body={`${10}`}
+          body={`${addressBlockProven}`}
           bodyMetricType={MetricTypes.prover}
           icon={abacusIcon}
           loadingbar={false}
@@ -568,13 +580,6 @@
       <div class="invisible">
         <Card />
       </div>
-      <!-- <Card
-          title="Earned"
-          body="4.588"
-          bodyMetricType={MetricTypes.taiko}
-          icon={medalIcon}
-          loadingbar={false}
-        /> -->
     </div>
   </div>
 </div>
@@ -586,7 +591,7 @@
       slot="body"
     >
       <div class="flex flex-col justify-between items-center">
-        address used by node
+        address used by {nodeType}
         <div class="mt-2 w-[75%]">
           <input
             class="shadow appearance-none rounded w-full px-3 focus:outline-none focus:shadow-outline placeholder:font-normal leading-none"
@@ -611,32 +616,64 @@
         </div>
       </div>
       {#if useCustomAddress}
-        <div class="flex flex-col justify-between items-center">
-          L1 address
-          <div class="mt-2 w-[75%]">
-            <input
-              class="shadow appearance-none rounded w-full px-3 focus:outline-none focus:shadow-outline leading-none"
-              type="text"
-              readonly={!useCustomAddress}
-              bind:value={customAddressL1}
-              on:change={() =>
-                setLocalStorageItem("customAddressL1", customAddressL1)}
-            />
+        <!-- when the node is a proposer, allow the user to change both L1 and L2 wallet address. Because proposers can receive fees on a different L2 address -->
+        <!-- when the node is simply a node or a prover, they can change the address (both L1 and L2) -->
+        {#if nodeType === NodeTypes.Proposer}
+          <div class="flex flex-col justify-between items-center">
+            custom L1 address
+            <div class="mt-2 w-[75%]">
+              <input
+                class="shadow appearance-none rounded w-full px-3 focus:outline-none focus:shadow-outline leading-none"
+                type="text"
+                readonly={!useCustomAddress}
+                bind:value={customAddressL1}
+                on:change={() =>
+                  setLocalStorageItem(
+                    "customAddressL1",
+                    customAddressL1.trim()
+                  )}
+              />
+            </div>
           </div>
-        </div>
-        <div class="flex flex-col justify-between items-center">
-          L2 address
-          <div class="mt-2 w-[75%]">
-            <input
-              class="shadow appearance-none rounded w-full px-3 focus:outline-none focus:shadow-outline leading-none"
-              type="text"
-              readonly={!useCustomAddress}
-              bind:value={customAddressL2}
-              on:change={() =>
-                setLocalStorageItem("customAddressL2", customAddressL2)}
-            />
+          <div class="flex flex-col justify-between items-center">
+            custom L2 address
+            <div class="mt-2 w-[75%]">
+              <input
+                class="shadow appearance-none rounded w-full px-3 focus:outline-none focus:shadow-outline leading-none"
+                type="text"
+                readonly={!useCustomAddress}
+                bind:value={customAddressL2}
+                on:change={() =>
+                  setLocalStorageItem(
+                    "customAddressL2",
+                    customAddressL2.trim()
+                  )}
+              />
+            </div>
           </div>
-        </div>
+        {:else}
+          <div class="flex flex-col justify-between items-center">
+            custom address
+            <div class="mt-2 w-[75%]">
+              <input
+                class="shadow appearance-none rounded w-full px-3 focus:outline-none focus:shadow-outline leading-none"
+                type="text"
+                readonly={!useCustomAddress}
+                bind:value={customAddressL1}
+                on:change={() => {
+                  setLocalStorageItem(
+                    "customAddressL1",
+                    customAddressL1.trim()
+                  );
+                  setLocalStorageItem(
+                    "customAddressL2",
+                    customAddressL2.trim()
+                  );
+                }}
+              />
+            </div>
+          </div>
+        {/if}
       {/if}
       <div
         class="flex md:flex-row gap-[15px] md:gap-[50px] flex-col justify-center"
@@ -669,10 +706,12 @@
 {#if connectionsOpen}
   <DetailsModal title={"Connections"} bind:isOpen={connectionsOpen}>
     <div
-      class="grid grid-cols-1 gap-6 mx-5 my-10 max-h-96 overflow-y-auto text-[hsl(var(--twc-textColor))]"
+      class="connections grid grid-cols-1 gap-6 mx-5 my-10 max-h-96 overflow-y-auto text-[hsl(var(--twc-textColor))]"
       slot="body"
     >
-      <div class="flex justify-between items-center font-bold">
+      <div
+        class="flex sm:flex-row flex-col justify-between items-center font-bold"
+      >
         Node:
         <div class="ml-2 w-72 flex items-center">
           <input
@@ -695,7 +734,9 @@
           />
         </div>
       </div>
-      <div class="flex justify-between items-center font-bold">
+      <div
+        class="flex sm:flex-row flex-col justify-between items-center font-bold"
+      >
         Systeminformation:
         <div class="ml-2 w-72 flex items-center">
           <input
@@ -717,12 +758,14 @@
           />
         </div>
       </div>
-      <div class="flex justify-between items-center font-bold">
+      <div
+        class="flex sm:flex-row flex-col justify-between items-center font-bold"
+      >
         Prometheus:
         <div class="ml-2 w-72 flex items-center">
           <input
             class="shadow appearance-none rounded w-full py-2 px-3 leading-tight focus:outline-none focus:shadow-outline"
-            type="search"
+            type="text"
             bind:value={CUSTOM_PROMETHEUS_API_URL}
             placeholder={PROMETHEUS_API_URL}
             on:change={() => {
@@ -739,7 +782,9 @@
           />
         </div>
       </div>
-      <div class="flex justify-between items-center font-bold">
+      <div
+        class="flex sm:flex-row flex-col justify-between items-center font-bold"
+      >
         ETH RPC:
         <div class="ml-2 w-72 flex items-center">
           <input
@@ -816,6 +861,10 @@
     font-weight: 400;
     text-align: center;
     border-radius: 999px;
+  }
+
+  .connections input {
+    background-color: hsl(var(--twc-settingsAccentColor));
   }
 
   .animateConnections {
