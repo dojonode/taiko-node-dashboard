@@ -237,7 +237,7 @@
       if (nodeType === NodeTypes.Node) return;
 
       const response = await fetch(
-        `https://eventindexer.internal.taiko.xyz/eventByAddress?address=${L1Wallet}&event=${
+        `https://eventindexer.test.taiko.xyz/eventByAddress?address=${L1Wallet}&event=${
           nodeType === NodeTypes.Proposer
             ? "BlockProposed"
             : nodeType === NodeTypes.Prover
