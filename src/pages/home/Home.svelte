@@ -140,17 +140,22 @@
   let L2Balance;
   let addressBlockProposed;
   let addressBlockProven;
+  let nodeType = NodeTypes.Node;
 
-  // set the correct nodeType to what is used within the .env file
-  let enableProver: boolean = JSON.parse(import.meta.env.VITE_ENABLE_PROVER);
-  let enableProposer: boolean = JSON.parse(
-    import.meta.env.VITE_ENABLE_PROPOSER
-  );
-  let nodeType = enableProver
-    ? NodeTypes.Prover
-    : enableProposer
-    ? NodeTypes.Proposer
-    : NodeTypes.Node;
+  // set the correct nodeType to what is used within the .env file, if present. Else we keep the default node
+  if (
+    import.meta.env.VITE_ENABLE_PROPOSER && import.meta.env.VITE_ENABLE_PROVER) {
+      let enableProver: boolean = JSON.parse(import.meta.env.VITE_ENABLE_PROVER);
+      let enableProposer: boolean = JSON.parse(import.meta.env.VITE_ENABLE_PROPOSER);
+
+      let nodeType = enableProver
+        ? NodeTypes.Prover
+        : enableProposer
+        ? NodeTypes.Proposer
+        : NodeTypes.Node;
+  }
+
+
 
   // proposers can specify a different L2 wallet to receive fees currently
   if (

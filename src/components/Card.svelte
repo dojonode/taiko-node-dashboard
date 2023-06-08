@@ -76,9 +76,8 @@
           >
             {#if bodyMetricType === MetricTypes.ethereum && subBodyMetricType === MetricTypes.ethereum}
               <img src={taikoIcon} class="w-[15px] ml-[5px]" alt="taiko icon" />
-              <!-- TODO: change to taiko explorer -->
               <a
-                href="https://sepolia.etherscan.io/address/{L2Wallet}"
+                href="https://explorer.test.taiko.xyz/address/{L2Wallet}"
                 target="”_blank”"
               >
                 {subBody}
