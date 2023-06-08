@@ -144,18 +144,20 @@
 
   // set the correct nodeType to what is used within the .env file, if present. Else we keep the default node
   if (
-    import.meta.env.VITE_ENABLE_PROPOSER && import.meta.env.VITE_ENABLE_PROVER) {
-      let enableProver: boolean = JSON.parse(import.meta.env.VITE_ENABLE_PROVER);
-      let enableProposer: boolean = JSON.parse(import.meta.env.VITE_ENABLE_PROPOSER);
+    import.meta.env.VITE_ENABLE_PROPOSER &&
+    import.meta.env.VITE_ENABLE_PROVER
+  ) {
+    let enableProver: boolean = JSON.parse(import.meta.env.VITE_ENABLE_PROVER);
+    let enableProposer: boolean = JSON.parse(
+      import.meta.env.VITE_ENABLE_PROPOSER
+    );
 
-      let nodeType = enableProver
-        ? NodeTypes.Prover
-        : enableProposer
-        ? NodeTypes.Proposer
-        : NodeTypes.Node;
+    let nodeType = enableProver
+      ? NodeTypes.Prover
+      : enableProposer
+      ? NodeTypes.Proposer
+      : NodeTypes.Node;
   }
-
-
 
   // proposers can specify a different L2 wallet to receive fees currently
   if (
@@ -222,6 +224,7 @@
         (syncingStatus.currentBlock / syncingStatus.highestBlock) * 100;
 
       // blockNumber = await taikoL2.eth.getBlockNumber();
+      blockNumber = await myNode.eth.getBlockNumber();
       // console.log(await myNode.eth.getNodeInfo());
       // // returns: Geth/v1.10.26-stable/linux-amd64/go1.18.10
       // // can maybe be used to check for updates?
@@ -263,13 +266,7 @@
   // fetch from the nodejs api that exposes system metrics using the npm package systeminformation
   async function fetchSystemInfo() {
     try {
-      const response = await fetch(CUSTOM_SYSTEMINFO_API_URL, {
-        headers: {
-          "Access-Control-Allow-Origin": "*",
-          "Access-Control-Allow-Headers":
-            "Origin, X-Requested-With, Content-Type, Accept",
-        },
-      });
+      const response = await fetch(CUSTOM_SYSTEMINFO_API_URL);
       systeminfo = await response.json();
 
       const usedMemoryGB =
