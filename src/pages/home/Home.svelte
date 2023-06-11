@@ -363,6 +363,7 @@
     // used for sorting the cards with drag and drop
     const sortable = new Sortable(document.querySelectorAll("#cards"), {
       draggable: ".card",
+      distance: 5,
     });
 
     // Interval to fetch metrics every 5 seconds
