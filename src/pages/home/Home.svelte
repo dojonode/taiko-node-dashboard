@@ -233,25 +233,31 @@
   }
 
   const fetchAddressEvents = async () => {
+    let eventIndexerEventURL: string;
     try {
       if (nodeType === NodeTypes.Node) return;
-
-      const response = await fetch(
-        `https://eventindexer.test.taiko.xyz/eventByAddress?address=${L1Wallet}&event=${
-          nodeType === NodeTypes.Proposer
-            ? "BlockProposed"
-            : nodeType === NodeTypes.Prover
-            ? "BlockProven"
-            : ""
-        }`
-      );
-      let addressEvent = await response.json();
-      if (nodeType === NodeTypes.Proposer)
-        addressBlockProposed = addressEvent.count;
-      else if (nodeType === NodeTypes.Prover)
-        addressBlockProven = addressEvent.count;
+      eventIndexerEventURL = `https://eventindexer.test.taiko.xyz/eventByAddress?address=${L1Wallet}&event=${
+        nodeType === NodeTypes.Proposer
+          ? "BlockProposed"
+          : nodeType === NodeTypes.Prover
+          ? "BlockProven"
+          : ""
+      }`;
+      const response = await fetch(eventIndexerEventURL);
+      if (response.status === 200) {
+        let addressEvent = await response.json();
+        if (nodeType === NodeTypes.Proposer)
+          addressBlockProposed = addressEvent.count;
+        else if (nodeType === NodeTypes.Prover)
+          addressBlockProven = addressEvent.count;
+      } else {
+        throw new Error("couldn't reach the eventindexer url");
+      }
     } catch (error) {
-      console.error(`Error fetching address events for the ${nodeType}`, error);
+      console.error(
+        `Error fetching address events for the ${nodeType} at ${eventIndexerEventURL}`,
+        error
+      );
     }
   };
 
