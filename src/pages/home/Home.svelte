@@ -16,12 +16,9 @@
   import dollsIcon from "../../assets/icons/Dolls.png";
   import checkmarkIcon from "../../assets/icons/Check_Mark.png";
   import fileboxIcon from "../../assets/icons/File_Box.png";
-  import loadingIcon from "../../assets/icons/Loading.png";
-  import medalIcon from "../../assets/icons/Medal.png";
   import chainIcon from "../../assets/icons/Chain.png";
   import taikoLogoIcon from "../../assets/taikoLogoIcon.png";
   import packageIcon from "../../assets/icons/Package.png";
-  import recyclingIcon from "../../assets/icons/Recycling.png";
   import abacusIcon from "../../assets/icons/Abacus.png";
   import gasIcon from "../../assets/icons/Gas.png";
   import timerclockIcon from "../../assets/icons/Timer_Clock.png";
@@ -29,7 +26,7 @@
   import antennaIcon from "../../assets/icons/Antenna.png";
   import Gear from "../../components/icons/Gear.svelte";
   import TaikoLogo from "../../components/icons/TaikoLogo.svelte";
-  import { MetricTypes, NodeTypes, Themes } from "../../domain/enums";
+  import { MetricTypes, NodeTypes } from "../../domain/enums";
   import { Sortable } from "@shopify/draggable";
   import type {
     Systeminfo,
@@ -46,6 +43,7 @@
 
   let myNode;
   let ethRPC;
+  let L2TaikoRPC;
   let fetchMetricsError = false;
   let fetchSystemInfoError = false;
   let fetchPrometheusError = false;
@@ -75,8 +73,7 @@
       // Temporary RPC while waiting for next testnet, using an alchemy rpc
       // ethRPC = new Web3(CUSTOM_ETH_RPC_API_URL);
       // Use the following RPCs by default?
-      // const L2TaikoRPC = new Web3(L1_TAIKO_RPC_API_URL);
-      // const L1TaikoRPC = new Web3(L2_TAIKO_RPC_API_URL);
+      // const L1TaikoRPC = new Web3(L1_TAIKO_RPC_API_URL);
       myNode.eth.net
         .isListening()
         .then((s) => {
@@ -105,6 +102,16 @@
       console.error(error);
       fetchEthRPCError = true;
     }
+    try {
+      L2TaikoRPC = new Web3(L2_TAIKO_RPC_API_URL);
+      // const L1TaikoRPC = new Web3(L1_TAIKO_RPC_API_URL);
+      L2TaikoRPC.eth.net.isListening();
+    } catch (error) {
+      console.error(
+        "Something went wrong when connecting to the L2 Taiko RPC",
+        error
+      );
+    }
   }
   initConnections();
 
@@ -113,6 +120,7 @@
 
   // General metrics
   let blockNumber;
+  let chainHeight;
   let gasPrice;
   let syncingStatus;
   let syncingProgress = 0;
@@ -174,15 +182,13 @@
   // layout variables
   let bigLayout = false;
   let rotationAngle = 0; // used to rotate the taiko logo
-  let themeMode = "light";
   let settingsOpen: boolean = false;
   let connectionsOpen: boolean = false;
   let imageRef: HTMLImageElement;
 
-  // fetch general metrics
+  // fetch general metrics from the node RPCs
   async function fetchMetrics() {
     try {
-      // Fetch metrics from API endpoint
       if (L1Wallet) {
         L1Balance = Number(
           ethRPC?.utils.fromWei(await ethRPC?.eth.getBalance(L1Wallet), "ether")
@@ -201,42 +207,28 @@
       gasPrice = Number(
         ethRPC?.utils.fromWei(await ethRPC?.eth.getGasPrice(), "gwei")
       );
-      // TODO: use the L2TaikoRPC and compare once testnet is live, check for a difference during syncing?
       blockNumber = await myNode.eth.getBlockNumber();
+      chainHeight = await L2TaikoRPC.eth.getBlockNumber();
       syncingStatus = await myNode.eth.isSyncing();
-      syncingProgress =
-        (syncingStatus.currentBlock / syncingStatus.highestBlock) * 100;
 
-      // blockNumber = await taikoL2.eth.getBlockNumber();
-      // console.log(await myNode.eth.getNodeInfo());
-      // // returns: Geth/v1.10.26-stable/linux-amd64/go1.18.10
-      // // can maybe be used to check for updates?
-      // console.log(await taikoL2.eth.getNodeInfo());
+      /*
+        Workaround to fix the initial 5mins where the node displays as synced but it hasn't even started syncing yet
+        check if there is a huge difference between myNode blocknumber and taiko rpc blocknumber while it's showing as not syncing
+      */
+
+      if (
+        chainHeight - blockNumber > 500 &&
+        (await myNode.eth.isSyncing()) === false
+      ) {
+        syncingStatus = undefined;
+      }
+
+      if (syncingStatus !== undefined && syncingStatus !== null)
+        syncingProgress =
+          (syncingStatus.currentBlock / syncingStatus.highestBlock) * 100;
     } catch (error) {
       console.error("Error while fetching RPC metrics", error);
-    }
-
-    try {
-      // TODO: use the L2TaikoRPC and compare once testnet is live, check for a difference during syncing?
-      blockNumber = await myNode.eth.getBlockNumber();
-      syncingStatus = await myNode.eth.isSyncing();
-      syncingProgress =
-        (syncingStatus.currentBlock / syncingStatus.highestBlock) * 100;
-
-      // blockNumber = await taikoL2.eth.getBlockNumber();
-      blockNumber = await myNode.eth.getBlockNumber();
-      // console.log(await myNode.eth.getNodeInfo());
-      // // returns: Geth/v1.10.26-stable/linux-amd64/go1.18.10
-      // // can maybe be used to check for updates?
-      // console.log(await taikoL2.eth.getNodeInfo());
-      fetchMetricsError = false;
-    } catch (error) {
-      if (!fetchMetricsError) {
-        console.error("Error while fetching Node metrics", error);
-        // indicate that the node is not found
-        syncingStatus = null;
-        fetchMetricsError = true;
-      }
+      syncingStatus = null;
     }
   }
 
@@ -417,12 +409,12 @@
   </div>
 
   <!-- Progress Bar -->
-  <!-- 
+  <!--
     the progress can only be displayed if the syncingrequest has been made and the node can be found
     -> first check if the request was made: !== undefined
     -> check if the node is found: !== null
     -> check if the node is syncing: syncingStatus === true
-     
+
     use a -1 value to display the loading or node not found values
    -->
   <div class="my-4">
@@ -437,7 +429,7 @@
       precision={2}
       showPercentage={true}
       finishedMessage={syncingStatus === undefined
-        ? "loading..."
+        ? "preparing to sync..."
         : syncingStatus === null
         ? "node not found"
         : "synced!"}
@@ -519,9 +511,11 @@
         loadingbar={false}
       />
       <Card
-        title="blockheight"
+        title="nodeheight"
         body={`${blockNumber}`}
         bodyMetricType={MetricTypes.blockheight}
+        subBody={`${chainHeight}`}
+        subBodyMetricType={MetricTypes.blockheight}
         icon={chainIcon}
         loadingbar={false}
       />

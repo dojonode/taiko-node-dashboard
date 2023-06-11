@@ -47,7 +47,6 @@
     width: 100%;
     height: 100%;
     background-color: hsl(var(--twc-progressBarBackgroundColor));
-    /* background-color: #e0e0e0; */
     border-radius: 10px;
   }
 
@@ -63,10 +62,8 @@
   }
 
   .progress-bar__text {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
+    position: relative;
+    text-align: center;
     font-size: 12px;
     color: hsl(var(--twc-textColor));
     z-index: 1;

@@ -52,6 +52,9 @@
                 {body}
                 {bodyMetricType}
               </a>
+              <!-- Nodeheight card-->
+            {:else if bodyMetricType && bodyMetricType === MetricTypes.blockheight}
+              {body}
               <!-- Card has only a percentage, so the percentage gets shown on the second row with brackets (cpu)-->
             {:else if bodyMetricType && subBody === null && bodyMetricType === MetricTypes.percentage}
               {body}
@@ -74,6 +77,7 @@
               ? 'justify-between'
               : 'justify-center'}"
           >
+            <!-- wallet card -->
             {#if bodyMetricType === MetricTypes.ethereum && subBodyMetricType === MetricTypes.ethereum}
               <img src={taikoIcon} class="w-[15px] ml-[5px]" alt="taiko icon" />
               <a
@@ -83,6 +87,9 @@
                 {subBody}
                 {subBodyMetricType}
               </a>
+              <!-- nodeheight card -->
+            {:else if bodyMetricType === MetricTypes.blockheight}
+              of {subBody}
             {:else}
               {subBody}
               {subBodyMetricType}
