@@ -119,7 +119,7 @@
   let peers = null;
 
   // General metrics
-  let blockNumber;
+  let nodeHeight;
   let chainHeight;
   let gasPrice;
   let syncingStatus;
@@ -207,7 +207,7 @@
       gasPrice = Number(
         ethRPC?.utils.fromWei(await ethRPC?.eth.getGasPrice(), "gwei")
       );
-      blockNumber = await myNode.eth.getBlockNumber();
+      nodeHeight = await myNode.eth.getBlockNumber();
       chainHeight = await L2TaikoRPC.eth.getBlockNumber();
       syncingStatus = await myNode.eth.isSyncing();
 
@@ -217,7 +217,7 @@
       */
 
       if (
-        chainHeight - blockNumber > 500 &&
+        chainHeight - nodeHeight > 500 &&
         (await myNode.eth.isSyncing()) === false
       ) {
         syncingStatus = undefined;
@@ -519,7 +519,7 @@
       />
       <Card
         title="nodeheight"
-        body={`${blockNumber}`}
+        body={`${nodeHeight}`}
         bodyMetricType={MetricTypes.blockheight}
         subBody={`${chainHeight}`}
         subBodyMetricType={MetricTypes.blockheight}

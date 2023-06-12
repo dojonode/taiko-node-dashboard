@@ -53,7 +53,7 @@
                 {bodyMetricType}
               </a>
               <!-- Nodeheight card-->
-            {:else if bodyMetricType && bodyMetricType === MetricTypes.blockheight}
+            {:else if bodyMetricType && bodyMetricType === MetricTypes.blockheight && subBody !== null && subBody === MetricTypes.blockheight}
               {body}
               <!-- Card has only a percentage, so the percentage gets shown on the second row with brackets (cpu)-->
             {:else if bodyMetricType && subBody === null && bodyMetricType === MetricTypes.percentage}
@@ -88,7 +88,7 @@
                 {subBodyMetricType}
               </a>
               <!-- nodeheight card -->
-            {:else if bodyMetricType === MetricTypes.blockheight}
+            {:else if bodyMetricType === MetricTypes.blockheight && subBodyMetricType === MetricTypes.blockheight}
               of {subBody}
             {:else}
               {subBody}
