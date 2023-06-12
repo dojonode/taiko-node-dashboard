@@ -596,7 +596,14 @@
             disabled
           />
 
-          <div class="mt-1 font-normal">
+          <!-- svelte-ignore a11y-click-events-have-key-events -->
+          <div
+            class="mt-1 font-normal cursor-pointer"
+            on:click={() => {
+              setLocalStorageItem("useCustomAddress", String(useCustomAddress));
+              useCustomAddress = !useCustomAddress;
+            }}
+          >
             <input
               class="accent-[hsl(var(--twc-settingsAccentColor))] cursor-pointer"
               type="checkbox"
