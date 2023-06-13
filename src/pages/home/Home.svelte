@@ -143,12 +143,17 @@
   // reactive declarations of the L1Wallet and L2Wallet that will re-calculate their values each time one of the reactive dependencies (useCustomAddress, customAddressL1, or nodeAddress) changes
   $: L1Wallet = useCustomAddress ? customAddressL1 : nodeAddress;
   $: L2Wallet = useCustomAddress ? customAddressL2 : nodeAddress;
-  // TODO: remove any types
+
+  // TODO: remove 'any' types
   let L1Balance;
   let L2Balance;
   let addressBlockProposed;
   let addressBlockProven;
   let nodeType = NodeTypes.Node;
+
+  if (getLocalStorageItem("nodeType")) {
+    nodeType = getLocalStorageItem("nodeType");
+  }
 
   // set the correct nodeType to what is used within the .env file, if present. Else we keep the default node
   if (
@@ -197,8 +202,12 @@
         L1Balance = null;
       }
       if (L2Wallet) {
+        // Use the taiko RPC to be reliable, node that's not synced will display false numbers
         L2Balance = Number(
-          ethRPC?.utils.fromWei(await ethRPC?.eth.getBalance(L2Wallet), "ether")
+          L2TaikoRPC?.utils.fromWei(
+            await L2TaikoRPC?.eth.getBalance(L2Wallet),
+            "ether"
+          )
         );
       } else {
         L2Balance = null;
@@ -346,20 +355,27 @@
       default:
         break;
     }
+
+    setLocalStorageItem("nodeType", nodeType);
   }
 
   onMount(async () => {
-    // load from localstorage the customAddress, and useCustomAddress but only if the customAddress actually exists
+    // load from localstorage the customAddress, and useCustomAddress but only if the customAddress actually exists,
+    // in case the nodeAddress is not valid, default to
     customAddressL1 = getLocalStorageItem("customAddressL1");
     customAddressL2 = getLocalStorageItem("customAddressL2");
     if (
-      customAddressL1 != null &&
+      customAddressL1 !== null &&
       customAddressL2 &&
       ethRPC.utils.isAddress(customAddressL1)
     ) {
       useCustomAddress = JSON.parse(getLocalStorageItem("useCustomAddress"));
     }
 
+    // if the nodeAddress is not valid, default the useCustomAddress to true, no matter what
+    if (!ethRPC.utils.isAddress(nodeAddress)) {
+      useCustomAddress = true;
+    }
     // used for sorting the cards with drag and drop
     const sortable = new Sortable(document.querySelectorAll("#cards"), {
       draggable: ".card",
@@ -600,8 +616,8 @@
           <div
             class="mt-1 font-normal cursor-pointer"
             on:click={() => {
-              setLocalStorageItem("useCustomAddress", String(useCustomAddress));
               useCustomAddress = !useCustomAddress;
+              setLocalStorageItem("useCustomAddress", String(useCustomAddress));
             }}
           >
             <input
@@ -630,7 +646,7 @@
                 type="text"
                 readonly={!useCustomAddress}
                 bind:value={customAddressL1}
-                on:change={() =>
+                on:keyup={() =>
                   setLocalStorageItem(
                     "customAddressL1",
                     customAddressL1.trim()
@@ -646,7 +662,7 @@
                 type="text"
                 readonly={!useCustomAddress}
                 bind:value={customAddressL2}
-                on:change={() =>
+                on:keyup={() =>
                   setLocalStorageItem(
                     "customAddressL2",
                     customAddressL2.trim()
@@ -663,11 +679,12 @@
                 type="text"
                 readonly={!useCustomAddress}
                 bind:value={customAddressL1}
-                on:change={() => {
+                on:keyup={() => {
                   setLocalStorageItem(
                     "customAddressL1",
                     customAddressL1.trim()
                   );
+                  customAddressL2 = customAddressL1;
                   setLocalStorageItem(
                     "customAddressL2",
                     customAddressL2.trim()

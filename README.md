@@ -13,7 +13,7 @@ To run the dashboard, simply follow these steps:
 5. Make sure docker desktop is running
 6. Start the simple-taiko-node
 7. `docker compose up`
-8. visit localhost:8082
+8. visit localhost:7744
 
 ## Development
 
