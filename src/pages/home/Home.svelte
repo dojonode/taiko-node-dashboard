@@ -218,18 +218,18 @@
       );
       nodeHeight = await myNode.eth.getBlockNumber();
       chainHeight = await L2TaikoRPC.eth.getBlockNumber();
-      syncingStatus = await myNode.eth.isSyncing();
 
       /*
         Workaround to fix the initial 5mins where the node displays as synced but it hasn't even started syncing yet
         check if there is a huge difference between myNode blocknumber and taiko rpc blocknumber while it's showing as not syncing
       */
-
       if (
         chainHeight - nodeHeight > 500 &&
         (await myNode.eth.isSyncing()) === false
       ) {
         syncingStatus = undefined;
+      } else {
+        syncingStatus = await myNode.eth.isSyncing();
       }
 
       if (syncingStatus !== undefined && syncingStatus !== null)
