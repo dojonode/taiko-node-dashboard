@@ -21,13 +21,13 @@ Make sure you have **node** and **npm** installed on your system. You can do it 
 
 ### Installation
 
-To use the [taiko-node-dashboard](https://github.com/wolfderechter/taiko-node-dashboard) you need to install **pnpm**:
-
-`pnpm install`
+To use the [taiko-node-dashboard](https://github.com/wolfderechter/taiko-node-dashboard) you need have installed **pnpm**.
 
 ### Development Usage
 
-You can start the application with the following code:
+You can start the application with the following lines:
+
+`pnpm install`
 
 `pnpm start`
 
