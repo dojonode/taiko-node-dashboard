@@ -1,19 +1,11 @@
-# Taiko Node Status
+# Taiko Node Dashboard
 
 Taiko node status is a dashboard that provides quick and digestible insights into your Taiko node.
+![Cover_Image](https://github.com/wolfderechter/taiko-node-dashboard/assets/60930264/8a18073f-848c-421f-9e81-4aae5482737e)
 
 ## Usage
 
-To run the dashboard, simply follow these steps:
-
-1. `git clone https://github.com/wolfderechter/taiko-node-status.git`
-2. `cd taiko-node-status`
-3. `cp .env.sample .env` or `copy .env.sample .env`
-4. Place the private key used for the proposer/prover in the .env file variable `VITE_PRIVATE_KEY`
-5. Make sure docker desktop is running
-6. Start the simple-taiko-node
-7. `docker compose up`
-8. visit localhost:7744
+To run the dashboard, there are 2 recipes posted in the [taiko-node-dashboard-docker](https://github.com/wolfderechter/taiko-node-dashboard-docker) using docker to either run the dashboard standalone or spin up the dashboard alongside a node.
 
 ## Development
 
@@ -29,7 +21,7 @@ Make sure you have **node** and **npm** installed on your system. You can do it 
 
 ### Installation
 
-To use the [taiko-node-status](https://github.com/wolfderechter/taiko-node-status) you need to install **pnpm**:
+To use the [taiko-node-dashboard](https://github.com/wolfderechter/taiko-node-dashboard) you need to install **pnpm**:
 
 `pnpm install`
 

@@ -403,7 +403,7 @@
   });
 </script>
 
-<div class="flex flex-col items-center pt-4">
+<div class="flex flex-col items-center pt-4 md:pt-10">
   <div class="text-center relative">
     <img
       bind:this={imageRef}

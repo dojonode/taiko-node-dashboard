@@ -1,5 +1,5 @@
 {
-  "name": "@wolfderechter/taiko-node-status",
+  "name": "@wolfderechter/taiko-node-dashboard",
   "version": "1.0.0",
   "private": true,
   "type": "module",
