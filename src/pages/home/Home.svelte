@@ -412,7 +412,9 @@
       alt=""
     />
     <!-- <TaikoLogoIcon class="mx-auto taikoImg rotate-[{rotationAngle}deg]" /> -->
-    <TaikoLogo class="fill-[hsl(var(--twc-textColor))] w-32 mx-auto mt-1" />
+    <TaikoLogo
+      class="fill-[hsl(var(--twc-textColor))] w-32 mx-auto mt-[10px]"
+    />
     <div class="nodeTypes flex justify-evenly mt-4">
       <button
         class:active={nodeType === NodeTypes.Node}
@@ -856,8 +858,8 @@
 
   .taikoImg {
     transition: transform 0.5s ease-in-out;
-    transform-origin: center 94px;
-    width: 170px;
+    transform-origin: center 37px;
+    width: 65px;
   }
 
   .layout {
@@ -931,13 +933,6 @@
     }
     39.0% {
       transform: rotate(0deg);
-    }
-  }
-
-  @media (max-width: 550px) {
-    .taikoImg {
-      width: 130px;
-      transform-origin: center 74px;
     }
   }
 </style>
