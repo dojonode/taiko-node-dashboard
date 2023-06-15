@@ -445,7 +445,7 @@
   <div class="my-4">
     <Progressbar
       progress={syncingStatus === undefined
-        ? -1
+        ? (Number(nodeHeight) / Number(chainHeight)) * 100
         : syncingStatus === null
         ? -1
         : syncingStatus
