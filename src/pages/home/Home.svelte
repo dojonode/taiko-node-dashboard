@@ -224,7 +224,7 @@
         check if there is a huge difference between myNode blocknumber and taiko rpc blocknumber while it's showing as not syncing
       */
       if (
-        chainHeight - nodeHeight > 500 &&
+        chainHeight - nodeHeight > 100 &&
         (await myNode.eth.isSyncing()) === false
       ) {
         syncingStatus = undefined;
@@ -578,7 +578,7 @@
         />
       {/if}
       <Card
-        title="Gas"
+        title="gas"
         body={`${gasPrice?.toFixed(2)}`}
         bodyMetricType={MetricTypes.gas}
         icon={gasIcon}
