@@ -31,4 +31,10 @@ You can start the application with the following lines:
 
 `pnpm start`
 
+You'll probably also want to start the systeminformation application with:
+
+`cd systeminformation`
+
+`node server.js`
+
 </details>
