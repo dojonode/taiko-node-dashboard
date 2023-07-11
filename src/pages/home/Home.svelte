@@ -28,6 +28,7 @@
   import TaikoLogo from "../../components/icons/TaikoLogo.svelte";
   import { MetricTypes, NodeTypes } from "../../domain/enums";
   import { Sortable } from "@shopify/draggable";
+  import * as sd from "simple-duration";
   import type {
     Systeminfo,
     SysteminformationMetricsInterface,
@@ -49,6 +50,13 @@
   let fetchPrometheusError = false;
   let fetchMyNodeError = false;
   let fetchEthRPCError = false;
+
+  // Syncing estimation
+  let startNodeHeight;
+  let startTime = Date.now();
+  let currentNodeheight;
+  let currentTime;
+  let estimatedSyncingTime;
 
   // if custom localstorage API urls exist, use those, else use the default variables from the constants.ts file
   let CUSTOM_ETH_RPC_API_URL =
@@ -82,6 +90,7 @@
         .catch((e) => {
           fetchMyNodeError = true;
         });
+      myNode.eth.getBlockNumber().then((height) => (startNodeHeight = height));
     } catch (error) {
       console.error(error);
       fetchMyNodeError = true;
@@ -119,7 +128,7 @@
   let peers = null;
 
   // General metrics
-  let nodeHeight;
+  let nodeHeight: number;
   let chainHeight;
   let gasPrice;
   let syncingStatus;
@@ -231,10 +240,27 @@
       } else {
         syncingStatus = await myNode.eth.isSyncing();
       }
-
-      if (syncingStatus !== undefined && syncingStatus !== null)
+      if (syncingStatus !== undefined && syncingStatus !== null) {
         syncingProgress =
           (syncingStatus.currentBlock / syncingStatus.highestBlock) * 100;
+      }
+
+      // Estimate how long until node is synced, but only if the nodeheight is more than 100 blocks behind the chainHeight
+      if (chainHeight - nodeHeight > 100) {
+        currentNodeheight = nodeHeight;
+        currentTime = Date.now();
+        const blocksDownloaded = Number(nodeHeight) - Number(startNodeHeight);
+        const blocksRemaining = Number(chainHeight) - Number(startNodeHeight);
+        const downloadProgress = blocksDownloaded / blocksRemaining;
+
+        //only calculate after 15s be more accurate
+        const timeElapsed = currentTime - startTime;
+        if (timeElapsed > 15000) {
+          console.log(timeElapsed);
+          const estimatedTotalTime = timeElapsed / downloadProgress;
+          estimatedSyncingTime = sd.stringify(estimatedTotalTime / 1000, "m");
+        }
+      }
     } catch (error) {
       console.error("Error while fetching RPC metrics", error);
       syncingStatus = null;
@@ -242,6 +268,7 @@
   }
 
   const fetchAddressEvents = async () => {
+    // Fetch Amount Of blocks proposed/proven
     let eventIndexerEventURL: string;
     try {
       if (nodeType === NodeTypes.Node) return;
@@ -442,7 +469,7 @@
 
     use a -1 value to display the loading or node not found values
    -->
-  <div class="my-4">
+  <div class="my-4 text-center">
     <Progressbar
       progress={syncingStatus === undefined
         ? (Number(nodeHeight) / Number(chainHeight)) * 100
@@ -459,6 +486,11 @@
         ? "node not found"
         : "synced!"}
     />
+    {#if estimatedSyncingTime}
+      <span class="text-[12px] text-[hsl(var(--twc-cardSubBodyColor))]"
+        >{estimatedSyncingTime}</span
+      >
+    {/if}
   </div>
 
   <div
@@ -495,9 +527,9 @@
     <div id="cards" class="mt-[1px] flex flex-wrap justify-center">
       <Card
         title="memory"
-        body={`${systeminformationMetrics?.memUsedGB}`}
+        body={systeminformationMetrics?.memUsedGB}
         bodyMetricType={MetricTypes.gigabyte}
-        subBody={`${systeminformationMetrics?.memUsedPerc}`}
+        subBody={systeminformationMetrics?.memUsedPerc}
         subBodyMetricType={MetricTypes.percentage}
         icon={brainIcon}
         loadingbar={true}
@@ -505,7 +537,7 @@
       />
       <Card
         title="cpu"
-        body={`${systeminformationMetrics?.cpuUsedPerc}`}
+        body={systeminformationMetrics?.cpuUsedPerc}
         bodyMetricType={MetricTypes.percentage}
         icon={heartIcon}
         loadingbar={true}
@@ -513,9 +545,9 @@
       />
       <Card
         title="storage"
-        body={`${systeminformationMetrics?.filestorageUsedGB}`}
+        body={systeminformationMetrics?.filestorageUsedGB}
         bodyMetricType={MetricTypes.gigabyte}
-        subBody={`${systeminformationMetrics?.filestorageUsedPerc}`}
+        subBody={systeminformationMetrics?.filestorageUsedPerc}
         subBodyMetricType={MetricTypes.percentage}
         icon={fileboxIcon}
         loadingbar={true}
@@ -523,7 +555,7 @@
       />
       <Card
         title="runtime"
-        body={`${systeminformationMetrics?.runtime}`}
+        body={systeminformationMetrics?.runtime}
         bodyMetricType={systeminformationMetrics?.runtimeMetricType}
         icon={timerclockIcon}
         loadingbar={false}
@@ -537,9 +569,9 @@
       />
       <Card
         title="nodeheight"
-        body={`${nodeHeight}`}
+        body={nodeHeight}
         bodyMetricType={MetricTypes.blockheight}
-        subBody={`${chainHeight}`}
+        subBody={chainHeight}
         subBodyMetricType={MetricTypes.blockheight}
         icon={chainIcon}
         loadingbar={false}
@@ -548,9 +580,9 @@
       {#if nodeType === NodeTypes.Proposer || nodeType === NodeTypes.Prover}
         <Card
           title="wallet"
-          body={L1Balance?.toFixed(3)}
+          body={L1Balance}
           bodyMetricType={MetricTypes.ethereum}
-          subBody={L2Balance?.toFixed(3)}
+          subBody={L2Balance}
           subBodyMetricType={MetricTypes.ethereum}
           icon={purseIcon}
           loadingbar={false}
@@ -562,7 +594,7 @@
       {#if nodeType === NodeTypes.Proposer}
         <Card
           title="proposed"
-          body={`${addressBlockProposed}`}
+          body={addressBlockProposed}
           bodyMetricType={MetricTypes.proposer}
           icon={packageIcon}
           loadingbar={false}
@@ -571,7 +603,7 @@
       {:else if nodeType === NodeTypes.Prover}
         <Card
           title="proven"
-          body={`${addressBlockProven}`}
+          body={addressBlockProven}
           bodyMetricType={MetricTypes.prover}
           icon={abacusIcon}
           loadingbar={false}
@@ -579,7 +611,7 @@
       {/if}
       <Card
         title="gas"
-        body={`${gasPrice?.toFixed(2)}`}
+        body={gasPrice}
         bodyMetricType={MetricTypes.gas}
         icon={gasIcon}
         loadingbar={false}

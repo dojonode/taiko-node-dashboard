@@ -5,9 +5,9 @@
   import taikoIcon from "../assets/TaikoLogo.png";
 
   export let title: string = null;
-  export let body: string = null;
+  export let body: number = null;
   export let bodyMetricType = null;
-  export let subBody: string = null;
+  export let subBody: number = null;
   export let subBodyMetricType = null;
   export let icon: string = null;
   export let loadingbar: boolean = null;
@@ -16,6 +16,11 @@
   // Used only by the wallet card
   export let L1Wallet: string = null;
   export let L2Wallet: string = null;
+
+  $: bodyString = body?.toLocaleString("en", { maximumFractionDigits: 2 });
+  $: subBodyString = subBody?.toLocaleString("en", {
+    maximumFractionDigits: 2,
+  });
 </script>
 
 <div class="card cursor-pointer modal shadow-md">
@@ -30,7 +35,7 @@
 
       <!-- TODO: Try to clean up this mess? -->
       <div class="bodyArea flex flex-col my-auto w-[90%]">
-        {#if body !== "undefined" && body !== undefined && body !== null && body !== "null" && body !== ""}
+        {#if body !== undefined && body !== null}
           <!-- Wallet -->
           <div
             class="flex items-center {bodyMetricType === MetricTypes.ethereum &&
@@ -49,28 +54,28 @@
                 href="https://sepolia.etherscan.io/address/{L1Wallet}"
                 target="”_blank”"
               >
-                {body}
+                {bodyString}
                 {bodyMetricType}
               </a>
               <!-- Nodeheight card-->
-            {:else if bodyMetricType && bodyMetricType === MetricTypes.blockheight && subBody !== null && subBody === MetricTypes.blockheight}
-              {body}
+            {:else if bodyMetricType && bodyMetricType === MetricTypes.blockheight && subBody !== null && subBodyMetricType === MetricTypes.blockheight}
+              {bodyString}
               <!-- Card has only a percentage, so the percentage gets shown on the second row with brackets (cpu)-->
             {:else if bodyMetricType && subBody === null && bodyMetricType === MetricTypes.percentage}
-              {body}
+              {bodyString}
               <span class="modal-sub-body">[ {bodyMetricType} ]</span>
               <!-- Normal cards that require 1 row (proposed/proven and runtime )-->
             {:else if bodyMetricType && subBody === null}
-              {body}
+              {bodyString}
               <span class="modal-sub-body">{bodyMetricType}</span>
               <!-- Normal cards that require 2 rows (memory and storage)-->
             {:else}
-              {body}
+              {bodyString}
               {bodyMetricType}
             {/if}
           </div>
         {/if}
-        {#if subBody !== "undefined" && subBody !== undefined && subBody !== null && subBody !== "null" && subBody !== ""}
+        {#if subBody !== undefined && subBody !== null}
           <div
             class="modal-sub-body flex items-center {bodyMetricType ===
               MetricTypes.ethereum && subBodyMetricType === MetricTypes.ethereum
@@ -84,14 +89,14 @@
                 href="https://explorer.test.taiko.xyz/address/{L2Wallet}"
                 target="”_blank”"
               >
-                {subBody}
+                {subBodyString}
                 {subBodyMetricType}
               </a>
               <!-- nodeheight card -->
             {:else if bodyMetricType === MetricTypes.blockheight && subBodyMetricType === MetricTypes.blockheight}
-              of {subBody}
+              of {subBodyString}
             {:else}
-              {subBody}
+              {subBodyString}
               {subBodyMetricType}
             {/if}
           </div>

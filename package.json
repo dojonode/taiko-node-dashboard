@@ -50,6 +50,7 @@
     "@shopify/draggable": "1.0.0-beta.12",
     "buffer": "^6.0.3",
     "dotenv": "^16.1.4",
+    "simple-duration": "^1.1.0",
     "svelte-spa-router": "^3.3.0",
     "tw-colors": "^1.2.6",
     "web3": "^4.0.1"
