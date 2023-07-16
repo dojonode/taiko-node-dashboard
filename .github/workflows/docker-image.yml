@@ -20,6 +20,8 @@ jobs:
     - name: Build the Docker image
       env:
         DOCKER_IMAGE_NAME: taiko-node-dashboard
+        DOCKER_REPOSITORY_NAME: wolfderechter/taiko-node-dashboard
+
       run: |
         # Extract the tag name from the ref
         export TAG_NAME=$(echo "${{ github.ref }}" | awk -F / '{print $3}')
@@ -28,9 +30,11 @@ jobs:
         docker build -t $DOCKER_IMAGE_NAME .
         
         # Tagging the docker image with latest and the current version tag
+        echo testing
+        echo $DOCKER_REPOSITORY_NAME
         echo wolfderechter/$DOCKER_IMAGE_NAME
-        docker tag $DOCKER_IMAGE_NAME:latest wolfderechter/$DOCKER_IMAGE_NAME:latest
-        docker tag $DOCKER_IMAGE_NAME:latest wolfderechter/$DOCKER_IMAGE_NAME:${{ env.TAG_NAME }}
+        docker tag $DOCKER_IMAGE_NAME:latest $DOCKER_REPOSITORY_NAME:latest
+        docker tag $DOCKER_IMAGE_NAME:latest $DOCKER_REPOSITORY_NAME:${{ env.TAG_NAME }}
         
         # Push the docker image
         # docker push wolfderechter/$DOCKER_IMAGE_NAME:${{ env.TAG_NAME }}
