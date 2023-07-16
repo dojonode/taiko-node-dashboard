@@ -24,11 +24,11 @@ jobs:
 
       run: |
         # Extract the tag name from the ref
-        export TAG_NAME=$(echo "${{ github.ref }}" | awk -F / '{print $3}')
+        export TAG_NAME=$(echo "${{ github.ref }}" | awk -F / '{print $$3}')
+        echo version:
         echo $TAG_NAME
         echo ${{ env.TAG_NAME }}
-        echo env.TAG_NAME
-
+        
         # Build the docker image
         docker build -t $DOCKER_IMAGE_NAME .
         
