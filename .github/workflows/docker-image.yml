@@ -9,11 +9,6 @@ jobs:
   buildx:
     runs-on: ubuntu-latest
     steps:
-      - name: version
-        run: |
-          echo version:
-          echo ${{ github.ref_name }}
-          echo ${{ github.ref }}
       - name: Checkout
         uses: actions/checkout@v3
 
@@ -36,12 +31,7 @@ jobs:
           context: .
           file: ./Dockerfile
           platforms: linux/amd64,linux/arm/v6,linux/arm/v7,linux/arm64
-          push: false
+          push: true
           tags: |
             wolfderechter/taiko-node-dashboard:latest
-            wolfderechter/taiko-node-dashboard:${{ github.ref_name }}
-
-      - name: Create github release
-        uses: ncipollo/release-action@v1
-        with:
-          makeLatest: true
+            wolfderechter/taiko-node-dashboard:${{ github.ref_name#v }}
