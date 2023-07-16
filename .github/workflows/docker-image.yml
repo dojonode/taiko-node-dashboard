@@ -1,0 +1,36 @@
+name: Docker Image CI
+
+on:
+  push:
+    branches: [ "main" ]
+    tags:
+      - 'v[0-9]+.[0-9]+.[0-9]+'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v3
+    - name: Login to Docker Hub
+      uses: docker/login-action@v1
+      with:
+        username: ${{ secrets.DOCKERHUB_USERNAME }}
+        password: ${{ secrets.DOCKERHUB_TOKEN }}    
+    - name: Build the Docker image
+      env:
+        DOCKER_IMAGE_NAME: taiko-node-dashboard
+      run: |
+        # Extract the tag name from the ref
+        export TAG_NAME=$(echo "${{ github.ref }} | awk -F / '{printf $$3}')
+        
+        # Build the docker image
+        docker build -t $DOCKER_IMAGE_NAME .
+        
+        # Tagging the docker image with latest and the current version tag
+        docker tag $DOCKER_IMAGE_NAME:latest wolfderechter/$DOCKER_IMAGE_NAME:latest
+        docker tag $DOCKER_IMAGE_NAME:latest wolfderechter/$DOCKER_IMAGE_NAME:${{ env.TAG_NAME }}
+        
+        # Push the docker image
+        docker push wolfderechter/$DOCKER_IMAGE_NAME:${{ env.TAG_NAME }}
+        docker push wolfderechter/$DOCKER_IMAGE_NAME:latest
