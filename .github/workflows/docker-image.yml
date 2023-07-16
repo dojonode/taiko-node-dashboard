@@ -34,4 +34,4 @@ jobs:
           push: true
           tags: |
             wolfderechter/taiko-node-dashboard:latest
-            wolfderechter/taiko-node-dashboard:${{ github.ref_name#v }}
+            wolfderechter/taiko-node-dashboard:${{ github.ref_name }}
