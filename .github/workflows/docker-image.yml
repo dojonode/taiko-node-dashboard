@@ -35,3 +35,8 @@ jobs:
           tags: |
             wolfderechter/taiko-node-dashboard:latest
             wolfderechter/taiko-node-dashboard:${{ github.ref_name }}
+
+      - name: Create github release
+        uses: ncipollo/release-action@v1
+        with:
+          makeLatest: true
