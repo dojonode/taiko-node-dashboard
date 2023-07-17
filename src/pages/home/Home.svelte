@@ -253,10 +253,9 @@
         const blocksRemaining = Number(chainHeight) - Number(startNodeHeight);
         const downloadProgress = blocksDownloaded / blocksRemaining;
 
-        //only calculate after 15s be more accurate
+        //only calculate after 15s and when the downloadProgress is bigger than 0, to be more accurate
         const timeElapsed = currentTime - startTime;
-        if (timeElapsed > 15000) {
-          console.log(timeElapsed);
+        if (timeElapsed > 15000 && downloadProgress > 0) {
           const estimatedTotalTime = timeElapsed / downloadProgress;
           estimatedSyncingTime = sd.stringify(estimatedTotalTime / 1000, "m");
         }
