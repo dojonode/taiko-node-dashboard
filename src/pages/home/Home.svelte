@@ -40,6 +40,7 @@
     MYNODE_API_URL,
     PROMETHEUS_API_URL,
     SYSTEMINFO_API_URL,
+    EVENT_INDEXER_API_URL,
   } from "../../domain/constants";
 
   let myNode;
@@ -50,6 +51,7 @@
   let fetchPrometheusError = false;
   let fetchMyNodeError = false;
   let fetchEthRPCError = false;
+  let fetchEventIndexerError = false;
 
   // Syncing estimation
   let startNodeHeight;
@@ -71,6 +73,8 @@
     getLocalStorageItem("CUSTOM_PROMETHEUS_API_URL") || PROMETHEUS_API_URL;
   let CUSTOM_SYSTEMINFO_API_URL =
     getLocalStorageItem("CUSTOM_SYSTEMINFO_API_URL") || SYSTEMINFO_API_URL;
+  let CUSTOM_EVENT_INDEXER_API_URL =
+    getLocalStorageItem("CUSTOM_EVENT_INDEXER_API_URL") || EVENT_INDEXER_API_URL;
 
   // Initialize the web3 RPC connections with error handling to see if we have provided a valid RPC provider
   function initConnections() {
@@ -266,18 +270,20 @@
     }
   }
 
+
   const fetchAddressEvents = async () => {
     // Fetch Amount Of blocks proposed/proven
-    let eventIndexerEventURL: string;
+    let eventIndexerEventURL = CUSTOM_EVENT_INDEXER_API_URL;
     try {
-      if (nodeType === NodeTypes.Node) return;
-      eventIndexerEventURL = `https://eventindexer.test.taiko.xyz/eventByAddress?address=${L1Wallet}&event=${
-        nodeType === NodeTypes.Proposer
+    if(nodeType === NodeTypes.Node) return;
+      eventIndexerEventURL = eventIndexerEventURL + `/eventByAddress?address=${L1Wallet}&event=${
+          nodeType === NodeTypes.Proposer
           ? "BlockProposed"
           : nodeType === NodeTypes.Prover
           ? "BlockProven"
           : ""
       }`;
+
       const response = await fetch(eventIndexerEventURL);
       if (response.status === 200) {
         let addressEvent = await response.json();
@@ -285,11 +291,14 @@
           addressBlockProposed = addressEvent.count;
         else if (nodeType === NodeTypes.Prover)
           addressBlockProven = addressEvent.count;
+      fetchEventIndexerError = false;
       } else {
-        throw new Error("couldn't reach the eventindexer url");
+          fetchEventIndexerError = true;
+          throw new Error("couldn't reach the eventindexer url");
       }
     } catch (error) {
-      console.error(
+        fetchEventIndexerError = true;
+        console.error(
         `Error fetching address events for the ${nodeType} at ${eventIndexerEventURL}`,
         error
       );
@@ -508,7 +517,8 @@
         fetchSystemInfoError ||
         fetchPrometheusError ||
         fetchMyNodeError ||
-        fetchEthRPCError
+        fetchEthRPCError ||
+	fetchEventIndexerError
           ? "animateConnections"
           : ""}
         alt="antenna icon"
@@ -860,6 +870,33 @@
           />
         </div>
       </div>
+
+      <div
+        class="flex sm:flex-row flex-col justify-between items-center font-bold"
+      >
+        Event Indexer:
+        <div class="ml-2 w-72 flex items-center">
+          <input
+            class="shadow appearance-none rounded w-full py-2 px-3 leading-tight focus:outline-none focus:shadow-outline mb-1"
+            type="text"
+            bind:value={CUSTOM_EVENT_INDEXER_API_URL}
+	    placeholder={EVENT_INDEXER_API_URL}
+	    on:change={() => {
+	      setLocalStorageItem(
+	        "CUSTOM_EVENT_INDEXER_API_URL",
+		CUSTOM_EVENT_INDEXER_API_URL
+	      );
+	      initConnections();
+	    }}
+	    />
+	    <img
+	      src={fetchEventIndexerError ? warningIcon : checkmarkIcon}
+	      alt="icon"
+	      class="w-[30px] ml-2"
+/>
+	</div>
+</div>
+
     </div>
   </DetailsModal>
 {/if}
