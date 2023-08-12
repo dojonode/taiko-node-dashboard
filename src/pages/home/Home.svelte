@@ -1,12 +1,4 @@
 <script lang="ts">
-
-/*
-<!--
-
--->
-*/
-
-
   import { onDestroy, onMount } from "svelte";
   import { queryPrometheus } from "../../utils/prometheus";
   import {
@@ -280,18 +272,7 @@
 
 
   const fetchAddressEvents = async () => {
-/*    // Fetch Amount Of blocks proposed/proven
-    let eventIndexerEventURL: string;
-    try {
-      if (nodeType === NodeTypes.Node) return;
-      eventIndexerEventURL = `https://eventindexer.test.taiko.xyz/eventByAddress?address=${L1Wallet}&event=${
-        nodeType === NodeTypes.Proposer
-          ? "BlockProposed"
-          : nodeType === NodeTypes.Prover
-          ? "BlockProven"
-          : ""
-      }`;
-*/
+    // Fetch Amount Of blocks proposed/proven
     let eventIndexerEventURL = CUSTOM_EVENT_INDEXER_API_URL;
     try {
     if(nodeType === NodeTypes.Node) return;
@@ -303,7 +284,6 @@
           : ""
       }`;
 
-
       const response = await fetch(eventIndexerEventURL);
       if (response.status === 200) {
         let addressEvent = await response.json();
@@ -311,11 +291,14 @@
           addressBlockProposed = addressEvent.count;
         else if (nodeType === NodeTypes.Prover)
           addressBlockProven = addressEvent.count;
+      fetchEventIndexerError = false;
       } else {
-        throw new Error("couldn't reach the eventindexer url");
+          fetchEventIndexerError = true;
+          throw new Error("couldn't reach the eventindexer url");
       }
     } catch (error) {
-      console.error(
+        fetchEventIndexerError = true;
+        console.error(
         `Error fetching address events for the ${nodeType} at ${eventIndexerEventURL}`,
         error
       );
@@ -907,7 +890,7 @@
 	    }}
 	    />
 	    <img
-	      src={fetchEthRPCError ? warningIcon : checkmarkIcon}
+	      src={fetchEventIndexerError ? warningIcon : checkmarkIcon}
 	      alt="icon"
 	      class="w-[30px] ml-2"
 />
