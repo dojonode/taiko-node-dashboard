@@ -18,10 +18,7 @@ Make sure you have **node** and **npm** installed on your system. You can do it 
 
 `brew install node`
 `brew install npm`
-
-### Installation
-
-To use the [taiko-node-dashboard](https://github.com/wolfderechter/taiko-node-dashboard) you need have installed **pnpm**.
+`npm install -g pnpm`
 
 ### Development Usage
 
@@ -31,9 +28,11 @@ You can start the application with the following lines:
 
 `pnpm start`
 
-You'll probably also want to start the systeminformation application with:
+You'll probably also want to start the [systeminformation](https://github.com/wolfderechter/dojonode-systeminformation) application with:
 
-`cd systeminformation`
+`git clone https://github.com/wolfderechter/dojonode-systeminformation`
+
+`cd dojonode-systeminformation`
 
 `node server.js`
 
