@@ -1,4 +1,5 @@
 # Taiko Node Dashboard
+![Docker Pulls](https://img.shields.io/docker/pulls/wolfderechter/taiko-node-dashboard)
 
 Taiko node dashboard is aimed to provide quick and digestible insights into your Taiko node.
 ![Cover_Image](https://github.com/wolfderechter/taiko-node-dashboard/assets/60930264/8a18073f-848c-421f-9e81-4aae5482737e)
