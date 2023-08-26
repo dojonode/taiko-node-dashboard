@@ -2,7 +2,7 @@
   import Progressbar from "./Progressbar.svelte";
   import { MetricTypes } from "../domain/enums";
   import ethIcon from "../assets/icons/Ethereum.png";
-  import taikoIcon from "../assets/TaikoLogo.png";
+  import taikoIcon from "../assets/taikoLogoIcon.png";
 
   export let title: string = null;
   export let body: number = null;
