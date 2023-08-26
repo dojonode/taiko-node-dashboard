@@ -6,6 +6,7 @@
   // TODO: double check these colors
   "background_color": "#FFF9EB",
   "theme_color": "#e81899",
+  // TODO: Add square icons
   "icons": [
     {
       "src": "dojonodelogo.png",
