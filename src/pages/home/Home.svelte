@@ -27,7 +27,6 @@
   import Gear from "../../components/icons/Gear.svelte";
   import TaikoLogo from "../../components/icons/TaikoLogo.svelte";
   import { MetricTypes, NodeTypes } from "../../domain/enums";
-  import { Sortable } from "@shopify/draggable";
   import * as sd from "simple-duration";
   import type {
     Systeminfo,
@@ -35,7 +34,6 @@
   } from "../../domain/types";
   import {
     ETH_RPC_API_URL,
-    L1_TAIKO_RPC_API_URL,
     L2_TAIKO_RPC_API_URL,
     MYNODE_API_URL,
     PROMETHEUS_API_URL,
@@ -63,8 +61,6 @@
   // if custom localstorage API urls exist, use those, else use the default variables from the constants.ts file
   let CUSTOM_ETH_RPC_API_URL =
     getLocalStorageItem("CUSTOM_ETH_RPC_API_URL") || ETH_RPC_API_URL;
-  let CUSTOM_L1_TAIKO_RPC_API_URL =
-    getLocalStorageItem("CUSTOM_L1_TAIKO_RPC_API_URL") || L1_TAIKO_RPC_API_URL;
   let CUSTOM_L2_TAIKO_RPC_API_URL =
     getLocalStorageItem("CUSTOM_L2_TAIKO_RPC_API_URL") || L2_TAIKO_RPC_API_URL;
   let CUSTOM_MYNODE_API_URL =
@@ -74,7 +70,8 @@
   let CUSTOM_SYSTEMINFO_API_URL =
     getLocalStorageItem("CUSTOM_SYSTEMINFO_API_URL") || SYSTEMINFO_API_URL;
   let CUSTOM_EVENT_INDEXER_API_URL =
-    getLocalStorageItem("CUSTOM_EVENT_INDEXER_API_URL") || EVENT_INDEXER_API_URL;
+    getLocalStorageItem("CUSTOM_EVENT_INDEXER_API_URL") ||
+    EVENT_INDEXER_API_URL;
 
   // Initialize the web3 RPC connections with error handling to see if we have provided a valid RPC provider
   function initConnections() {
@@ -139,15 +136,8 @@
   let syncingProgress = 0;
   let nodeAddress; // the wallet address used by the node/proposer/prover
 
-  // If we find a private key variable in the .env we use this for the nodeAddress
-  if (import.meta.env.VITE_L1_PRIVATE_KEY) {
-    nodeAddress = ethRPC?.eth.accounts.privateKeyToAccount(
-      import.meta.env.VITE_L1_PRIVATE_KEY
-    ).address;
-  } else {
-    // no private key found, so no default wallet
-    nodeAddress = null;
-  }
+  // no private key found, so no default wallet
+  nodeAddress = null;
 
   // overriding the nodeAddress with a custom address, to check on other addresses or if the default address was not found
   let useCustomAddress = false;
@@ -270,19 +260,20 @@
     }
   }
 
-
   const fetchAddressEvents = async () => {
     // Fetch Amount Of blocks proposed/proven
     let eventIndexerEventURL = CUSTOM_EVENT_INDEXER_API_URL;
     try {
-    if(nodeType === NodeTypes.Node) return;
-      eventIndexerEventURL = eventIndexerEventURL + `/eventByAddress?address=${L1Wallet}&event=${
+      if (nodeType === NodeTypes.Node) return;
+      eventIndexerEventURL =
+        eventIndexerEventURL +
+        `/eventByAddress?address=${L1Wallet}&event=${
           nodeType === NodeTypes.Proposer
-          ? "BlockProposed"
-          : nodeType === NodeTypes.Prover
-          ? "BlockProven"
-          : ""
-      }`;
+            ? "BlockProposed"
+            : nodeType === NodeTypes.Prover
+            ? "BlockProven"
+            : ""
+        }`;
 
       const response = await fetch(eventIndexerEventURL);
       if (response.status === 200) {
@@ -291,14 +282,14 @@
           addressBlockProposed = addressEvent.count;
         else if (nodeType === NodeTypes.Prover)
           addressBlockProven = addressEvent.count;
-      fetchEventIndexerError = false;
+        fetchEventIndexerError = false;
       } else {
-          fetchEventIndexerError = true;
-          throw new Error("couldn't reach the eventindexer url");
+        fetchEventIndexerError = true;
+        throw new Error("couldn't reach the eventindexer url");
       }
     } catch (error) {
-        fetchEventIndexerError = true;
-        console.error(
+      fetchEventIndexerError = true;
+      console.error(
         `Error fetching address events for the ${nodeType} at ${eventIndexerEventURL}`,
         error
       );
@@ -411,11 +402,6 @@
     if (!ethRPC.utils.isAddress(nodeAddress)) {
       useCustomAddress = true;
     }
-    // used for sorting the cards with drag and drop
-    const sortable = new Sortable(document.querySelectorAll("#cards"), {
-      draggable: ".card",
-      distance: 5,
-    });
 
     // Interval to fetch metrics every 5 seconds
     interval = setInterval(async () => {
@@ -518,7 +504,7 @@
         fetchPrometheusError ||
         fetchMyNodeError ||
         fetchEthRPCError ||
-	fetchEventIndexerError
+        fetchEventIndexerError
           ? "animateConnections"
           : ""}
         alt="antenna icon"
@@ -871,8 +857,9 @@
         </div>
       </div>
 
+      <!-- TODO: show only in developer/expert mode -->
       <div
-        class="flex sm:flex-row flex-col justify-between items-center font-bold"
+        class="flex sm:flex-row flex-col justify-between items-center font-bold hidden"
       >
         Event Indexer:
         <div class="ml-2 w-72 flex items-center">
@@ -880,23 +867,22 @@
             class="shadow appearance-none rounded w-full py-2 px-3 leading-tight focus:outline-none focus:shadow-outline mb-1"
             type="text"
             bind:value={CUSTOM_EVENT_INDEXER_API_URL}
-	    placeholder={EVENT_INDEXER_API_URL}
-	    on:change={() => {
-	      setLocalStorageItem(
-	        "CUSTOM_EVENT_INDEXER_API_URL",
-		CUSTOM_EVENT_INDEXER_API_URL
-	      );
-	      initConnections();
-	    }}
-	    />
-	    <img
-	      src={fetchEventIndexerError ? warningIcon : checkmarkIcon}
-	      alt="icon"
-	      class="w-[30px] ml-2"
-/>
-	</div>
-</div>
-
+            placeholder={EVENT_INDEXER_API_URL}
+            on:change={() => {
+              setLocalStorageItem(
+                "CUSTOM_EVENT_INDEXER_API_URL",
+                CUSTOM_EVENT_INDEXER_API_URL
+              );
+              initConnections();
+            }}
+          />
+          <img
+            src={fetchEventIndexerError ? warningIcon : checkmarkIcon}
+            alt="icon"
+            class="w-[30px] ml-2"
+          />
+        </div>
+      </div>
     </div>
   </DetailsModal>
 {/if}
