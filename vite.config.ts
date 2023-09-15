@@ -15,4 +15,5 @@ export default defineConfig({
     port: 5173,
   },
   plugins: [svelte()],
+  base: "/taiko-node-dashboard",
 });
