@@ -1,15 +1,24 @@
 <script lang="ts">
   import { wrap } from "svelte-spa-router/wrap";
   import Router from "svelte-spa-router";
-  import Home from "./pages/home/Home.svelte";
+  import Dashboard from "./routes/dashboard/Dashboard.svelte";
+  import Home from "./routes/Home.svelte";
   import { currentTheme } from "./components/ThemeSwitcher.svelte";
 
   const routes = {
-    "/": wrap({
-      component: Home,
-      userData: {},
-    }),
+    "/": Home,
+    "/dashboard": Dashboard,
   };
+  // const routes = {
+  //   "/": wrap({
+  //     component: Home,
+  //     userData: {},
+  //   }),
+  //   "/dashboard": wrap({
+  //     component: Dashboard,
+  //     userData: {},
+  //   }),
+  // };
 
   // Change the document body data-theme value on theme changes
   const body = document.body;
