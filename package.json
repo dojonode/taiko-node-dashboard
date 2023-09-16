@@ -3,7 +3,7 @@
   "version": "1.0.2",
   "private": true,
   "type": "module",
-  "homepage": "https://suncatcher.app",
+  "homepage": "https://dojonode.xyz",
   "scripts": {
     "start": "pnpm run dev",
     "dev": "vite",
