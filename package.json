@@ -3,6 +3,7 @@
   "version": "1.0.2",
   "private": true,
   "type": "module",
+  "homepage": "https://suncatcher.app",
   "scripts": {
     "start": "pnpm run dev",
     "dev": "vite",
@@ -15,7 +16,9 @@
     "prettier:check": "pnpm run prettier -- --check",
     "svelte:check": "npx svelte-check --ignore test-app",
     "lint": "pnpm exec eslint './**/*.{ts,svelte}' --ignore-path .eslintignore",
-    "lint:fix": "pnpm exec eslint --fix './**/*.{ts,svelte}' --ignore-path .eslintignore"
+    "lint:fix": "pnpm exec eslint --fix './**/*.{ts,svelte}' --ignore-path .eslintignore",
+    "predeploy": "pnpm run build",
+    "deploy": "gh-pages -d dist"
   },
   "devDependencies": {
     "@babel/preset-env": "^7.22.15",
@@ -29,6 +32,7 @@
     "@typescript-eslint/parser": "^6.7.0",
     "autoprefixer": "^10.4.15",
     "babel-plugin-transform-es2015-modules-commonjs": "^6.26.2",
+    "gh-pages": "^6.0.0",
     "postcss": "^8.4.29",
     "postcss-cli": "^10.1.0",
     "postcss-loader": "^7.3.3",
