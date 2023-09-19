@@ -480,7 +480,7 @@
         ? "node not found"
         : "synced!"}
     />
-    {#if estimatedSyncingTime}
+    {#if estimatedSyncingTime && syncingStatus}
       <span class="text-[12px] text-[hsl(var(--twc-cardSubBodyColor))]"
         >{estimatedSyncingTime}</span
       >
