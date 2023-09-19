@@ -3,6 +3,7 @@
   "compilerOptions": {
     "target": "es2022",
     "useDefineForClassFields": true,
+    "strict": false,
     "module": "es2022",
     "resolveJsonModule": true,
     "baseUrl": ".",
