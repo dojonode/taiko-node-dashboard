@@ -86,7 +86,7 @@
             {#if bodyMetricType === MetricTypes.ethereum && subBodyMetricType === MetricTypes.ethereum}
               <img src={taikoIcon} class="w-[15px] ml-[5px]" alt="taiko icon" />
               <a
-                href="https://explorer.test.taiko.xyz/address/{L2Wallet}"
+                href="https://explorer.jolnir.taiko.xyz/address/{L2Wallet}"
                 target="”_blank”"
               >
                 {subBodyString}
