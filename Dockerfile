@@ -1,5 +1,5 @@
 # Use the official Node.js image as the base image
-FROM node:20-alpine3.17 AS Build
+FROM node:20.7.0 AS Build
 
 # Install pnpm
 RUN npm install -g pnpm
