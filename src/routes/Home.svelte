@@ -1,53 +1,60 @@
 <script lang="ts">
   import { link } from "svelte-spa-router";
-  import dojonodeHeader from "../assets/dojonode-header.png";
-  import TaikoLogoHeart from "../assets/taikoLogoIcon.png";
+  import GlyphBlank from "../assets/GlyphBlank.png";
+  import TaikoHeart from "../assets/TaikoHeart.png";
+  import MilestonesAsset from "../assets/Milestones.png";
 </script>
 
 <a
   href="/dashboard"
   use:link
-  class="flex flex-col relative items-center pt-4 md:pt-10"
+  class="flex flex-col relative items-center pt-4 md:pt-4"
 >
   <div class="text-center relative">
-    <img src={dojonodeHeader} class="taikoImg mx-auto h-64" alt="" />
+    <img src={GlyphBlank} class="taikoImg mx-auto h-64" alt="" />
   </div>
   <h1 class="font-bold text-3xl text-[#ffad12]">dojo node</h1>
   <div
     class="absolute text-sm font-semibold bottom-8 opacity-80 text-[#ffad12]"
   >
-    click to enter the
+    click to enter
   </div>
 </a>
 
+<img src={MilestonesAsset} class="mt-8 hidden md:block" alt="" />
 <div
-  class="flex flex-col items-baseline space-y-8 md:space-y-0 md:flex-row md:justify-center md:space-x-16 mt-8 md:mt-20 w-[90%] m-auto text-[#a52519] font-medium"
+  class="flex flex-col items-baseline space-y-8 md:space-y-0 md:flex-row md:justify-center md:space-x-16 mt-8 md:mt-0 w-[90%] m-auto text-[#a52519] font-medium"
 >
   <div class="w-full md:w-1/3 p-4">
-    <h2 class="text-lg font-normal mb-10 text-center text-[#1c7f3f]">
+    <h2 class="md:hidden text-lg font-normal mb-10 text-center text-[#1c7f3f]">
       milestone <span class="block md:block font-bold">01</span>
     </h2>
     <ul>
-      <li class="mb-5">
+      <li class="mb-5 milestone done">
         <span class="mr-2">🥋</span>
-        Continue development to support layer 3 nodes
+        Support testnet alpha-5
       </li>
-      <li class="mb-5">
+      <li class="mb-5 milestone">
+        <span class="mr-2">🥋</span>
+        Look into development to support and switch between different nodes on different
+        layers easily (L1/L2/L3)
+      </li>
+      <li class="mb-5 milestone">
         <span class="mr-2">🥋</span>
 
         Draft overview for Proposer/Prover rewards visually and functionally
         (charts/metrics)
       </li>
-      <li class="mb-5">
+      <li class="mb-5 milestone">
         <span class="mr-2">🥋</span>
         Build online presence and branding.
       </li>
-      <li class="mb-5">
+      <li class="mb-5 milestone">
         <span class="mr-2">🥋</span>
 
         Bug fixes for minor issues, fine tuning existing dashboard
       </li>
-      <li class="mb-5">
+      <li class="mb-5 milestone">
         <span class="mr-2">🥋</span>
 
         Increase documentation. Providing useful information for operators
@@ -57,41 +64,35 @@
   </div>
 
   <div class="w-full md:w-1/3 p-4">
-    <h2 class="text-lg font-normal mb-10 text-center text-[#1c7f3f]">
+    <h2 class="md:hidden text-lg font-normal mb-10 text-center text-[#1c7f3f]">
       milestone <span class="block md:block font-bold">02</span>
     </h2>
     <ul>
-      <li class="mb-5">
+      <li class="mb-5 milestone">
         <span class="mr-2">🥋</span>
 
         Build a dedicated desktop app (for the dashboard only) and/or integrate
         into taiko’s GUI app
       </li>
-      <li class="mb-5">
-        <span class="mr-2">🥋</span>
-
-        Build a dedicated desktop app (for the dashboard only) and/or integrate
-        into taiko’s GUI app
-      </li>
-      <li class="mb-5">
+      <li class="mb-5 milestone">
         <span class="mr-2">🥋</span>
 
         Implement overview of Proposer/Prover rewards (charts/metrics)
       </li>
-      <li class="mb-5">
+      <li class="mb-5 milestone">
         <span class="mr-2">🥋</span>
 
         Deploy custom website with installation guides and visual
         instructions/tutorials.
       </li>
-      <li class="mb-5">
+      <li class="mb-5 milestone done">
         <span class="mr-2">🥋</span>
 
         Implement and host a ‘preview’ of the dashboard where any taiko node
         runner can enter their IP address and see basic node stats such as
         syncing progress
       </li>
-      <li class="mb-5">
+      <li class="mb-5 milestone">
         <span class="mr-2">🥋</span>
 
         Focus on research for new features to integrate based on latest taiko
@@ -101,27 +102,27 @@
   </div>
 
   <div class="w-full md:w-1/3 p-4">
-    <h2 class="text-lg font-normal mb-10 text-center text-[#1c7f3f]">
+    <h2 class="md:hidden text-lg font-normal mb-10 text-center text-[#1c7f3f]">
       milestone <span class="block md:block font-bold">03</span>
     </h2>
     <ul>
-      <li class="mb-5">
+      <li class="mb-5 milestone">
         <span class="mr-2">🥋</span>
 
         Build Discord (or operate one inside Taiko) for community support
         (node/dashboard runners), updates, bug fixes
       </li>
-      <li class="mb-5">
+      <li class="mb-5 milestone">
         <span class="mr-2">🥋</span>
 
         Take on feature requests from the community and implement into latest
         version
       </li>
-      <li class="mb-5">
+      <li class="mb-5 milestone">
         <span class="mr-2">🥋</span>
         Develop and implement alternative design formats
       </li>
-      <li class="mb-5">
+      <li class="mb-5 milestone">
         <span class="mr-2">🥋</span>
 
         Create and distribute digital content around what nodes are, their
@@ -136,7 +137,7 @@
   <p>
     made with <img
       class="w-3 inline align-baseline"
-      src={TaikoLogoHeart}
+      src={TaikoHeart}
       alt="Taiko heart icon"
     /> by
   </p>
@@ -167,5 +168,18 @@
     color: #333; /* Dark text color for light mode */
     text-align: center;
     padding: 20px;
+  }
+
+  @font-face {
+    font-family: "Menlo";
+    src: url("../assets/Menlo-Regular.ttf") format("truetype");
+  }
+
+  .milestone {
+    font-family: "Menlo", sans-serif;
+  }
+
+  .milestone.done {
+    text-decoration: line-through;
   }
 </style>

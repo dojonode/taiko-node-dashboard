@@ -641,25 +641,32 @@
             disabled
           />
 
-          <!-- svelte-ignore a11y-click-events-have-key-events -->
           <div
             class="mt-1 font-normal cursor-pointer"
             on:click={() => {
               useCustomAddress = !useCustomAddress;
               setLocalStorageItem("useCustomAddress", String(useCustomAddress));
             }}
+            tabindex="0"
+            role="checkbox"
+            aria-checked={useCustomAddress}
+            on:keydown={(event) => {
+              if (event.key === "Enter" || event.key === " ") {
+                useCustomAddress = !useCustomAddress;
+                setLocalStorageItem(
+                  "useCustomAddress",
+                  String(useCustomAddress)
+                );
+                event.preventDefault();
+              }
+            }}
           >
             <input
               class="accent-[hsl(var(--twc-settingsAccentColor))] cursor-pointer"
               type="checkbox"
               bind:checked={useCustomAddress}
-              on:change={() =>
-                setLocalStorageItem(
-                  "useCustomAddress",
-                  String(useCustomAddress)
-                )}
             />
-            use custom address
+            <span tabindex="-1">use custom address</span>
           </div>
         </div>
       </div>
