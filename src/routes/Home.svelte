@@ -164,8 +164,7 @@
 
 <style>
   .footer {
-    background-color: #fff9eb; /* Light background color */
-    color: #333; /* Dark text color for light mode */
+    color: hsl(var(--twc-textColor));
     text-align: center;
     padding: 20px;
   }
