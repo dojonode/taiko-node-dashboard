@@ -1,9 +1,10 @@
 <script lang="ts">
   import { wrap } from "svelte-spa-router/wrap";
   import Router from "svelte-spa-router";
-  import Dashboard from "./routes/dashboard/Dashboard.svelte";
+  import Dashboard from "./routes/Dashboard.svelte";
   import Home from "./routes/Home.svelte";
   import { currentTheme } from "./components/ThemeSwitcher.svelte";
+  import ProverMarket from './routes/ProverMarket.svelte';
 
   const routes = {
     "/": Home,

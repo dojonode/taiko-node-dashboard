@@ -1,37 +1,37 @@
 <script lang="ts">
   import { onDestroy, onMount } from "svelte";
-  import { queryPrometheus } from "../../utils/prometheus";
+  import { queryPrometheus } from "../utils/prometheus";
   import {
     setLocalStorageItem,
     getLocalStorageItem,
-  } from "../../utils/localstorage";
-  import DetailsModal from "../../components/DetailsModal.svelte";
+  } from "../utils/localstorage";
+  import DetailsModal from "../components/DetailsModal.svelte";
   import Web3 from "web3";
-  import Card from "../../components/Card.svelte";
-  import ThemeSwitcher from "../../components/ThemeSwitcher.svelte";
-  import Progressbar from "../../components/Progressbar.svelte";
-  import purseIcon from "../../assets/icons/Purse.png";
-  import heartIcon from "../../assets/icons/Heart.png";
-  import brainIcon from "../../assets/icons/Brain.png";
-  import dollsIcon from "../../assets/icons/Dolls.png";
-  import checkmarkIcon from "../../assets/icons/Check_Mark.png";
-  import fileboxIcon from "../../assets/icons/File_Box.png";
-  import chainIcon from "../../assets/icons/Chain.png";
-  import taikoLogoIcon from "../../assets/taikoLogoIcon.png";
-  import packageIcon from "../../assets/icons/Package.png";
-  import abacusIcon from "../../assets/icons/Abacus.png";
-  import gasIcon from "../../assets/icons/Gas.png";
-  import timerclockIcon from "../../assets/icons/Timer_Clock.png";
-  import warningIcon from "../../assets/icons/Warning.png";
-  import antennaIcon from "../../assets/icons/Antenna.png";
-  import Gear from "../../components/icons/Gear.svelte";
-  import TaikoLogo from "../../components/icons/TaikoLogo.svelte";
-  import { MetricTypes, NodeTypes } from "../../domain/enums";
+  import Card from "../components/Card.svelte";
+  import ThemeSwitcher from "../components/ThemeSwitcher.svelte";
+  import Progressbar from "../components/Progressbar.svelte";
+  import purseIcon from "../assets/icons/Purse.png";
+  import heartIcon from "../assets/icons/Heart.png";
+  import brainIcon from "../assets/icons/Brain.png";
+  import dollsIcon from "../assets/icons/Dolls.png";
+  import checkmarkIcon from "../assets/icons/Check_Mark.png";
+  import fileboxIcon from "../assets/icons/File_Box.png";
+  import chainIcon from "../assets/icons/Chain.png";
+  import taikoLogoIcon from "../assets/taikoLogoIcon.png";
+  import packageIcon from "../assets/icons/Package.png";
+  import abacusIcon from "../assets/icons/Abacus.png";
+  import gasIcon from "../assets/icons/Gas.png";
+  import timerclockIcon from "../assets/icons/Timer_Clock.png";
+  import warningIcon from "../assets/icons/Warning.png";
+  import antennaIcon from "../assets/icons/Antenna.png";
+  import Gear from "../components/icons/Gear.svelte";
+  import TaikoLogo from "../components/icons/TaikoLogo.svelte";
+  import { MetricTypes, NodeTypes } from "../domain/enums";
   import * as sd from "simple-duration";
   import type {
     Systeminfo,
     SysteminformationMetricsInterface,
-  } from "../../domain/types";
+  } from "../domain/types";
   import {
     ETH_RPC_API_URL,
     L2_TAIKO_RPC_API_URL,
@@ -39,7 +39,7 @@
     PROMETHEUS_API_URL,
     SYSTEMINFO_API_URL,
     EVENT_INDEXER_API_URL,
-  } from "../../domain/constants";
+  } from "../domain/constants";
 
   let myNode;
   let ethRPC;
