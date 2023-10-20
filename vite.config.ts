@@ -1,6 +1,5 @@
 import { defineConfig } from "vite";
 import { svelte } from "@sveltejs/vite-plugin-svelte";
-import polyfillNode from "rollup-plugin-polyfill-node";
 import { VitePWA } from "vite-plugin-pwa";
 
 // https://vitejs.dev/config/
