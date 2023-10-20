@@ -1,12 +1,10 @@
 <script lang="ts">
   import Router from "svelte-spa-router";
   import Dashboard from "./routes/Dashboard.svelte";
-  import Home from "./routes/Home.svelte";
   import { currentTheme } from "./components/ThemeSwitcher.svelte";
 
   const routes = {
-    "/": Home,
-    "/dashboard": Dashboard,
+    "/": Dashboard,
   };
 
   // Change the document body data-theme value on theme changes
