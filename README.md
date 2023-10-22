@@ -13,10 +13,6 @@ To run the dashboard, there are 2 recipes posted in the [taiko-node-dashboard-do
 <details>
 <summary>Development steps</summary>
 
-## Deployment
-
-To deploy to the website run: `pnpm run predeploy` and `pnpm run deploy`. This will build the website and push to the `gh-pages` branch.
-
 ### Pre-installation
 
 Make sure you have **node** and **npm** installed on your system. You can do it by:
