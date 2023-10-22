@@ -6,7 +6,28 @@ Taiko node dashboard is aimed to provide quick and digestible insights into your
 
 ## Usage
 
-To run the dashboard, there are 2 recipes posted in the [taiko-node-dashboard-docker](https://github.com/wolfderechter/taiko-node-dashboard-docker) using docker to either run the dashboard standalone or spin up the dashboard alongside a node.
+To run the dashboard simply append the following two services to the `docker-compose.yml` of the taiko node.
+
+```docker-compose
+  taiko-node-dashboard:
+     image: wolfderechter/taiko-node-dashboard:latest
+     ports:
+       - "7744:80"
+  taiko-node-systeminfo:
+     image: wolfderechter/taiko-node-systeminfo:latest
+     ports:
+       - "3009:3009"
+```
+
+Or if you wish to run the dashboard standalone:
+
+1. `git clone https://github.com/wolfderechter/taiko-node-dashboard-docker`
+2. `cd taiko-node-dashboard-docker`
+3. `docker compose up`
+4. visit http://localhost:7744 to access the dashboard
+5. *_⚠️ NOTE:_*  you might need to change the IP address in the connections (📡 button) to the IP address of your VPS.
+
+
 
 ## Development
 
