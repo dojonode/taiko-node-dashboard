@@ -16,9 +16,7 @@
     "prettier:check": "pnpm run prettier -- --check",
     "svelte:check": "npx svelte-check --ignore test-app",
     "lint": "pnpm exec eslint './**/*.{ts,svelte}' --ignore-path .eslintignore",
-    "lint:fix": "pnpm exec eslint --fix './**/*.{ts,svelte}' --ignore-path .eslintignore",
-    "predeploy": "pnpm run build",
-    "deploy": "gh-pages -d dist"
+    "lint:fix": "pnpm exec eslint --fix './**/*.{ts,svelte}' --ignore-path .eslintignore"
   },
   "devDependencies": {
     "@babel/preset-env": "^8.0.0-alpha.4",
