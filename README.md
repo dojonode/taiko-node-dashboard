@@ -28,7 +28,6 @@ Or if you wish to run the dashboard standalone:
 5. *_⚠️ NOTE:_*  you might need to change the IP address in the connections (📡 button) to the IP address of your VPS.
 
 
-
 ## Development
 
 <details>
@@ -57,5 +56,9 @@ You'll probably also want to start the [systeminformation](https://github.com/wo
 `cd dojonode-systeminformation`
 
 `node server.js`
+
+### Deployment
+
+To deploy to the website run: `pnpm run predeploy` and `pnpm run deploy`. This will build the website and push to the `gh-pages` branch.
 
 </details>
