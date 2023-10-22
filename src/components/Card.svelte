@@ -14,8 +14,8 @@
   export let progress: number = null;
 
   // Used only by the wallet card
-  export let L1Wallet: string = null;
-  export let L2Wallet: string = null;
+  export let customAddressL1: string = null;
+  export let customAddressL2: string = null;
 
   $: bodyString = body?.toLocaleString("en", { maximumFractionDigits: 2 });
   $: subBodyString = subBody?.toLocaleString("en", {
@@ -51,7 +51,7 @@
                 alt="ethereum icon"
               />
               <a
-                href="https://sepolia.etherscan.io/address/{L1Wallet}"
+                href="https://sepolia.etherscan.io/address/{customAddressL1}"
                 target="”_blank”"
               >
                 {bodyString}
@@ -86,7 +86,7 @@
             {#if bodyMetricType === MetricTypes.ethereum && subBodyMetricType === MetricTypes.ethereum}
               <img src={taikoIcon} class="w-[15px] ml-[5px]" alt="taiko icon" />
               <a
-                href="https://explorer.jolnir.taiko.xyz/address/{L2Wallet}"
+                href="https://explorer.jolnir.taiko.xyz/address/{customAddressL2}"
                 target="”_blank”"
               >
                 {subBodyString}

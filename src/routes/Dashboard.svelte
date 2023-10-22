@@ -1,37 +1,37 @@
 <script lang="ts">
   import { onDestroy, onMount } from "svelte";
-  import { queryPrometheus } from "../../utils/prometheus";
+  import { queryPrometheus } from "../utils/prometheus";
   import {
     setLocalStorageItem,
     getLocalStorageItem,
-  } from "../../utils/localstorage";
-  import DetailsModal from "../../components/DetailsModal.svelte";
+  } from "../utils/localstorage";
+  import DetailsModal from "../components/DetailsModal.svelte";
   import Web3 from "web3";
-  import Card from "../../components/Card.svelte";
-  import ThemeSwitcher from "../../components/ThemeSwitcher.svelte";
-  import Progressbar from "../../components/Progressbar.svelte";
-  import purseIcon from "../../assets/icons/Purse.png";
-  import heartIcon from "../../assets/icons/Heart.png";
-  import brainIcon from "../../assets/icons/Brain.png";
-  import dollsIcon from "../../assets/icons/Dolls.png";
-  import checkmarkIcon from "../../assets/icons/Check_Mark.png";
-  import fileboxIcon from "../../assets/icons/File_Box.png";
-  import chainIcon from "../../assets/icons/Chain.png";
-  import taikoLogoIcon from "../../assets/taikoLogoIcon.png";
-  import packageIcon from "../../assets/icons/Package.png";
-  import abacusIcon from "../../assets/icons/Abacus.png";
-  import gasIcon from "../../assets/icons/Gas.png";
-  import timerclockIcon from "../../assets/icons/Timer_Clock.png";
-  import warningIcon from "../../assets/icons/Warning.png";
-  import antennaIcon from "../../assets/icons/Antenna.png";
-  import Gear from "../../components/icons/Gear.svelte";
-  import TaikoLogo from "../../components/icons/TaikoLogo.svelte";
-  import { MetricTypes, NodeTypes } from "../../domain/enums";
+  import Card from "../components/Card.svelte";
+  import ThemeSwitcher from "../components/ThemeSwitcher.svelte";
+  import Progressbar from "../components/Progressbar.svelte";
+  import purseIcon from "../assets/icons/Purse.png";
+  import heartIcon from "../assets/icons/Heart.png";
+  import brainIcon from "../assets/icons/Brain.png";
+  import dollsIcon from "../assets/icons/Dolls.png";
+  import checkmarkIcon from "../assets/icons/Check_Mark.png";
+  import fileboxIcon from "../assets/icons/File_Box.png";
+  import chainIcon from "../assets/icons/Chain.png";
+  import taikoLogoIcon from "../assets/taikoLogoIcon.png";
+  import packageIcon from "../assets/icons/Package.png";
+  import abacusIcon from "../assets/icons/Abacus.png";
+  import gasIcon from "../assets/icons/Gas.png";
+  import timerclockIcon from "../assets/icons/Timer_Clock.png";
+  import warningIcon from "../assets/icons/Warning.png";
+  import antennaIcon from "../assets/icons/Antenna.png";
+  import Gear from "../components/icons/Gear.svelte";
+  import TaikoLogo from "../components/icons/TaikoLogo.svelte";
+  import { MetricTypes, NodeTypes } from "../domain/enums";
   import * as sd from "simple-duration";
   import type {
     Systeminfo,
     SysteminformationMetricsInterface,
-  } from "../../domain/types";
+  } from "../domain/types";
   import {
     ETH_RPC_API_URL,
     L2_TAIKO_RPC_API_URL,
@@ -39,7 +39,7 @@
     PROMETHEUS_API_URL,
     SYSTEMINFO_API_URL,
     EVENT_INDEXER_API_URL,
-  } from "../../domain/constants";
+  } from "../domain/constants";
 
   let myNode;
   let ethRPC;
@@ -134,53 +134,18 @@
   let gasPrice;
   let syncingStatus;
   let syncingProgress = 0;
-  let nodeAddress; // the wallet address used by the node/proposer/prover
-
-  // no private key found, so no default wallet
-  nodeAddress = null;
-
-  // overriding the nodeAddress with a custom address, to check on other addresses or if the default address was not found
-  let useCustomAddress = false;
-  let customAddressL1;
-  let customAddressL2;
-  // reactive declarations of the L1Wallet and L2Wallet that will re-calculate their values each time one of the reactive dependencies (useCustomAddress, customAddressL1, or nodeAddress) changes
-  $: L1Wallet = useCustomAddress ? customAddressL1 : nodeAddress;
-  $: L2Wallet = useCustomAddress ? customAddressL2 : nodeAddress;
+  let customAddressL1 = getLocalStorageItem("customAddressL1");
+  let customAddressL2 = getLocalStorageItem("customAddressL2");
 
   // TODO: remove 'any' types
   let L1Balance;
   let L2Balance;
-  let addressBlockProposed;
-  let addressBlockProven;
+  let addressBlockProposedCount;
+  let addressBlockProvenCount;
   let nodeType = NodeTypes.Node;
 
   if (getLocalStorageItem("nodeType")) {
     nodeType = getLocalStorageItem("nodeType");
-  }
-
-  // set the correct nodeType to what is used within the .env file, if present. Else we keep the default node
-  if (
-    import.meta.env.VITE_ENABLE_PROPOSER &&
-    import.meta.env.VITE_ENABLE_PROVER
-  ) {
-    let enableProver: boolean = JSON.parse(import.meta.env.VITE_ENABLE_PROVER);
-    let enableProposer: boolean = JSON.parse(
-      import.meta.env.VITE_ENABLE_PROPOSER
-    );
-
-    let nodeType = enableProver
-      ? NodeTypes.Prover
-      : enableProposer
-      ? NodeTypes.Proposer
-      : NodeTypes.Node;
-  }
-
-  // proposers can specify a different L2 wallet to receive fees currently
-  if (
-    import.meta.env.VITE_L2_SUGGESTED_FEE_RECIPIENT &&
-    nodeType === NodeTypes.Proposer
-  ) {
-    L2Wallet = import.meta.env.VITE_L2_SUGGESTED_FEE_RECIPIENT;
   }
 
   let interval: NodeJS.Timer;
@@ -190,25 +155,31 @@
   // layout variables
   let bigLayout = false;
   let rotationAngle = 0; // used to rotate the taiko logo
-  let settingsOpen: boolean = false;
+  let settingsOpen =
+    nodeType !== NodeTypes.Node &&
+    (customAddressL1 === null || customAddressL1 === "");
+
   let connectionsOpen: boolean = false;
   let imageRef: HTMLImageElement;
 
   // fetch general metrics from the node RPCs
   async function fetchMetrics() {
     try {
-      if (L1Wallet) {
+      if (customAddressL1) {
         L1Balance = Number(
-          ethRPC?.utils.fromWei(await ethRPC?.eth.getBalance(L1Wallet), "ether")
+          ethRPC?.utils.fromWei(
+            await ethRPC?.eth.getBalance(customAddressL1),
+            "ether"
+          )
         );
       } else {
         L1Balance = null;
       }
-      if (L2Wallet) {
+      if (customAddressL2) {
         // Use the taiko RPC to be reliable, node that's not synced will display false numbers
         L2Balance = Number(
           L2TaikoRPC?.utils.fromWei(
-            await L2TaikoRPC?.eth.getBalance(L2Wallet),
+            await L2TaikoRPC?.eth.getBalance(customAddressL2),
             "ether"
           )
         );
@@ -267,7 +238,7 @@
       if (nodeType === NodeTypes.Node) return;
       eventIndexerEventURL =
         eventIndexerEventURL +
-        `/eventByAddress?address=${L1Wallet}&event=${
+        `/eventByAddress?address=${customAddressL1}&event=${
           nodeType === NodeTypes.Proposer
             ? "BlockProposed"
             : nodeType === NodeTypes.Prover
@@ -279,9 +250,9 @@
       if (response.status === 200) {
         let addressEvent = await response.json();
         if (nodeType === NodeTypes.Proposer)
-          addressBlockProposed = addressEvent.count;
+          addressBlockProposedCount = addressEvent.count;
         else if (nodeType === NodeTypes.Prover)
-          addressBlockProven = addressEvent.count;
+          addressBlockProvenCount = addressEvent.count;
         fetchEventIndexerError = false;
       } else {
         fetchEventIndexerError = true;
@@ -382,27 +353,15 @@
         break;
     }
 
+    // Open the settings popup if no address is defined or if it's empty
+    settingsOpen =
+      nodeType !== NodeTypes.Node &&
+      (customAddressL1 === null || customAddressL1 === "");
+
     setLocalStorageItem("nodeType", nodeType);
   }
 
   onMount(async () => {
-    // load from localstorage the customAddress, and useCustomAddress but only if the customAddress actually exists,
-    // in case the nodeAddress is not valid, default to
-    customAddressL1 = getLocalStorageItem("customAddressL1");
-    customAddressL2 = getLocalStorageItem("customAddressL2");
-    if (
-      customAddressL1 !== null &&
-      customAddressL2 &&
-      ethRPC.utils.isAddress(customAddressL1)
-    ) {
-      useCustomAddress = JSON.parse(getLocalStorageItem("useCustomAddress"));
-    }
-
-    // if the nodeAddress is not valid, default the useCustomAddress to true, no matter what
-    if (!ethRPC.utils.isAddress(nodeAddress)) {
-      useCustomAddress = true;
-    }
-
     // Interval to fetch metrics every 5 seconds
     interval = setInterval(async () => {
       try {
@@ -581,15 +540,15 @@
           subBodyMetricType={MetricTypes.ethereum}
           icon={purseIcon}
           loadingbar={false}
-          {L1Wallet}
-          {L2Wallet}
+          {customAddressL1}
+          {customAddressL2}
         />
       {/if}
       <!-- node is a proposer -->
       {#if nodeType === NodeTypes.Proposer}
         <Card
           title="proposed"
-          body={addressBlockProposed}
+          body={addressBlockProposedCount}
           bodyMetricType={MetricTypes.proposer}
           icon={packageIcon}
           loadingbar={false}
@@ -598,7 +557,7 @@
       {:else if nodeType === NodeTypes.Prover}
         <Card
           title="proven"
-          body={addressBlockProven}
+          body={addressBlockProvenCount}
           bodyMetricType={MetricTypes.prover}
           icon={abacusIcon}
           loadingbar={false}
@@ -631,105 +590,49 @@
       class="settings grid grid-cols-1 gap-6 mx-5 my-10 max-h-[600px] overflow-y-auto text-[hsl(var(--twc-textColor))] font-semibold"
       slot="body"
     >
-      <div class="flex flex-col justify-between items-center">
-        address used by {nodeType}
-        <div class="mt-2 w-[75%]">
-          <input
-            class="shadow appearance-none rounded w-full px-3 focus:outline-none focus:shadow-outline placeholder:font-normal leading-none"
-            type="text"
-            value={nodeAddress || "no address found"}
-            disabled
-          />
-
-          <div
-            class="mt-1 font-normal cursor-pointer"
-            on:click={() => {
-              useCustomAddress = !useCustomAddress;
-              setLocalStorageItem("useCustomAddress", String(useCustomAddress));
-            }}
-            tabindex="0"
-            role="checkbox"
-            aria-checked={useCustomAddress}
-            on:keydown={(event) => {
-              if (event.key === "Enter" || event.key === " ") {
-                useCustomAddress = !useCustomAddress;
-                setLocalStorageItem(
-                  "useCustomAddress",
-                  String(useCustomAddress)
-                );
-                event.preventDefault();
-              }
-            }}
-          >
+      <!-- when the node is a proposer, allow the user to change both L1 and L2 wallet address. Because proposers can receive fees on a different L2 address -->
+      <!-- when the node is simply a node or a prover, they can change the address (both L1 and L2) -->
+      {#if nodeType === NodeTypes.Proposer}
+        <div class="flex flex-col justify-between items-center">
+          L1 address used by {nodeType}
+          <div class="mt-2 w-[75%]">
             <input
-              class="accent-[hsl(var(--twc-settingsAccentColor))] cursor-pointer"
-              type="checkbox"
-              bind:checked={useCustomAddress}
+              class="shadow appearance-none rounded w-full px-3 focus:outline-none focus:shadow-outline leading-none"
+              type="text"
+              bind:value={customAddressL1}
+              on:keyup={() =>
+                setLocalStorageItem("customAddressL1", customAddressL1.trim())}
             />
-            <span tabindex="-1">use custom address</span>
           </div>
         </div>
-      </div>
-      {#if useCustomAddress}
-        <!-- when the node is a proposer, allow the user to change both L1 and L2 wallet address. Because proposers can receive fees on a different L2 address -->
-        <!-- when the node is simply a node or a prover, they can change the address (both L1 and L2) -->
-        {#if nodeType === NodeTypes.Proposer}
-          <div class="flex flex-col justify-between items-center">
-            custom L1 address
-            <div class="mt-2 w-[75%]">
-              <input
-                class="shadow appearance-none rounded w-full px-3 focus:outline-none focus:shadow-outline leading-none"
-                type="text"
-                readonly={!useCustomAddress}
-                bind:value={customAddressL1}
-                on:keyup={() =>
-                  setLocalStorageItem(
-                    "customAddressL1",
-                    customAddressL1.trim()
-                  )}
-              />
-            </div>
+        <div class="flex flex-col justify-between items-center">
+          L2 address used by {nodeType}
+          <div class="mt-2 w-[75%]">
+            <input
+              class="shadow appearance-none rounded w-full px-3 focus:outline-none focus:shadow-outline leading-none"
+              type="text"
+              bind:value={customAddressL2}
+              on:keyup={() =>
+                setLocalStorageItem("customAddressL2", customAddressL2.trim())}
+            />
           </div>
-          <div class="flex flex-col justify-between items-center">
-            custom L2 address
-            <div class="mt-2 w-[75%]">
-              <input
-                class="shadow appearance-none rounded w-full px-3 focus:outline-none focus:shadow-outline leading-none"
-                type="text"
-                readonly={!useCustomAddress}
-                bind:value={customAddressL2}
-                on:keyup={() =>
-                  setLocalStorageItem(
-                    "customAddressL2",
-                    customAddressL2.trim()
-                  )}
-              />
-            </div>
+        </div>
+      {:else if nodeType === NodeTypes.Prover}
+        <div class="flex flex-col justify-between items-center">
+          address used by {nodeType}
+          <div class="mt-2 w-[75%]">
+            <input
+              class="shadow appearance-none rounded w-full px-3 focus:outline-none focus:shadow-outline leading-none"
+              type="text"
+              bind:value={customAddressL1}
+              on:keyup={() => {
+                setLocalStorageItem("customAddressL1", customAddressL1.trim());
+                customAddressL2 = customAddressL1;
+                setLocalStorageItem("customAddressL2", customAddressL2.trim());
+              }}
+            />
           </div>
-        {:else}
-          <div class="flex flex-col justify-between items-center">
-            custom address
-            <div class="mt-2 w-[75%]">
-              <input
-                class="shadow appearance-none rounded w-full px-3 focus:outline-none focus:shadow-outline leading-none"
-                type="text"
-                readonly={!useCustomAddress}
-                bind:value={customAddressL1}
-                on:keyup={() => {
-                  setLocalStorageItem(
-                    "customAddressL1",
-                    customAddressL1.trim()
-                  );
-                  customAddressL2 = customAddressL1;
-                  setLocalStorageItem(
-                    "customAddressL2",
-                    customAddressL2.trim()
-                  );
-                }}
-              />
-            </div>
-          </div>
-        {/if}
+        </div>
       {/if}
       <div
         class="flex md:flex-row gap-[15px] md:gap-[50px] flex-col justify-center"

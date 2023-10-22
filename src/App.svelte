@@ -1,14 +1,10 @@
 <script lang="ts">
-  import { wrap } from "svelte-spa-router/wrap";
   import Router from "svelte-spa-router";
-  import Home from "./pages/home/Home.svelte";
+  import Dashboard from "./routes/Dashboard.svelte";
   import { currentTheme } from "./components/ThemeSwitcher.svelte";
 
   const routes = {
-    "/": wrap({
-      component: Home,
-      userData: {},
-    }),
+    "/": Dashboard,
   };
 
   // Change the document body data-theme value on theme changes
@@ -27,11 +23,8 @@
   @tailwind components;
   @tailwind utilities;
 
-  main {
-    font-family: "Jost", sans-serif;
-    background-color: hsl(var(--twc-backgroundColor));
-  }
   body {
+    font-family: "Jost", sans-serif;
     background-color: hsl(var(--twc-backgroundColor));
   }
 </style>
