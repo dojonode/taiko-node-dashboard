@@ -49,6 +49,7 @@
   },
   "dependencies": {
     "buffer": "^6.0.3",
+    "canvas-confetti": "^1.9.0",
     "simple-duration": "^1.1.0",
     "svelte-spa-router": "^3.3.0",
     "tw-colors": "^3.0.3",

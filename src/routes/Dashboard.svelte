@@ -28,6 +28,7 @@
   import TaikoLogo from "../components/icons/TaikoLogo.svelte";
   import { MetricTypes, NodeTypes } from "../domain/enums";
   import * as sd from "simple-duration";
+  import confetti from 'canvas-confetti';
   import type {
     Systeminfo,
     SysteminformationMetricsInterface,
@@ -41,6 +42,8 @@
     EVENT_INDEXER_API_URL,
   } from "../domain/constants";
 
+  let expertModeCounter = 0;
+  let expertMode = false;
   let myNode;
   let ethRPC;
   let L2TaikoRPC;
@@ -72,6 +75,15 @@
   let CUSTOM_EVENT_INDEXER_API_URL =
     getLocalStorageItem("CUSTOM_EVENT_INDEXER_API_URL") ||
     EVENT_INDEXER_API_URL;
+
+  function enableExpertMode(){
+    expertMode = true;
+    confetti({
+      particleCount: 100,
+      spread: 70,
+      origin: { y: 0.6 },
+    });
+  }
 
   // Initialize the web3 RPC connections with error handling to see if we have provided a valid RPC provider
   function initConnections() {
@@ -637,19 +649,30 @@
       <div
         class="flex md:flex-row gap-[15px] md:gap-[50px] flex-col justify-center"
       >
-        <div class="flex flex-col justify-between items-center">
+      <div class="flex flex-col justify-between items-center">
           layout
           <div class="mt-2 inline-flex text-black">
             <button
               class:active={!bigLayout}
-              on:click={() => (bigLayout = false)}
+              on:click={() => {
+                expertModeCounter++;
+                if(expertModeCounter === 5) enableExpertMode();
+
+                bigLayout = false;
+                }
+              }
               class="layout py-[2px] px-1 mx-1 rounded-full"
             >
               compact
             </button>
             <button
               class:active={bigLayout}
-              on:click={() => (bigLayout = true)}
+              on:click={() => {
+                expertModeCounter = 0;
+                expertMode = false;
+                bigLayout = true
+                }
+              }
               class="layout py-[2px] px-1 mx-1 rounded-full"
             >
               wide
@@ -767,9 +790,8 @@
         </div>
       </div>
 
-      <!-- TODO: show only in developer/expert mode -->
       <div
-        class="flex sm:flex-row flex-col justify-between items-center font-bold hidden"
+        class="{expertMode ? 'flex' : 'hidden'} sm:flex-row flex-col justify-between items-center font-bold"
       >
         Event Indexer:
         <div class="ml-2 w-72 flex items-center">
