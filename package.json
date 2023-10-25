@@ -18,7 +18,7 @@
     "lint": "pnpm exec eslint './**/*.{ts,svelte}' --ignore-path .eslintignore",
     "lint:fix": "pnpm exec eslint --fix './**/*.{ts,svelte}' --ignore-path .eslintignore",
     "predeploy": "pnpm run build",
-    "deploy": "echo dashboard.dojonode.xyz > ./dist/CNAME && gh-pages -d dist"
+    "deploy": "gh-pages -d dist"
   },
   "devDependencies": {
     "@babel/preset-env": "^8.0.0-alpha.4",
