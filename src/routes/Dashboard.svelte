@@ -10,6 +10,7 @@
   import Card from "../components/Card.svelte";
   import ThemeSwitcher from "../components/ThemeSwitcher.svelte";
   import Progressbar from "../components/Progressbar.svelte";
+  import Footer from '../components/Footer.svelte';
   import purseIcon from "../assets/icons/Purse.png";
   import heartIcon from "../assets/icons/Heart.png";
   import brainIcon from "../assets/icons/Brain.png";
@@ -595,6 +596,7 @@
     </div>
   </div>
 </div>
+<Footer/>
 
 {#if settingsOpen}
   <DetailsModal title={"settings"} bind:isOpen={settingsOpen}>
