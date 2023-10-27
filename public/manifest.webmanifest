@@ -1,11 +1,10 @@
 {
-  "name": "dojo node dashboard",
+  "name": "dojo node",
   "short_name": "dojo node",
   "start_url": "./",
   "display": "standalone",
-  // TODO: double check these colors
   "background_color": "#FFF9EB",
-  "theme_color": "#e81899",
+  "theme_color": "#1a1b1b",
   "icons": [
     {
       "src": "dojonodelogo-dark-square.png",
