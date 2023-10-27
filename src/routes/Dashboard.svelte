@@ -43,6 +43,8 @@
     EVENT_INDEXER_API_URL,
   } from "../domain/constants";
 
+
+  const urlParams = new URLSearchParams(window.location.search);
   let expertModeCounter = 0;
   let expertMode = false;
   let myNode;
@@ -65,8 +67,6 @@
   // if custom localstorage API urls exist, use those, else use the default variables from the constants.ts file
   let CUSTOM_ETH_RPC_API_URL =
     getLocalStorageItem("CUSTOM_ETH_RPC_API_URL") || ETH_RPC_API_URL;
-  let CUSTOM_L2_TAIKO_RPC_API_URL =
-    getLocalStorageItem("CUSTOM_L2_TAIKO_RPC_API_URL") || L2_TAIKO_RPC_API_URL;
   let CUSTOM_MYNODE_API_URL =
     getLocalStorageItem("CUSTOM_MYNODE_API_URL") || MYNODE_API_URL;
   let CUSTOM_PROMETHEUS_API_URL =
@@ -85,6 +85,22 @@
       origin: { y: 0.6 },
     });
   }
+
+  // override the current params with urlParams if user provides an IP param
+  // example url: http://.../?ip=192.168.1.1&nodePort=8546&prometheusPort=9090
+  function loadSearchParams(){
+    if (urlParams.has('ip')){
+      const ip = urlParams.get('ip');
+      const nodePort = urlParams.get('nodePort') || 8548;
+      const prometheusPort = urlParams.get('prometheusPort') || 9091;
+      const systeminformationPort = urlParams.get('systeminformationPort') || 3009;
+
+      CUSTOM_MYNODE_API_URL = `ws://${ip}:${nodePort}`;
+      CUSTOM_PROMETHEUS_API_URL = `http://${ip}:${prometheusPort}`;
+      CUSTOM_SYSTEMINFO_API_URL = `http://${ip}:${systeminformationPort}`;
+    }
+  }
+  loadSearchParams();
 
   // Initialize the web3 RPC connections with error handling to see if we have provided a valid RPC provider
   function initConnections() {
@@ -283,7 +299,7 @@
   // fetch from the nodejs api that exposes system metrics using the npm package systeminformation
   async function fetchSystemInfo() {
     try {
-      const response = await fetch(CUSTOM_SYSTEMINFO_API_URL);
+      const response = await fetch(`${CUSTOM_SYSTEMINFO_API_URL}/metrics`);
       systeminfo = await response.json();
 
       const usedMemoryGB =
@@ -331,7 +347,7 @@
   // Fetch from prometheus
   const fetchPrometheus = async () => {
     try {
-      const peersData = await queryPrometheus("p2p_peers");
+      const peersData = await queryPrometheus(CUSTOM_PROMETHEUS_API_URL, "p2p_peers");
       peers = peersData.data.result[0].value[1];
       fetchPrometheusError = false;
     } catch (error) {
@@ -396,15 +412,15 @@
   });
 </script>
 
-<div class="flex flex-col items-center pt-4 md:pt-10">
-  <div class="text-center relative">
+<div class="flex flex-col items-center">
+  <div class="text-center relative pt-4 md:pt-10">
     <img
       bind:this={imageRef}
       src={taikoLogoIcon}
       class="taikoImg mx-auto"
       alt=""
     />
-    <!-- <TaikoLogoIcon class="mx-auto taikoImg rotate-[{rotationAngle}deg]" /> -->
+
     <TaikoLogo
       class="fill-[hsl(var(--twc-textColor))] w-32 mx-auto mt-[10px]"
     />
@@ -462,7 +478,7 @@
   <div
     class="{bigLayout
       ? 'max-w-[46rem]'
-      : 'max-w-[35rem]'} relative sm:justify-center"
+      : 'max-w-[35rem]'} sticky sm:justify-center"
   >
     <button
       id="connectionsBtn"
@@ -491,7 +507,7 @@
       <Gear class="fill-[hsl(var(--twc-settingsBtnColor))]" />
     </button>
 
-    <div id="cards" class="mt-[1px] flex flex-wrap justify-center">
+    <div id="cards" class="mt-[1px] flex flex-wrap justify-center overflow-y-clip">
       <Card
         title="memory"
         body={systeminformationMetrics?.memUsedGB}
@@ -584,13 +600,13 @@
         loadingbar={false}
       />
       <!-- Invisble cards that push any incomplete rows of cards to the left -->
-      <div class="invisible">
+      <div class="invisible h-5">
         <Card />
       </div>
-      <div class="invisible">
+      <div class="invisible h-5">
         <Card />
       </div>
-      <div class="invisible">
+      <div class="invisible h-5">
         <Card />
       </div>
     </div>
