@@ -177,7 +177,7 @@
     nodeType = getLocalStorageItem("nodeType");
   }
 
-  let interval: NodeJS.Timer;
+  let intervalTimer: NodeJS.Timer;
   let systeminfo: Systeminfo;
   let systeminformationMetrics: SysteminformationMetricsInterface = null;
 
@@ -353,6 +353,11 @@
         CUSTOM_PROMETHEUS_API_URL,
         "p2p_peers",
       );
+
+      // Check if we can find the p2p_peers value in the result, throw error if response is undefined
+      if (peersData?.data?.result?.[0]?.value?.[1] === undefined)
+        throw new Error("Value p2p_peers not found in the Prometheus response");
+
       peers = peersData.data.result[0].value[1];
       fetchPrometheusError = false;
     } catch (error) {
@@ -397,7 +402,7 @@
 
   onMount(async () => {
     // Interval to fetch metrics every 5 seconds
-    interval = setInterval(async () => {
+    intervalTimer = setInterval(async () => {
       try {
         fetchMetrics();
         fetchSystemInfo();
@@ -413,7 +418,7 @@
   });
 
   onDestroy(() => {
-    if (interval) clearInterval(interval);
+    if (intervalTimer) clearInterval(intervalTimer as any);
   });
 </script>
 
@@ -902,7 +907,6 @@
   }
 
   .animateConnections {
-    /* Add your animation styles here */
     animation: animateConnections 1.5s infinite;
   }
 
