@@ -1,9 +1,9 @@
 <script lang="ts">
   import { onDestroy, onMount } from "svelte";
-  import Web3 from "web3";
   import * as simpleDuration from "simple-duration";
   import confetti from "canvas-confetti";
   import { queryPrometheus } from "../utils/prometheus";
+  import { initializeRPCConnection } from "../utils/connection";
   import {
     setLocalStorageItem,
     getLocalStorageItem,
@@ -54,6 +54,7 @@
   let fetchPrometheusError = false;
   let fetchMyNodeError = false;
   let fetchEthRPCError = false;
+  let fetchL2TaikoRPCError = false;
   let fetchEventIndexerError = false;
 
   // Syncing estimation
@@ -85,74 +86,25 @@
     });
   }
 
-  // override the current params with urlParams if user provides an IP param
-  // example url: http://.../?ip=192.168.1.1&nodePort=8546&prometheusPort=9090
-  function loadSearchParams() {
-    if (urlParams.has("ip")) {
-      const ip = urlParams.get("ip");
-      const nodePort = urlParams.get("nodePort") || 8548;
-      const prometheusPort = urlParams.get("prometheusPort") || 9091;
-      const systeminformationPort =
-        urlParams.get("systeminformationPort") || 3009;
-
-      CUSTOM_MYNODE_API_URL = `ws://${ip}:${nodePort}`;
-      CUSTOM_PROMETHEUS_API_URL = `http://${ip}:${prometheusPort}`;
-      CUSTOM_SYSTEMINFO_API_URL = `http://${ip}:${systeminformationPort}`;
-    }
-  }
-  loadSearchParams();
-
   // Initialize the web3 RPC connections with error handling to see if we have provided a valid RPC provider
-  function initConnections() {
-    // L2 taiko / Node RPC
-    try {
-      // TODO: figure out what RPCs will be used by default, give the user an option in the settings to switch to a new RPC
-      myNode = new Web3(CUSTOM_MYNODE_API_URL);
-      // Temporary RPC while waiting for next testnet, using an alchemy rpc
-      // ethRPC = new Web3(CUSTOM_ETH_RPC_API_URL);
-      // Use the following RPCs by default?
-      // const L1TaikoRPC = new Web3(L1_TAIKO_RPC_API_URL);
-      myNode.eth.net
-        .isListening()
-        .then((s) => {
-          fetchMyNodeError = false;
-        })
-        .catch((e) => {
-          fetchMyNodeError = true;
-        });
-      myNode.eth.getBlockNumber().then((height) => (startNodeHeight = height));
-    } catch (error) {
-      console.error(error);
-      fetchMyNodeError = true;
-    }
-    // L1 Ethereum / public RPC
-    try {
-      ethRPC = new Web3(CUSTOM_ETH_RPC_API_URL);
-      // check if the rpc is connected succesfully
-      ethRPC.eth.net
-        .isListening()
-        .then((s) => {
-          fetchEthRPCError = false;
-        })
-        .catch((e) => {
-          fetchEthRPCError = true;
-        });
-    } catch (error) {
-      console.error(error);
-      fetchEthRPCError = true;
-    }
-    try {
-      L2TaikoRPC = new Web3(L2_TAIKO_RPC_API_URL);
-      // const L1TaikoRPC = new Web3(L1_TAIKO_RPC_API_URL);
-      L2TaikoRPC.eth.net.isListening();
-    } catch (error) {
-      console.error(
-        "Something went wrong when connecting to the L2 Taiko RPC",
-        error,
-      );
-    }
+  async function initConnections() {
+    const myNodeResponse = await initializeRPCConnection(CUSTOM_MYNODE_API_URL);
+    const ethRPCResponse = await initializeRPCConnection(CUSTOM_ETH_RPC_API_URL);
+    const L2TaikoRPCResponse = await initializeRPCConnection(L2_TAIKO_RPC_API_URL);
+
+    // Set the web3 RPC instances
+    myNode = myNodeResponse.web3Instance;
+    ethRPC = ethRPCResponse.web3Instance;
+    L2TaikoRPC = L2TaikoRPCResponse.web3Instance;
+
+    // Set the response errors
+    fetchMyNodeError = myNodeResponse.fetchErrorBoolean;
+    fetchEthRPCError = ethRPCResponse.fetchErrorBoolean;
+    fetchL2TaikoRPCError = L2TaikoRPCResponse.fetchErrorBoolean;
+
+    if(fetchL2TaikoRPCError)
+          console.error(`Error while connecting to the L2 Taiko RPC ${L2_TAIKO_RPC_API_URL}. This dashboard version might be outdated, reach out in the taiko discord if the issue persists.`);
   }
-  initConnections();
 
   // Prometheus metric
   let peers = null;
@@ -265,25 +217,20 @@
 
   const fetchAddressEvents = async () => {
     // Fetch Amount Of blocks proposed/proven, so if nodeType is regular node return and do nothing
-    let eventIndexerEventURL = CUSTOM_EVENT_INDEXER_API_URL;
+    if (nodeType === NodeTypes.Node) return;
+
+    const event = nodeType === NodeTypes.Proposer ? "BlockProposed" : nodeType === NodeTypes.Prover ? "BlockProven" : "";
+    const eventIndexerEventURL = `${CUSTOM_EVENT_INDEXER_API_URL}/eventByAddress?address=${customAddressL1}&event=${event}`;
+
     try {
-      if (nodeType === NodeTypes.Node) return;
-
-      eventIndexerEventURL = `${eventIndexerEventURL}/eventByAddress?address=${customAddressL1}&event=${
-        nodeType === NodeTypes.Proposer
-          ? "BlockProposed"
-          : nodeType === NodeTypes.Prover
-          ? "BlockProven"
-          : ""
-      }`;
-
       const response = await fetch(eventIndexerEventURL);
+
       if (response.status === 200) {
-        let addressEvent = await response.json();
-        if (nodeType === NodeTypes.Proposer)
-          addressBlockProposedCount = addressEvent.count;
-        else if (nodeType === NodeTypes.Prover)
-          addressBlockProvenCount = addressEvent.count;
+        const addressEvent = await response.json();
+
+      if (nodeType === NodeTypes.Proposer) addressBlockProposedCount = addressEvent.count;
+      else if (nodeType === NodeTypes.Prover) addressBlockProvenCount = addressEvent.count;
+
         fetchEventIndexerError = false;
       } else {
         fetchEventIndexerError = true;
@@ -302,40 +249,24 @@
   async function fetchSystemInfo() {
     try {
       const response = await fetch(`${CUSTOM_SYSTEMINFO_API_URL}/metrics`);
-      systeminfo = await response.json();
+      const systemInfo = await response.json();
 
-      const usedMemoryGB =
-        (systeminfo.mem.total - systeminfo.mem.available) / 1024 / 1024 / 1024;
-      const usedMemoryPercent =
-        ((systeminfo.mem.total - systeminfo.mem.available) /
-          systeminfo.mem.total) *
-        100;
-      const cpuPercent = systeminfo.cpu.currentLoad;
-
-      const usedSpace = systeminfo.disk[0].used / 1024 / 1024 / 1024;
-      const freeSpaceGB =
-        (systeminfo.disk[0].size - systeminfo.disk[0].used) /
-        1024 /
-        1024 /
-        1024;
-      const usedPercentage = systeminfo.disk[0].use;
-
-      const currentTime: number = Math.floor(Date.now() / 1000);
-      const secondsElapsed: number = currentTime - systeminfo.startTime;
+      const mem = systemInfo.mem;
+      const disk = systemInfo.disk[0];
+      const currentTime = Math.floor(Date.now() / 1000);
+      const secondsElapsed = currentTime - systemInfo.startTime;
       const runtimeInHours = secondsElapsed / 3600;
-      const runtime =
-        runtimeInHours >= 1 ? runtimeInHours : runtimeInHours * 60;
+      const runtime = runtimeInHours >= 1 ? runtimeInHours : runtimeInHours * 60;
 
       systeminformationMetrics = {
-        memUsedGB: Number(usedMemoryGB.toFixed(2)),
-        memUsedPerc: Number(usedMemoryPercent.toFixed(2)),
-        cpuUsedPerc: Number(cpuPercent.toFixed(2)),
-        filestorageFreeGB: Number(freeSpaceGB.toFixed(2)),
-        filestorageUsedGB: Number(usedSpace.toFixed(2)),
-        filestorageUsedPerc: Number(usedPercentage.toFixed(2)),
+        memUsedGB: Number(((mem.total - mem.available) / 1024 / 1024 / 1024).toFixed(2)),
+        memUsedPerc: Number((((mem.total - mem.available) / mem.total) * 100).toFixed(2)),
+        cpuUsedPerc: Number(systemInfo.cpu.currentLoad.toFixed(2)),
+        filestorageFreeGB: Number(((disk.size - disk.used) / 1024 / 1024 / 1024).toFixed(2)),
+        filestorageUsedGB: Number((disk.used / 1024 / 1024 / 1024).toFixed(2)),
+        filestorageUsedPerc: Number(disk.use.toFixed(2)),
         runtime: Number(runtime.toFixed(0)),
-        runtimeMetricType:
-          runtimeInHours >= 1 ? MetricTypes.hours : MetricTypes.minutes,
+        runtimeMetricType: runtimeInHours >= 1 ? MetricTypes.hours : MetricTypes.minutes,
       };
       fetchSystemInfoError = false;
     } catch (error) {
@@ -401,6 +332,26 @@
   }
 
   onMount(async () => {
+    // override the current params with urlParams if user provides an IP param
+    // example url: http://.../?ip=192.168.1.1&nodePort=8546&prometheusPort=9090
+    if (urlParams.has("ip")) {
+      const ip = urlParams.get("ip");
+      const nodePort = urlParams.get("nodePort") || 8548;
+      const prometheusPort = urlParams.get("prometheusPort") || 9091;
+      const systeminformationPort =
+        urlParams.get("systeminformationPort") || 3009;
+
+      CUSTOM_MYNODE_API_URL = `ws://${ip}:${nodePort}`;
+      CUSTOM_PROMETHEUS_API_URL = `http://${ip}:${prometheusPort}`;
+      CUSTOM_SYSTEMINFO_API_URL = `http://${ip}:${systeminformationPort}`;
+    }
+
+    // Initialize the RPC connections
+    await initConnections();
+
+    // Set startNodeHeight of the node
+    myNode.eth.getBlockNumber().then((height) => (startNodeHeight = height));
+
     // Interval to fetch metrics every 5 seconds
     intervalTimer = setInterval(async () => {
       try {
@@ -409,7 +360,7 @@
         fetchPrometheus();
         fetchAddressEvents();
 
-        // If we had errors connecting to node, we will occasionaly re-try initializing the RPC connections
+        // If there were errors connecting to node, we will occasionally re-try initializing the RPC connections
         if (fetchMyNodeError) initConnections();
       } catch (e) {
         console.error(e);
