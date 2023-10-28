@@ -1,4 +1,4 @@
-const { createThemes } = require('tw-colors');
+const { createThemes } = require("tw-colors");
 
 module.exports = {
   content: ["./src/**/*.{html,js,svelte,ts}"],
@@ -65,6 +65,6 @@ module.exports = {
         settingsAccentColor: "#707D75",
         settingsBtnColor: "#9baab2",
       },
-    })
+    }),
   ],
 };

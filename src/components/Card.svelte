@@ -40,8 +40,8 @@
           <div
             class="flex items-center {bodyMetricType === MetricTypes.ethereum &&
             subBodyMetricType === MetricTypes.ethereum
-              ? 'justify-between'
-              : 'flex-col'}"
+              ? "justify-between"
+              : "flex-col"}"
           >
             <!-- Card is a wallet card -->
             {#if bodyMetricType === MetricTypes.ethereum && subBodyMetricType === MetricTypes.ethereum}
@@ -79,8 +79,8 @@
           <div
             class="modal-sub-body flex items-center {bodyMetricType ===
               MetricTypes.ethereum && subBodyMetricType === MetricTypes.ethereum
-              ? 'justify-between'
-              : 'justify-center'}"
+              ? "justify-between"
+              : "justify-center"}"
           >
             <!-- wallet card -->
             {#if bodyMetricType === MetricTypes.ethereum && subBodyMetricType === MetricTypes.ethereum}

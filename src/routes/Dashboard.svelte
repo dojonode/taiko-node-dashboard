@@ -1,16 +1,20 @@
 <script lang="ts">
   import { onDestroy, onMount } from "svelte";
+  import Web3 from "web3";
+  import * as simpleDuration from "simple-duration";
+  import confetti from "canvas-confetti";
   import { queryPrometheus } from "../utils/prometheus";
   import {
     setLocalStorageItem,
     getLocalStorageItem,
   } from "../utils/localstorage";
   import DetailsModal from "../components/DetailsModal.svelte";
-  import Web3 from "web3";
   import Card from "../components/Card.svelte";
   import ThemeSwitcher from "../components/ThemeSwitcher.svelte";
   import Progressbar from "../components/Progressbar.svelte";
-  import Footer from '../components/Footer.svelte';
+  import Footer from "../components/Footer.svelte";
+  import TaikoLogo from "../components/icons/TaikoLogo.svelte";
+  import Gear from "../components/icons/Gear.svelte";
   import purseIcon from "../assets/icons/Purse.png";
   import heartIcon from "../assets/icons/Heart.png";
   import brainIcon from "../assets/icons/Brain.png";
@@ -25,11 +29,7 @@
   import timerclockIcon from "../assets/icons/Timer_Clock.png";
   import warningIcon from "../assets/icons/Warning.png";
   import antennaIcon from "../assets/icons/Antenna.png";
-  import Gear from "../components/icons/Gear.svelte";
-  import TaikoLogo from "../components/icons/TaikoLogo.svelte";
   import { MetricTypes, NodeTypes } from "../domain/enums";
-  import * as sd from "simple-duration";
-  import confetti from 'canvas-confetti';
   import type {
     Systeminfo,
     SysteminformationMetricsInterface,
@@ -42,7 +42,6 @@
     SYSTEMINFO_API_URL,
     EVENT_INDEXER_API_URL,
   } from "../domain/constants";
-
 
   const urlParams = new URLSearchParams(window.location.search);
   let expertModeCounter = 0;
@@ -77,7 +76,7 @@
     getLocalStorageItem("CUSTOM_EVENT_INDEXER_API_URL") ||
     EVENT_INDEXER_API_URL;
 
-  function enableExpertMode(){
+  function enableExpertMode() {
     expertMode = true;
     confetti({
       particleCount: 100,
@@ -88,12 +87,13 @@
 
   // override the current params with urlParams if user provides an IP param
   // example url: http://.../?ip=192.168.1.1&nodePort=8546&prometheusPort=9090
-  function loadSearchParams(){
-    if (urlParams.has('ip')){
-      const ip = urlParams.get('ip');
-      const nodePort = urlParams.get('nodePort') || 8548;
-      const prometheusPort = urlParams.get('prometheusPort') || 9091;
-      const systeminformationPort = urlParams.get('systeminformationPort') || 3009;
+  function loadSearchParams() {
+    if (urlParams.has("ip")) {
+      const ip = urlParams.get("ip");
+      const nodePort = urlParams.get("nodePort") || 8548;
+      const prometheusPort = urlParams.get("prometheusPort") || 9091;
+      const systeminformationPort =
+        urlParams.get("systeminformationPort") || 3009;
 
       CUSTOM_MYNODE_API_URL = `ws://${ip}:${nodePort}`;
       CUSTOM_PROMETHEUS_API_URL = `http://${ip}:${prometheusPort}`;
@@ -148,7 +148,7 @@
     } catch (error) {
       console.error(
         "Something went wrong when connecting to the L2 Taiko RPC",
-        error
+        error,
       );
     }
   }
@@ -198,8 +198,8 @@
         L1Balance = Number(
           ethRPC?.utils.fromWei(
             await ethRPC?.eth.getBalance(customAddressL1),
-            "ether"
-          )
+            "ether",
+          ),
         );
       } else {
         L1Balance = null;
@@ -209,15 +209,15 @@
         L2Balance = Number(
           L2TaikoRPC?.utils.fromWei(
             await L2TaikoRPC?.eth.getBalance(customAddressL2),
-            "ether"
-          )
+            "ether",
+          ),
         );
       } else {
         L2Balance = null;
       }
 
       gasPrice = Number(
-        ethRPC?.utils.fromWei(await ethRPC?.eth.getGasPrice(), "gwei")
+        ethRPC?.utils.fromWei(await ethRPC?.eth.getGasPrice(), "gwei"),
       );
       nodeHeight = await myNode.eth.getBlockNumber();
       chainHeight = await L2TaikoRPC.eth.getBlockNumber();
@@ -251,7 +251,10 @@
         const timeElapsed = currentTime - startTime;
         if (timeElapsed > 5000 && downloadProgress > 0) {
           const estimatedTotalTime = timeElapsed / downloadProgress;
-          estimatedSyncingTime = sd.stringify(estimatedTotalTime / 1000, "m");
+          estimatedSyncingTime = simpleDuration.stringify(
+            estimatedTotalTime / 1000,
+            "m",
+          );
         }
       }
     } catch (error) {
@@ -261,19 +264,18 @@
   }
 
   const fetchAddressEvents = async () => {
-    // Fetch Amount Of blocks proposed/proven
+    // Fetch Amount Of blocks proposed/proven, so if nodeType is regular node return and do nothing
     let eventIndexerEventURL = CUSTOM_EVENT_INDEXER_API_URL;
     try {
       if (nodeType === NodeTypes.Node) return;
-      eventIndexerEventURL =
-        eventIndexerEventURL +
-        `/eventByAddress?address=${customAddressL1}&event=${
-          nodeType === NodeTypes.Proposer
-            ? "BlockProposed"
-            : nodeType === NodeTypes.Prover
-            ? "BlockProven"
-            : ""
-        }`;
+
+      eventIndexerEventURL = `${eventIndexerEventURL}/eventByAddress?address=${customAddressL1}&event=${
+        nodeType === NodeTypes.Proposer
+          ? "BlockProposed"
+          : nodeType === NodeTypes.Prover
+          ? "BlockProven"
+          : ""
+      }`;
 
       const response = await fetch(eventIndexerEventURL);
       if (response.status === 200) {
@@ -291,7 +293,7 @@
       fetchEventIndexerError = true;
       console.error(
         `Error fetching address events for the ${nodeType} at ${eventIndexerEventURL}`,
-        error
+        error,
       );
     }
   };
@@ -347,7 +349,10 @@
   // Fetch from prometheus
   const fetchPrometheus = async () => {
     try {
-      const peersData = await queryPrometheus(CUSTOM_PROMETHEUS_API_URL, "p2p_peers");
+      const peersData = await queryPrometheus(
+        CUSTOM_PROMETHEUS_API_URL,
+        "p2p_peers",
+      );
       peers = peersData.data.result[0].value[1];
       fetchPrometheusError = false;
     } catch (error) {
@@ -477,8 +482,8 @@
 
   <div
     class="{bigLayout
-      ? 'max-w-[46rem]'
-      : 'max-w-[35rem]'} sticky sm:justify-center"
+      ? "max-w-[46rem]"
+      : "max-w-[35rem]"} sticky sm:justify-center"
   >
     <button
       id="connectionsBtn"
@@ -507,7 +512,10 @@
       <Gear class="fill-[hsl(var(--twc-settingsBtnColor))]" />
     </button>
 
-    <div id="cards" class="mt-[1px] flex flex-wrap justify-center overflow-y-clip">
+    <div
+      id="cards"
+      class="mt-[1px] flex flex-wrap justify-center overflow-y-clip"
+    >
       <Card
         title="memory"
         body={systeminformationMetrics?.memUsedGB}
@@ -612,7 +620,7 @@
     </div>
   </div>
 </div>
-<Footer/>
+<Footer />
 
 {#if settingsOpen}
   <DetailsModal title={"settings"} bind:isOpen={settingsOpen}>
@@ -667,18 +675,17 @@
       <div
         class="flex md:flex-row gap-[15px] md:gap-[50px] flex-col justify-center"
       >
-      <div class="flex flex-col justify-between items-center">
+        <div class="flex flex-col justify-between items-center">
           layout
           <div class="mt-2 inline-flex text-black">
             <button
               class:active={!bigLayout}
               on:click={() => {
                 expertModeCounter++;
-                if(expertModeCounter === 5) enableExpertMode();
+                if (expertModeCounter === 5) enableExpertMode();
 
                 bigLayout = false;
-                }
-              }
+              }}
               class="layout py-[2px] px-1 mx-1 rounded-full"
             >
               compact
@@ -688,9 +695,8 @@
               on:click={() => {
                 expertModeCounter = 0;
                 expertMode = false;
-                bigLayout = true
-                }
-              }
+                bigLayout = true;
+              }}
               class="layout py-[2px] px-1 mx-1 rounded-full"
             >
               wide
@@ -722,7 +728,7 @@
             on:change={() => {
               setLocalStorageItem(
                 "CUSTOM_MYNODE_API_URL",
-                CUSTOM_MYNODE_API_URL
+                CUSTOM_MYNODE_API_URL,
               );
               initConnections();
             }}
@@ -747,7 +753,7 @@
             on:change={() => {
               setLocalStorageItem(
                 "CUSTOM_SYSTEMINFO_API_URL",
-                CUSTOM_SYSTEMINFO_API_URL
+                CUSTOM_SYSTEMINFO_API_URL,
               );
             }}
           />
@@ -771,7 +777,7 @@
             on:change={() => {
               setLocalStorageItem(
                 "CUSTOM_PROMETHEUS_API_URL",
-                CUSTOM_PROMETHEUS_API_URL
+                CUSTOM_PROMETHEUS_API_URL,
               );
             }}
           />
@@ -795,7 +801,7 @@
             on:change={() => {
               setLocalStorageItem(
                 "CUSTOM_ETH_RPC_API_URL",
-                CUSTOM_ETH_RPC_API_URL
+                CUSTOM_ETH_RPC_API_URL,
               );
               initConnections();
             }}
@@ -809,7 +815,9 @@
       </div>
 
       <div
-        class="{expertMode ? 'flex' : 'hidden'} sm:flex-row flex-col justify-between items-center font-bold"
+        class="{expertMode
+          ? "flex"
+          : "hidden"} sm:flex-row flex-col justify-between items-center font-bold"
       >
         Event Indexer:
         <div class="ml-2 w-72 flex items-center">
@@ -821,7 +829,7 @@
             on:change={() => {
               setLocalStorageItem(
                 "CUSTOM_EVENT_INDEXER_API_URL",
-                CUSTOM_EVENT_INDEXER_API_URL
+                CUSTOM_EVENT_INDEXER_API_URL,
               );
               initConnections();
             }}

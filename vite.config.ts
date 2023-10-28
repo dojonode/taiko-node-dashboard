@@ -8,7 +8,6 @@ export default defineConfig({
     global: "globalThis",
     "process.env.NODE_DEBUG": false,
     "process.env.LINK_API_URL": false,
-    "process.env.SDK_VERSION": "'unknown'",
   },
   server: {
     host: "0.0.0.0",
