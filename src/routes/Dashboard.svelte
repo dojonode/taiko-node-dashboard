@@ -103,7 +103,7 @@
     fetchL2TaikoRPCError = L2TaikoRPCResponse.fetchErrorBoolean;
 
     if(fetchL2TaikoRPCError)
-          console.error(`Error while connecting to the L2 Taiko RPC ${L2_TAIKO_RPC_API_URL}. This dashboard version might be outdated, reach out in the taiko discord if the issue persists.`);
+      console.error(`Error while connecting to the L2 Taiko RPC ${L2_TAIKO_RPC_API_URL}. This dashboard version might be outdated, reach out in the taiko discord if the issue persists.`);
   }
 
   // Prometheus metric
@@ -523,7 +523,7 @@
         icon={chainIcon}
         loadingbar={false}
       />
-      <!-- node is either a prover or a proposr -->
+      <!-- node is either a prover or a proposer -->
       {#if nodeType === NodeTypes.Proposer || nodeType === NodeTypes.Prover}
         <Card
           title="wallet"
@@ -563,7 +563,7 @@
         icon={gasIcon}
         loadingbar={false}
       />
-      <!-- Invisble cards that push any incomplete rows of cards to the left -->
+      <!-- Invisible cards that push any incomplete rows of cards to the left -->
       <div class="invisible h-5">
         <Card />
       </div>
@@ -588,32 +588,23 @@
       <!-- when the node is simply a node or a prover, they can change the address (both L1 and L2) -->
       {#if nodeType === NodeTypes.Proposer}
         <div class="flex flex-col justify-between items-center">
-          L1 address used by {nodeType}
+          ethereum address used by {nodeType}
           <div class="mt-2 w-[75%]">
             <input
               class="shadow appearance-none rounded w-full px-3 focus:outline-none focus:shadow-outline leading-none"
               type="text"
               bind:value={customAddressL1}
-              on:keyup={() =>
-                setLocalStorageItem("customAddressL1", customAddressL1.trim())}
-            />
-          </div>
-        </div>
-        <div class="flex flex-col justify-between items-center">
-          L2 address used by {nodeType}
-          <div class="mt-2 w-[75%]">
-            <input
-              class="shadow appearance-none rounded w-full px-3 focus:outline-none focus:shadow-outline leading-none"
-              type="text"
-              bind:value={customAddressL2}
-              on:keyup={() =>
-                setLocalStorageItem("customAddressL2", customAddressL2.trim())}
+              on:keyup={() => {
+                setLocalStorageItem("customAddressL1", customAddressL1.trim());
+                customAddressL2 = customAddressL1;
+                setLocalStorageItem("customAddressL2", customAddressL2.trim());
+              }}
             />
           </div>
         </div>
       {:else if nodeType === NodeTypes.Prover}
         <div class="flex flex-col justify-between items-center">
-          address used by {nodeType}
+          ethereum address used by {nodeType}
           <div class="mt-2 w-[75%]">
             <input
               class="shadow appearance-none rounded w-full px-3 focus:outline-none focus:shadow-outline leading-none"
