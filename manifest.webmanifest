@@ -1,1 +1,1 @@
-{"name":"@wolfderechter/taiko-node-dashboard","short_name":"@wolfderechter/taiko-node-dashboard","start_url":"/","display":"standalone","background_color":"#ffffff","lang":"en","scope":"/"}
+{"name":"dojo node dashboard","short_name":"dojo node","start_url":"./","display":"standalone","background_color":"#FFF9EB","lang":"en","scope":"/","theme_color":"#1a1b1b","icons":[{"src":"dojonodelogo-dark-square.png","sizes":"any"}]}
