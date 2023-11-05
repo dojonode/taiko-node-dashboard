@@ -349,12 +349,14 @@
     // Initialize the RPC connections
     await initConnections();
 
-    // Set startNodeHeight of the node
-    myNode.eth.getBlockNumber().then((height) => (startNodeHeight = height));
+    // Set startNodeHeight of the node if the RPC is successfully set
+    if(!fetchMyNodeError)
+      myNode.eth.getBlockNumber().then((height) => (startNodeHeight = height));
 
     // Interval to fetch metrics every 5 seconds
     intervalTimer = setInterval(async () => {
       try {
+        // TODO: add if checks for the fetchMyNodeError etc. before fetching data
         fetchMetrics();
         fetchSystemInfo();
         fetchPrometheus();
