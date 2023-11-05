@@ -16,6 +16,18 @@ export default defineConfig({
   plugins: [
     svelte(),
     VitePWA({
+      includeAssets: [
+        "splashscreens/iphone5_splash.png",
+        "splashscreens/iphone6_splash.png",
+        "splashscreens/iphoneplus_splash.png",
+        "splashscreens/iphonex_splash.png",
+        "splashscreens/iphonexr_splash.png",
+        "splashscreens/iphonexsmax_splash.png",
+        "splashscreens/ipad_splash.png",
+        "splashscreens/ipadpro1_splash.png",
+        "splashscreens/ipadpro3_splash.png",
+        "splashscreens/ipadpro2_splash.png",
+      ],
       manifest: {
         name: "dojo node dashboard",
         short_name: "dojo node",
