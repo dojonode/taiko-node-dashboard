@@ -49,13 +49,13 @@
   let myNode;
   let ethRPC;
   let L2TaikoRPC;
-  let fetchMetricsError = false;
-  let fetchSystemInfoError = false;
-  let fetchPrometheusError = false;
-  let fetchMyNodeError = false;
-  let fetchEthRPCError = false;
-  let fetchL2TaikoRPCError = false;
-  let fetchEventIndexerError = false;
+  let fetchMetricsError = true;
+  let fetchSystemInfoError = true;
+  let fetchPrometheusError = true;
+  let fetchMyNodeError = true;
+  let fetchEthRPCError = true;
+  let fetchL2TaikoRPCError = true;
+  let fetchEventIndexerError = true;
 
   // Syncing estimation
   let startNodeHeight;
@@ -88,22 +88,49 @@
 
   // Initialize the web3 RPC connections with error handling to see if we have provided a valid RPC provider
   async function initConnections() {
-    const myNodeResponse = await initializeRPCConnection(CUSTOM_MYNODE_API_URL);
-    const ethRPCResponse = await initializeRPCConnection(CUSTOM_ETH_RPC_API_URL);
-    const L2TaikoRPCResponse = await initializeRPCConnection(L2_TAIKO_RPC_API_URL);
+    const timeout = 5000; // Set your maximum time in milliseconds
 
-    // Set the web3 RPC instances
-    myNode = myNodeResponse.web3Instance;
-    ethRPC = ethRPCResponse.web3Instance;
-    L2TaikoRPC = L2TaikoRPCResponse.web3Instance;
+    const myNodePromise = initializeRPCConnection(CUSTOM_MYNODE_API_URL);
+    const ethRPCPromise = initializeRPCConnection(CUSTOM_ETH_RPC_API_URL);
+    const L2TaikoRPCPromise = initializeRPCConnection(L2_TAIKO_RPC_API_URL);
 
-    // Set the response errors
-    fetchMyNodeError = myNodeResponse.fetchErrorBoolean;
-    fetchEthRPCError = ethRPCResponse.fetchErrorBoolean;
-    fetchL2TaikoRPCError = L2TaikoRPCResponse.fetchErrorBoolean;
+    // Start connections concurrently
+    const myNodeResponse = Promise.race([
+      myNodePromise,
+      new Promise(resolve => setTimeout(resolve, timeout, { web3Instance: null, fetchErrorBoolean: true }))
+    ]);
 
-    if(fetchL2TaikoRPCError)
-      console.error(`Error while connecting to the L2 Taiko RPC ${L2_TAIKO_RPC_API_URL}. This dashboard version might be outdated, reach out in the taiko discord if the issue persists.`);
+    const ethRPCResponse = Promise.race([
+      ethRPCPromise,
+      new Promise(resolve => setTimeout(resolve, timeout, { web3Instance: null, fetchErrorBoolean: true }))
+    ]);
+
+    const L2TaikoRPCResponse = Promise.race([
+      L2TaikoRPCPromise,
+      new Promise(resolve => setTimeout(resolve, timeout, { web3Instance: null, fetchErrorBoolean: true }))
+    ]);
+
+    // Set the web3 RPC instances and handle errors
+    myNodeResponse.then((response: any) => {
+      myNode = response.web3Instance;
+      fetchMyNodeError = response.fetchErrorBoolean;
+      if (fetchMyNodeError)
+        console.error(`Error while connecting to the NODE RPC at ${CUSTOM_MYNODE_API_URL}. The node IP address or port might be wrong. Or the port might be blocked by a firewall.`);
+    });
+
+    ethRPCResponse.then((response: any) => {
+      ethRPC = response.web3Instance;
+      fetchEthRPCError = response.fetchErrorBoolean;
+      if (fetchEthRPCError)
+        console.error(`Error while connecting to the ETHEREUM RPC ${CUSTOM_ETH_RPC_API_URL}. Double check the url in the connections tab.`);
+    });
+
+    L2TaikoRPCResponse.then((response: any) => {
+      L2TaikoRPC = response.web3Instance;
+      fetchL2TaikoRPCError = response.fetchErrorBoolean;
+      if (fetchL2TaikoRPCError)
+        console.error(`Error while connecting to the TAIKO RPC ${L2_TAIKO_RPC_API_URL}. Looks like something is wrong with the official Taiko L2 RPC, check in the discord if this issue persists.`);
+    });
   }
 
   // Prometheus metric
@@ -170,6 +197,14 @@
         L2Balance = null;
         gasPrice = null;
       }
+
+      // If there was an error with the Node or L2TaikoRPC, return and set the syncingStatus to null so the progress bar reads 'node not found'
+      // This way there aren't made any more calls to offline RPC's before the connection is stable again
+      if(fetchMyNodeError || fetchL2TaikoRPCError){
+        syncingStatus = null;
+        return;
+      }
+
       nodeHeight = await myNode.eth.getBlockNumber();
       chainHeight = await L2TaikoRPC.eth.getBlockNumber();
 
