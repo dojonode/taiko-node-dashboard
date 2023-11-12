@@ -130,7 +130,6 @@
   }
 
   let intervalTimer: NodeJS.Timer;
-  let systeminfo: Systeminfo;
   let systeminformationMetrics: SysteminformationMetricsInterface = null;
 
   // layout variables
@@ -146,31 +145,31 @@
   // fetch general metrics from the node RPCs
   async function fetchMetrics() {
     try {
-      if (customAddressL1) {
+      // Check if there was an error with the ETH RPC and L2 Taiko RPC connection, before fetching data
+      if (customAddressL1 && customAddressL2 && (!fetchEthRPCError) && (!fetchL2TaikoRPCError)) {
         L1Balance = Number(
           ethRPC?.utils.fromWei(
             await ethRPC?.eth.getBalance(customAddressL1),
             "ether",
           ),
         );
-      } else {
-        L1Balance = null;
-      }
-      if (customAddressL2) {
-        // Use the taiko RPC to be reliable, node that's not synced will display false numbers
+
+        // Use the taiko RPC to be reliable, a node that's not synced will display false numbers
         L2Balance = Number(
           L2TaikoRPC?.utils.fromWei(
             await L2TaikoRPC?.eth.getBalance(customAddressL2),
             "ether",
           ),
         );
-      } else {
-        L2Balance = null;
-      }
 
-      gasPrice = Number(
+        gasPrice = Number(
         ethRPC?.utils.fromWei(await ethRPC?.eth.getGasPrice(), "gwei"),
-      );
+        );
+      } else {
+        L1Balance = null;
+        L2Balance = null;
+        gasPrice = null;
+      }
       nodeHeight = await myNode.eth.getBlockNumber();
       chainHeight = await L2TaikoRPC.eth.getBlockNumber();
 
