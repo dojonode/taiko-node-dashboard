@@ -25,7 +25,7 @@ Or if you wish to run the dashboard standalone:
 2. `cd taiko-node-dashboard-docker`
 3. `docker compose up`
 4. visit http://localhost:7744 to access the dashboard
-5. *_⚠️ NOTE:_*  you might need to change the IP address in the connections (📡 button) to the IP address of your VPS.
+5. Click on the 📡 button and change localhost to the IP address of the node's machine
 
 
 ## Development
