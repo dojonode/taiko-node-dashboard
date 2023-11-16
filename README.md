@@ -2,7 +2,7 @@
 ![Docker Pulls](https://img.shields.io/docker/pulls/wolfderechter/taiko-node-dashboard)
 
 Taiko node dashboard is aimed to provide quick and digestible insights into your Taiko node.
-![Cover_Image](https://github.com/wolfderechter/taiko-node-dashboard/assets/60930264/8a18073f-848c-421f-9e81-4aae5482737e)
+![Cover_Image](https://github.com/dojonode/taiko-node-dashboard/assets/60930264/8a18073f-848c-421f-9e81-4aae5482737e)
 
 ## Usage
 
@@ -21,7 +21,7 @@ To run the dashboard simply append the following two services to the `docker-com
 
 Or if you wish to run the dashboard standalone:
 
-1. `git clone https://github.com/wolfderechter/taiko-node-dashboard-docker`
+1. `git clone https://github.com/dojonode/taiko-node-dashboard-docker`
 2. `cd taiko-node-dashboard-docker`
 3. `docker compose up`
 4. visit http://localhost:7744 to access the dashboard
@@ -49,9 +49,9 @@ You can start the application with the following lines:
 
 `pnpm start`
 
-You'll probably also want to start the [systeminformation](https://github.com/wolfderechter/dojonode-systeminformation) application with:
+You'll probably also want to start the [systeminformation](https://github.com/dojonode/dojonode-systeminformation) application with:
 
-`git clone https://github.com/wolfderechter/dojonode-systeminformation`
+`git clone https://github.com/dojonode/dojonode-systeminformation`
 
 `cd dojonode-systeminformation`
 
