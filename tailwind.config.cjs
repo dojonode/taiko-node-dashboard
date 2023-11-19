@@ -1,6 +1,6 @@
-const { createThemes } = require("tw-colors");
+import {createThemes} from "tw-colors";
 
-module.exports = {
+export default {
   content: ["./src/**/*.{html,js,svelte,ts}"],
   plugins: [
     createThemes({
