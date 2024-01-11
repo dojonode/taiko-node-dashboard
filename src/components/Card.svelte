@@ -1,7 +1,7 @@
 <script lang="ts">
   import Progressbar from "./Progressbar.svelte";
   import { MetricTypes } from "../domain/enums";
-  import ethIcon from "../assets/icons/Ethereum.png";
+  import ethIcon from "../assets/icons/Ethereum.avif";
   import taikoIcon from "../assets/taikoLogoIcon.png";
 
   export let title: string = null;

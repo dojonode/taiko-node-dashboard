@@ -15,20 +15,21 @@
   import Footer from "../components/Footer.svelte";
   import TaikoLogo from "../components/icons/TaikoLogo.svelte";
   import Gear from "../components/icons/Gear.svelte";
-  import purseIcon from "../assets/icons/Purse.png";
-  import heartIcon from "../assets/icons/Heart.png";
-  import brainIcon from "../assets/icons/Brain.png";
-  import dollsIcon from "../assets/icons/Dolls.png";
-  import checkmarkIcon from "../assets/icons/Check_Mark.png";
-  import fileboxIcon from "../assets/icons/File_Box.png";
-  import chainIcon from "../assets/icons/Chain.png";
+  import purseIcon from "../assets/icons/Purse.avif";
+  import heartIcon from "../assets/icons/Heart.avif";
+  import brainIcon from "../assets/icons/Brain.avif";
+  import dollsIcon from "../assets/icons/Dolls.avif";
+  import checkmarkIcon from "../assets/icons/CheckMark.avif";
+  import fileboxIcon from "../assets/icons/FileBox.avif";
+  import chainIcon from "../assets/icons/Chain.avif";
   import taikoLogoIcon from "../assets/taikoLogoIcon.png";
-  import packageIcon from "../assets/icons/Package.png";
-  import abacusIcon from "../assets/icons/Abacus.png";
-  import gasIcon from "../assets/icons/Gas.png";
-  import timerclockIcon from "../assets/icons/Timer_Clock.png";
-  import warningIcon from "../assets/icons/Warning.png";
-  import antennaIcon from "../assets/icons/Antenna.png";
+  import ethereumIcon from "../assets/icons/Ethereum.avif";
+  import packageIcon from "../assets/icons/Package.avif";
+  import abacusIcon from "../assets/icons/Abacus.avif";
+  import gasIcon from "../assets/icons/Gas.avif";
+  import timerclockIcon from "../assets/icons/Timer_Clock.avif";
+  import warningIcon from "../assets/icons/Warning.avif";
+  import antennaIcon from "../assets/icons/Antenna.avif";
   import { MetricTypes, NodeTypes } from "../domain/enums";
   import type {
     Systeminfo,

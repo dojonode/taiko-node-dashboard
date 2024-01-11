@@ -1,8 +1,8 @@
 <script context="module">
-	import TaikoHeart from '../assets/TaikoHeart.png';
-	import GithubIcon from '../assets/icons/Github.png';
-	import TwitterIcon from '../assets/icons/Twitter.png';
-	import DiscordIcon from '../assets/icons/Discord.png';
+	import TaikoHeart from '../assets/TaikoHeart.avif';
+	import GithubIcon from '../assets/icons/Github.avif';
+	import TwitterIcon from '../assets/icons/Twitter.avif';
+	import DiscordIcon from '../assets/icons/Discord.avif';
 </script>
 
 <div class="footer relative md:top-[35px] top-[0px] bottom-1 mb-1">
