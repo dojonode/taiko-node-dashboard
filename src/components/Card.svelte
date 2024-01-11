@@ -51,7 +51,7 @@
                 alt="ethereum icon"
               />
               <a
-                href="https://sepolia.etherscan.io/address/{customAddressL1}"
+                href="https://holesky.etherscan.io/address/{customAddressL1}"
                 target="”_blank”"
               >
                 {bodyString}
@@ -86,7 +86,7 @@
             {#if bodyMetricType === MetricTypes.ethereum && subBodyMetricType === MetricTypes.ethereum}
               <img src={taikoIcon} class="w-[15px] ml-[5px]" alt="taiko icon" />
               <a
-                href="https://explorer.jolnir.taiko.xyz/address/{customAddressL2}"
+                href="https://explorer.katla.taiko.xyz/address/{customAddressL2}"
                 target="”_blank”"
               >
                 {subBodyString}
