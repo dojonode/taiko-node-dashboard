@@ -135,7 +135,7 @@
     color: hsl(var(--twc-cardTitleColor));
     font-size: 18px;
     font-size: large;
-    font-weight: 700;
+    font-weight: 600;
   }
 
   .modal-sub-body {
