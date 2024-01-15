@@ -16,6 +16,11 @@ and this project adheres to [Semantic Versioning].
 - upgrade postcss to es6
 - update dependencies: vite v5
 - update footer
+- upgrade to alpha6 katla testnet
+- optimize images
+- combine connections and settings into connections popup
+- refactored the themeswitcher
+- updated theme colors
 
 ## [1.1.5] - 2023-11-12
 
