@@ -1,6 +1,7 @@
 <script lang="ts">
   export let title: string = null;
   export let body: string = null;
+  export let subBody: string = null;
   export let icon: string = null;
 </script>
 
@@ -14,13 +15,8 @@
         <img src={icon} alt="icon" />
       </div>
 
-      <div class="bodyArea flex flex-col my-auto w-[90%]">
-          <div
-            class="flex items-center flex-col"
-          >
-              taiko
-          </div>
-      </div>
+      <div class="bodyArea flex flex-col my-auto w-[90%]">{body}</div>
+      <div class="modal-sub-body flex items-center justify-center">{subBody}</div>
     </div>
   </div>
 </div>
@@ -46,11 +42,17 @@
     font-weight: 600;
   }
 
+  .modal-sub-body {
+    color: hsl(var(--twc-cardSubBodyColor));
+    font-size: 15px;
+  }
+
   .bodyArea {
     text-align: center;
     padding-top: 5px;
     color: hsl(var(--twc-textColor));
     font-weight: 400;
+    font-size: 18px;
   }
 
   @media (max-width: 750px) {

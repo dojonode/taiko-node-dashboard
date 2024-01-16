@@ -10,20 +10,19 @@
   } from "../utils/localstorage";
   import DetailsModal from "../components/DetailsModal.svelte";
   import Card from "../components/Card.svelte";
+  import ChainCard from "../components/ChainCard.svelte";
   import ThemeSwitcher from "../components/ThemeSwitcher.svelte";
   import Progressbar from "../components/Progressbar.svelte";
   import Footer from "../components/Footer.svelte";
-  import TaikoLogo from "../components/icons/TaikoLogo.svelte";
-  import Gear from "../components/icons/Gear.svelte";
   import purseIcon from "../assets/icons/Purse.avif";
   import heartIcon from "../assets/icons/Heart.avif";
   import brainIcon from "../assets/icons/Brain.avif";
   import dollsIcon from "../assets/icons/Dolls.avif";
   import checkmarkIcon from "../assets/icons/CheckMark.avif";
   import fileboxIcon from "../assets/icons/FileBox.avif";
+  import dojoScrollIcon from "../assets/icons/DojoScroll.svg";
   import chainIcon from "../assets/icons/Chain.avif";
-  import taikoLogoIcon from "../assets/taikoLogoIcon.png";
-  import ethereumIcon from "../assets/icons/Ethereum.avif";
+  import nodeTaikoIcon from "../assets/icons/NodeTaiko.avif";
   import packageIcon from "../assets/icons/Package.avif";
   import abacusIcon from "../assets/icons/Abacus.avif";
   import gasIcon from "../assets/icons/Gas.avif";
@@ -31,8 +30,8 @@
   import warningIcon from "../assets/icons/Warning.avif";
   import antennaIcon from "../assets/icons/Antenna.avif";
   import { MetricTypes, NodeTypes } from "../domain/enums";
+  import headerImage from '../assets/Header.avif';
   import type {
-    Systeminfo,
     SysteminformationMetricsInterface,
   } from "../domain/types";
   import {
@@ -161,12 +160,7 @@
   let systeminformationMetrics: SysteminformationMetricsInterface = null;
 
   // layout variables
-  let bigLayout = false;
   let rotationAngle = 0; // used to rotate the taiko logo
-  let settingsOpen =
-    nodeType !== NodeTypes.Node &&
-    (customAddressL1 === null || customAddressL1 === "");
-
   let connectionsOpen: boolean = false;
   let imageRef: HTMLImageElement;
 
@@ -174,25 +168,27 @@
   async function fetchMetrics() {
     try {
       // Check if there was an error with the ETH RPC and L2 Taiko RPC connection, before fetching data
-      if (customAddressL1 && customAddressL2 && (!fetchEthRPCError) && (!fetchL2TaikoRPCError)) {
-        L1Balance = Number(
-          ethRPC?.utils.fromWei(
-            await ethRPC?.eth.getBalance(customAddressL1),
-            "ether",
-          ),
-        );
-
-        // Use the taiko RPC to be reliable, a node that's not synced will display false numbers
-        L2Balance = Number(
-          L2TaikoRPC?.utils.fromWei(
-            await L2TaikoRPC?.eth.getBalance(customAddressL2),
-            "ether",
-          ),
-        );
-
+      if (!fetchEthRPCError && !fetchL2TaikoRPCError) {
         gasPrice = Number(
-        ethRPC?.utils.fromWei(await ethRPC?.eth.getGasPrice(), "gwei"),
+          ethRPC?.utils.fromWei(await ethRPC?.eth.getGasPrice(), "gwei"),
         );
+
+        if(customAddressL1 && customAddressL2){
+          L1Balance = Number(
+            ethRPC?.utils.fromWei(
+              await ethRPC?.eth.getBalance(customAddressL1),
+              "ether",
+            ),
+          );
+
+          // Use the taiko RPC to be reliable, a node that's not synced will display false numbers
+          L2Balance = Number(
+            L2TaikoRPC?.utils.fromWei(
+              await L2TaikoRPC?.eth.getBalance(customAddressL2),
+              "ether",
+            ),
+          );
+        }
       } else {
         L1Balance = null;
         L2Balance = null;
@@ -341,8 +337,8 @@
     if (nodeType === type) return;
 
     // used to rotate the taiko logo correctly
-    rotationAngle += 120;
-    imageRef.style.transform = `rotate(${rotationAngle}deg)`;
+    // rotationAngle += 120;
+    // imageRef.style.transform = `rotate(${rotationAngle}deg)`;
 
     switch (type) {
       case NodeTypes.Node:
@@ -357,11 +353,6 @@
       default:
         break;
     }
-
-    // Open the settings popup if no address is defined or if it's empty
-    settingsOpen =
-      nodeType !== NodeTypes.Node &&
-      (customAddressL1 === null || customAddressL1 === "");
 
     setLocalStorageItem("nodeType", nodeType);
   }
@@ -410,18 +401,33 @@
   });
 </script>
 
+<header class="flex flex-col items-center justify-center w-[90%] m-auto">
+  <span>
+    <a href="/">
+      <img src={headerImage} class="max-w-full max-h-[20vh] w-auto h-auto mt-2" alt="dojo node header with trees and the logo" />
+    </a>
+    <div class="w-[60px] ml-auto mr-8 lg:-mb-12 md:mb-4 mb-2">
+      <ThemeSwitcher />
+    </div>
+  </span>
+</header>
+
 <div class="flex flex-col items-center">
   <div class="text-center relative pt-4 md:pt-10">
-    <img
-      bind:this={imageRef}
-      src={taikoLogoIcon}
-      class="taikoImg mx-auto"
-      alt=""
-    />
+    <section>
+      <div class="mx-auto relative">
+        <span>
+          <span class="text-[#5CAA80] font-bold">tatami</span>
+          <img src={dojoScrollIcon} class="icon-big m-auto" alt="tatami flag">
+        </span>
 
-    <TaikoLogo
-      class="fill-[hsl(var(--twc-textColor))] w-32 mx-auto mt-[10px]"
-    />
+        <div class="card md:absolute md:top-0 md:left-36 w-max text-balance md:text-left mt-8 mb-2 max-w-[20rem]">
+          <h1 class="font-bold">node dashboard</h1>
+          <h2 class="-mt-2">the main training area</h2>
+        </div>
+      </div>
+    </section>
+
     <div class="nodeTypes flex justify-evenly mt-4">
       <button
         class:active={nodeType === NodeTypes.Node}
@@ -474,13 +480,11 @@
   </div>
 
   <div
-    class="{bigLayout
-      ? "max-w-[46rem]"
-      : "max-w-[35rem]"} sticky sm:justify-center"
+    class="max-w-[35rem] sticky sm:justify-center"
   >
     <button
       id="connectionsBtn"
-      class="w-6 h-6 absolute right-[40px] top-[-37px] cursor-pointer"
+      class="w-6 h-6 absolute right-[7px] mr-[6px] top-[-37px] cursor-pointer"
       on:click={() => (connectionsOpen = true)}
     >
       <img
@@ -497,18 +501,16 @@
       />
     </button>
 
-    <button
-      id="settingsBtn"
-      class="w-6 h-6 absolute right-[7px] top-[-37px] cursor-pointer"
-      on:click={() => (settingsOpen = true)}
-    >
-      <Gear class="fill-[hsl(var(--twc-settingsBtnColor))]" />
-    </button>
-
     <div
       id="cards"
       class="mt-[1px] flex flex-wrap justify-center overflow-y-clip"
     >
+      <ChainCard
+        title="chain"
+        body="taiko"
+        subBody="katla testnet"
+        icon={nodeTaikoIcon}
+      />
       <Card
         title="memory"
         body={systeminformationMetrics?.memUsedGB}
@@ -538,10 +540,12 @@
         progress={systeminformationMetrics?.filestorageUsedPerc}
       />
       <Card
-        title="runtime"
-        body={systeminformationMetrics?.runtime}
-        bodyMetricType={systeminformationMetrics?.runtimeMetricType}
-        icon={timerclockIcon}
+        title="nodeheight"
+        body={nodeHeight}
+        bodyMetricType={MetricTypes.blockheight}
+        subBody={chainHeight}
+        subBodyMetricType={MetricTypes.blockheight}
+        icon={chainIcon}
         loadingbar={false}
       />
       <Card
@@ -552,12 +556,10 @@
         loadingbar={false}
       />
       <Card
-        title="nodeheight"
-        body={nodeHeight}
-        bodyMetricType={MetricTypes.blockheight}
-        subBody={chainHeight}
-        subBodyMetricType={MetricTypes.blockheight}
-        icon={chainIcon}
+        title="runtime"
+        body={systeminformationMetrics?.runtime}
+        bodyMetricType={systeminformationMetrics?.runtimeMetricType}
+        icon={timerclockIcon}
         loadingbar={false}
       />
       <!-- node is either a prover or a proposer -->
@@ -615,84 +617,6 @@
 </div>
 <Footer />
 
-{#if settingsOpen}
-  <DetailsModal title={"settings"} bind:isOpen={settingsOpen}>
-    <div
-      class="settings grid grid-cols-1 gap-6 mx-5 my-10 max-h-[600px] overflow-y-auto text-[hsl(var(--twc-textColor))] font-semibold"
-      slot="body"
-    >
-      <!-- when the node is a proposer, allow the user to change both L1 and L2 wallet address. Because proposers can receive fees on a different L2 address -->
-      <!-- when the node is simply a node or a prover, they can change the address (both L1 and L2) -->
-      {#if nodeType === NodeTypes.Proposer}
-        <div class="flex flex-col justify-between items-center">
-          ethereum address used by {nodeType}
-          <div class="mt-2 w-[75%]">
-            <input
-              class="shadow appearance-none rounded w-full px-3 focus:outline-none focus:shadow-outline leading-none"
-              type="text"
-              bind:value={customAddressL1}
-              on:keyup={() => {
-                setLocalStorageItem("customAddressL1", customAddressL1.trim());
-                customAddressL2 = customAddressL1;
-                setLocalStorageItem("customAddressL2", customAddressL2.trim());
-              }}
-            />
-          </div>
-        </div>
-      {:else if nodeType === NodeTypes.Prover}
-        <div class="flex flex-col justify-between items-center">
-          ethereum address used by {nodeType}
-          <div class="mt-2 w-[75%]">
-            <input
-              class="shadow appearance-none rounded w-full px-3 focus:outline-none focus:shadow-outline leading-none"
-              type="text"
-              bind:value={customAddressL1}
-              on:keyup={() => {
-                setLocalStorageItem("customAddressL1", customAddressL1.trim());
-                customAddressL2 = customAddressL1;
-                setLocalStorageItem("customAddressL2", customAddressL2.trim());
-              }}
-            />
-          </div>
-        </div>
-      {/if}
-      <div
-        class="flex md:flex-row gap-[15px] md:gap-[50px] flex-col justify-center"
-      >
-        <div class="flex flex-col justify-between items-center">
-          layout
-          <div class="mt-2 inline-flex text-black">
-            <button
-              class:active={!bigLayout}
-              on:click={() => {
-                expertModeCounter++;
-                if (expertModeCounter === 5) enableExpertMode();
-
-                bigLayout = false;
-              }}
-              class="layout py-[2px] px-1 mx-1 rounded-full"
-            >
-              compact
-            </button>
-            <button
-              class:active={bigLayout}
-              on:click={() => {
-                expertModeCounter = 0;
-                expertMode = false;
-                bigLayout = true;
-              }}
-              class="layout py-[2px] px-1 mx-1 rounded-full"
-            >
-              wide
-            </button>
-          </div>
-        </div>
-        <!-- Theme switcher to change themes -->
-        <ThemeSwitcher />
-      </div>
-    </div>
-  </DetailsModal>
-{/if}
 {#if connectionsOpen}
   <DetailsModal title={"Connections"} bind:isOpen={connectionsOpen}>
     <div
@@ -702,7 +626,24 @@
       <div
         class="flex sm:flex-row flex-col justify-between items-center font-bold"
       >
-        Node:
+        ethereum address
+        <div class="ml-2 w-72 flex items-center">
+          <input
+              class="shadow appearance-none rounded w-full py-2 px-3 focus:outline-none focus:shadow-outline leading-none"
+              type="text"
+              bind:value={customAddressL1}
+              on:keyup={() => {
+                setLocalStorageItem("customAddressL1", customAddressL1.trim());
+                customAddressL2 = customAddressL1;
+                setLocalStorageItem("customAddressL2", customAddressL2.trim());
+              }}
+            />
+        </div>
+      </div>
+      <div
+        class="flex sm:flex-row flex-col justify-between items-center font-bold"
+      >
+        node
         <div class="ml-2 w-72 flex items-center">
           <input
             class="shadow appearance-none rounded w-full py-2 px-3 leading-tight focus:outline-none focus:shadow-outline mt-1"
@@ -727,7 +668,7 @@
       <div
         class="flex sm:flex-row flex-col justify-between items-center font-bold"
       >
-        Systeminformation:
+        systeminformation
         <div class="ml-2 w-72 flex items-center">
           <input
             class="shadow appearance-none rounded w-full py-2 px-3 leading-tight focus:outline-none focus:shadow-outline"
@@ -751,7 +692,7 @@
       <div
         class="flex sm:flex-row flex-col justify-between items-center font-bold"
       >
-        Prometheus:
+        prometheus
         <div class="ml-2 w-72 flex items-center">
           <input
             class="shadow appearance-none rounded w-full py-2 px-3 leading-tight focus:outline-none focus:shadow-outline"
@@ -775,7 +716,7 @@
       <div
         class="flex sm:flex-row flex-col justify-between items-center font-bold"
       >
-        ETH RPC:
+        ethereum RPC
         <div class="ml-2 w-72 flex items-center">
           <input
             class="shadow appearance-none rounded w-full py-2 px-3 leading-tight focus:outline-none focus:shadow-outline mb-1"
@@ -842,7 +783,7 @@
 
   .nodeTypes .active {
     color: hsl(var(--twc-nodeTypesColorActive));
-    font-weight: 700;
+    font-weight: 600;
   }
 
   .nodeTypes .bar {
@@ -852,37 +793,8 @@
     font-weight: 400;
   }
 
-  .taikoImg {
-    transition: transform 0.5s ease-in-out;
-    transform-origin: center 37px;
-    width: 65px;
-  }
-
-  .layout {
-    border: 2.1px solid hsl(var(--twc-cardBackgroundColor));
-    background-color: hsl(var(--twc-settingsAccentColor));
-    color: hsl(var(--twc-textColor));
-    font-weight: 400;
-    line-height: 1;
-  }
-  .layout.active {
-    border: 2.1px solid hsl(var(--twc-primaryColor));
-    background-color: hsl(var(--twc-cardBackgroundColor));
-  }
-
-  .settings button {
-    width: 75px;
-  }
-
-  .settings input {
-    background-color: hsl(var(--twc-settingsAccentColor));
-    font-weight: 400;
-    text-align: center;
-    border-radius: 999px;
-  }
-
   .connections input {
-    background-color: hsl(var(--twc-settingsAccentColor));
+    background-color: hsl(var(--twc-inputAccentColor));
   }
 
   .animateConnections {
@@ -930,4 +842,37 @@
       transform: rotate(0deg);
     }
   }
+
+  section {
+    color: hsl(var(--twc-textColor));
+    display: flex;
+		flex-direction: column;
+		justify-content: center;
+		align-items: center;
+		flex: 0.6;
+		width: 50%;
+		margin-left: auto;
+		margin-right: auto;
+		text-align: center;
+	}
+
+
+  @media only screen and (max-width: 600px) {
+    section {
+      width: 90%;
+    }
+  }
+  @media only screen and (max-width: 1260px) {
+    section {
+      width: 75%;
+    }
+  }
+  .icon-big {
+		width: 100px;
+	}
+  .card {
+		background-color: hsl(var(--twc-cardBackgroundColor));
+		border-radius: 30px;
+		padding: 10px 20px;
+	}
 </style>
