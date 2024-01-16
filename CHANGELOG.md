@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning].
 
 ## [Unreleased]
 
+## [1.2.1] - 2024-01-16
+
+### Fixed
+
+- issue with animateConnections on error
+
+## [1.2.0] - 2024-01-16
+
 ### Added
 
 - add changelog
