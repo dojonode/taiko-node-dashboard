@@ -49,13 +49,17 @@
   let myNode;
   let ethRPC;
   let L2TaikoRPC;
-  let fetchMetricsError = true;
-  let fetchSystemInfoError = true;
-  let fetchPrometheusError = true;
-  let fetchMyNodeError = true;
-  let fetchEthRPCError = true;
-  let fetchL2TaikoRPCError = true;
-  let fetchEventIndexerError = true;
+  let fetchSystemInfoError = false;
+  let fetchPrometheusError = false;
+  let fetchMyNodeError = false;
+  let fetchEthRPCError = false;
+  let fetchL2TaikoRPCError = false;
+  let fetchEventIndexerError = false;
+  $:hasError = fetchSystemInfoError ||
+      fetchPrometheusError ||
+      fetchMyNodeError ||
+      fetchEthRPCError ||
+      fetchEventIndexerError;
 
   // Syncing estimation
   let startNodeHeight;
@@ -248,6 +252,7 @@
 
   const fetchAddressEvents = async () => {
     // Fetch Amount Of blocks proposed/proven, so if nodeType is regular node return and do nothing
+    fetchEventIndexerError = false;
     if (nodeType === NodeTypes.Node) return;
 
     const event = nodeType === NodeTypes.Proposer ? "BlockProposed" : nodeType === NodeTypes.Prover ? "BlockProven" : "";
@@ -376,7 +381,7 @@
     await initConnections();
 
     // Set startNodeHeight of the node if the RPC is successfully set
-    if(!fetchMyNodeError)
+    if(!fetchMyNodeError && myNode)
       myNode.eth.getBlockNumber().then((height) => (startNodeHeight = height));
 
     // Interval to fetch metrics every 5 seconds
@@ -489,12 +494,7 @@
     >
       <img
         src={antennaIcon}
-        class={fetchMetricsError ||
-        fetchSystemInfoError ||
-        fetchPrometheusError ||
-        fetchMyNodeError ||
-        fetchEthRPCError ||
-        fetchEventIndexerError
+        class={hasError
           ? "animateConnections"
           : ""}
         alt="antenna icon"
