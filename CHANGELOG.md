@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning].
 
 ## [Unreleased]
 
+## [1.2.2] - 2024-01-23
+
+### Fixed
+
+- fix dojo flag title
+- update headerimage href url
+
 ## [1.2.1] - 2024-01-16
 
 ### Fixed

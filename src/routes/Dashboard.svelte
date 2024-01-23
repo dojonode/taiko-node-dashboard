@@ -408,7 +408,7 @@
 
 <header class="flex flex-col items-center justify-center w-[90%] m-auto">
   <span>
-    <a href="/">
+    <a href="https://dojonode.xyz/shomen">
       <img src={headerImage} class="max-w-full max-h-[20vh] w-auto h-auto mt-2" alt="dojo node header with trees and the logo" />
     </a>
     <div class="w-[60px] ml-auto mr-8 lg:-mb-12 md:mb-4 mb-2">
@@ -422,8 +422,8 @@
     <section>
       <div class="mx-auto relative">
         <span>
-          <span class="text-[#5CAA80] font-bold">tatami</span>
-          <img src={dojoScrollIcon} class="icon-big m-auto" alt="tatami flag">
+          <span class="text-[#5CAA80] font-bold">dojo</span>
+          <img src={dojoScrollIcon} class="icon-big m-auto" alt="dojo flag">
         </span>
 
         <div class="card md:absolute md:top-0 md:left-36 w-max text-balance md:text-left mt-8 mb-2 max-w-[20rem]">
