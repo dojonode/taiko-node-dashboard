@@ -508,7 +508,7 @@
       <ChainCard
         title="chain"
         body="taiko"
-        subBody="katla testnet"
+        subBody="hekla testnet"
         icon={nodeTaikoIcon}
       />
       <Card

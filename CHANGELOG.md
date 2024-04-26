@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning].
 
 ## [Unreleased]
 
+## [1.3.0] - 2024-04-25
+
+### Changed
+
+- upgrade to alpha7 hekla testnet
+
 ## [1.2.2] - 2024-01-23
 
 ### Fixed
