@@ -13,7 +13,7 @@ To run the dashboard simply append the following two services to the `docker-com
      image: wolfderechter/taiko-node-dashboard:latest
      ports:
        - "7744:80"
-  taiko-node-systeminfo:
+  dojonode-systeminformation:
      image: wolfderechter/dojonode-systeminformation:latest
      ports:
        - "3009:3009"
