@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning].
 
 ## [Unreleased]
 
+## [1.3.1] - 2024-05-02
+
+### Changed
+
+- include arm in docker build
+
 ## [1.3.0] - 2024-04-25
 
 ### Changed
