@@ -207,6 +207,8 @@
       }
 
       nodeHeight = await myNode.eth.getBlockNumber();
+      // set the startNodeHeight once
+      if(startNodeHeight === undefined) startNodeHeight = nodeHeight;
       chainHeight = await L2TaikoRPC.eth.getBlockNumber();
 
       /*
@@ -379,10 +381,6 @@
 
     // Initialize the RPC connections
     await initConnections();
-
-    // Set startNodeHeight of the node if the RPC is successfully set
-    if(!fetchMyNodeError && myNode)
-      myNode.eth.getBlockNumber().then((height) => (startNodeHeight = height));
 
     // Interval to fetch metrics every 5 seconds
     intervalTimer = setInterval(async () => {

@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning].
 
 ## [Unreleased]
 
+## [1.3.2] - 2024-05-06
+
+### Fixed
+
+- fix broken startNodeHeight which broke the ETA timer
+
 ## [1.3.1] - 2024-05-02
 
 ### Changed
