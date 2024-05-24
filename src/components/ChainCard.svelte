@@ -5,7 +5,7 @@
   export let icon: string = null;
 </script>
 
-<div class="card cursor-pointer modal shadow-md">
+<div class="card modal shadow-md">
   <h3 class="modal-title">{title}</h3>
   <div class="flex flex-col h-[125px]">
     <div

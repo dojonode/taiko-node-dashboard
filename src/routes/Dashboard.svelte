@@ -45,6 +45,7 @@
 
   const urlParams = new URLSearchParams(window.location.search);
   let expertModeCounter = 0;
+  let url;
   let expertMode = false;
   let myNode;
   let ethRPC;
@@ -164,9 +165,7 @@
   let systeminformationMetrics: SysteminformationMetricsInterface = null;
 
   // layout variables
-  let rotationAngle = 0; // used to rotate the taiko logo
   let connectionsOpen: boolean = false;
-  let imageRef: HTMLImageElement;
 
   // fetch general metrics from the node RPCs
   async function fetchMetrics() {
@@ -343,10 +342,6 @@
   function switchNodeType(type) {
     if (nodeType === type) return;
 
-    // used to rotate the taiko logo correctly
-    // rotationAngle += 120;
-    // imageRef.style.transform = `rotate(${rotationAngle}deg)`;
-
     switch (type) {
       case NodeTypes.Node:
         nodeType = NodeTypes.Node;
@@ -365,6 +360,7 @@
   }
 
   onMount(async () => {
+    url = window.location.href;
     // override the current params with urlParams if user provides an IP param
     // example url: http://.../?ip=192.168.1.1&nodePort=8546&prometheusPort=9090
     if (urlParams.has("ip")) {
@@ -621,6 +617,20 @@
       class="connections grid grid-cols-1 gap-6 mx-5 my-10 max-h-96 overflow-y-auto text-[hsl(var(--twc-textColor))]"
       slot="body"
     >
+
+    {#if url.startsWith('https://dashboard.dojonode.xyz')}
+      <div class="flex items-center">
+        <img
+        src={warningIcon}
+        alt="icon"
+        class="w-[30px] h-[30px] mr-2"
+        />
+        <div>
+          it seems like you are using the 'https' version of the hosted dashboard. This will not connect to your node, make sure to use <a class="underline" href="http://dashboard.dojonode.xyz">http://dashboard.dojonode.xyz</a> or <a target="_blank" class="underline" href="https://github.com/dojonode/taiko-node-dashboard-docker/">try selfhosting the dashboard</a>
+        </div>
+      </div>
+    {/if}
+
       <div
         class="flex sm:flex-row flex-col justify-between items-center font-bold"
       >

@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning].
 
 ## [Unreleased]
 
+## [1.3.3] - 2024-05-22
+
+### Added
+
+- Check for `https://dashboard.dojonode.xyz` and add warning to use http or selfhost to fix common issue
+
+### Changed
+
+- remove cursor pointer on cards
+
 ## [1.3.2] - 2024-05-06
 
 ### Fixed

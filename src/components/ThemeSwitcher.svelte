@@ -1,5 +1,4 @@
 <script lang="ts" context="module">
-  import { onMount } from "svelte";
   import CremeModeIcon from "../assets/icons/CremeMode.avif";
   import DarkModeIcon from "../assets/icons/DarkMode.avif";
   import { writable } from "svelte/store";
