@@ -45,6 +45,7 @@
 
   const urlParams = new URLSearchParams(window.location.search);
   let expertModeCounter = 0;
+  let selected = "hekla"
   let url;
   let expertMode = false;
   let myNode;
@@ -337,6 +338,13 @@
       }
     }
   };
+  function handleNavigation() {
+    if (selected === 'mainnet') {
+      window.location.href = "http://dashboard.dojonode.xyz";
+    } else if (selected === 'hekla') {
+      window.location.href = "http://hekla.dojonode.xyz";
+    }
+  }
 
   // switching the nodetype, rotates the taiko logo and reveals/hides certain cards
   function switchNodeType(type) {
@@ -418,6 +426,14 @@
         <span>
           <span class="text-[#5CAA80] font-bold">dojo</span>
           <img src={dojoScrollIcon} class="icon-big m-auto" alt="dojo flag">
+          {#if url?.startsWith('http://dashboard.dojonode.xyz') || url?.startsWith('http://hekla.dojonode.xyz')}
+            <div>
+              <select class="mt-2 px-3 py-1 rounded-full" bind:value={selected} on:change={handleNavigation}>
+                <option value="mainnet">mainnet</option>
+                <option value="hekla">hekla</option>
+              </select>
+            </div>
+          {/if}
         </span>
 
         <div class="card md:absolute md:top-0 md:left-36 w-max text-balance md:text-left mt-8 mb-2 max-w-[20rem]">
