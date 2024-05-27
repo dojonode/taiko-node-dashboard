@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning].
 
 ## [Unreleased]
 
+## [1.4.0] - 2024-05-27
+
+### Added
+
+- Upgraded to support mainnet
+
 ## [1.3.3] - 2024-05-22
 
 ### Added
