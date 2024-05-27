@@ -635,7 +635,7 @@
       slot="body"
     >
 
-    {#if url.startsWith('https://dashboard.dojonode.xyz') || url.startsWith('https://hekla.dojonode.xyz')}
+    {#if url.startsWith('https://dashboard.dojonode.xyz') }
       <div class="flex items-center">
         <img
         src={warningIcon}
@@ -646,6 +646,17 @@
           it seems like you are using the 'https' version of the hosted dashboard. This will not connect to your node, make sure to use <a class="underline" href="http://dashboard.dojonode.xyz">http://dashboard.dojonode.xyz</a> or <a target="_blank" class="underline" href="https://github.com/dojonode/taiko-node-dashboard-docker/">try selfhosting the dashboard</a>
         </div>
       </div>
+    {:else if url.startsWith('https://hekla.dojonode.xyz')}
+    <div class="flex items-center">
+      <img
+      src={warningIcon}
+      alt="icon"
+      class="w-[30px] h-[30px] mr-2"
+      />
+      <div>
+        it seems like you are using the 'https' version of the hosted dashboard. This will not connect to your node, make sure to use <a class="underline" href="http://hekla.dojonode.xyz">http://hekla.dojonode.xyz</a> or <a target="_blank" class="underline" href="https://github.com/dojonode/taiko-node-dashboard-docker/">try selfhosting the dashboard</a>
+      </div>
+    </div>
     {/if}
 
       <div
