@@ -45,7 +45,7 @@
 
   const urlParams = new URLSearchParams(window.location.search);
   let expertModeCounter = 0;
-  let selected = "hekla"
+  let selected = 'mainnet'
   let url;
   let expertMode = false;
   let myNode;
@@ -338,6 +338,7 @@
       }
     }
   };
+
   function handleNavigation() {
     if (selected === 'mainnet') {
       window.location.href = "http://dashboard.dojonode.xyz";
@@ -426,7 +427,7 @@
         <span>
           <span class="text-[#5CAA80] font-bold">dojo</span>
           <img src={dojoScrollIcon} class="icon-big m-auto" alt="dojo flag">
-          {#if url?.startsWith('http://dashboard.dojonode.xyz') || url?.startsWith('http://hekla.dojonode.xyz')}
+          {#if url?.startsWith('http://dashboard.dojonode.xyz') || url?.startsWith('http://hekla.dojonode.xyz') || url?.startsWith('https://dashboard.dojonode.xyz') || url?.startsWith('https://hekla.dojonode.xyz')}
             <div>
               <select class="mt-2 px-3 py-1 rounded-full" bind:value={selected} on:change={handleNavigation}>
                 <option value="mainnet">mainnet</option>
@@ -518,7 +519,7 @@
       <ChainCard
         title="chain"
         body="taiko"
-        subBody="hekla testnet"
+        subBody="mainnet"
         icon={nodeTaikoIcon}
       />
       <Card
@@ -634,7 +635,7 @@
       slot="body"
     >
 
-    {#if url.startsWith('https://dashboard.dojonode.xyz') || url.startsWith('http://dashboard.dojonode.xyz') }
+    {#if url.startsWith('https://dashboard.dojonode.xyz') }
       <div class="flex items-center">
         <img
         src={warningIcon}
@@ -645,7 +646,7 @@
           it seems like you are using the 'https' version of the hosted dashboard. This will not connect to your node, make sure to use <a class="underline" href="http://dashboard.dojonode.xyz">http://dashboard.dojonode.xyz</a> or <a target="_blank" class="underline" href="https://github.com/dojonode/taiko-node-dashboard-docker/">try selfhosting the dashboard</a>
         </div>
       </div>
-    {:else if url.startsWith('https://hekla.dojonode.xyz') || url.startsWith('http://hekla.dojonode.xyz')}
+    {:else if url.startsWith('https://hekla.dojonode.xyz')}
     <div class="flex items-center">
       <img
       src={warningIcon}
