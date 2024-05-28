@@ -519,7 +519,7 @@
       <ChainCard
         title="chain"
         body="taiko"
-        subBody="mainnet"
+        subBody="hekla"
         icon={nodeTaikoIcon}
       />
       <Card
