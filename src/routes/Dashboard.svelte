@@ -45,7 +45,7 @@
 
   const urlParams = new URLSearchParams(window.location.search);
   let expertModeCounter = 0;
-  let selected = 'mainnet'
+  let selected = 'hekla'
   let url;
   let expertMode = false;
   let myNode;
