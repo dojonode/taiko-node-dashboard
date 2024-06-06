@@ -7,6 +7,7 @@ Taiko node dashboard is aimed to provide quick and digestible insights into your
 ## Usage
 
 To run the dashboard simply append the following two services to the `docker-compose.yml` of the taiko node.
+
 To configure the dashboard for the Hekla testnet, use the `hekla` image tag in `wolfderechter/taiko-node-dashboard:hekla`.
 
 ```docker-compose
