@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning].
 
 ## [Unreleased]
 
+## [1.4.1] - 2024-06-06
+
+### Fixed
+
+- darkmode network dropdown issue
+
 ## [1.4.0] - 2024-05-27
 
 ### Added
