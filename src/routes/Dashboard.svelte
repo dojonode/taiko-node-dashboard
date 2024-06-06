@@ -429,7 +429,7 @@
           <img src={dojoScrollIcon} class="icon-big m-auto" alt="dojo flag">
           {#if url?.startsWith('http://dashboard.dojonode.xyz') || url?.startsWith('http://hekla.dojonode.xyz') || url?.startsWith('https://dashboard.dojonode.xyz') || url?.startsWith('https://hekla.dojonode.xyz')}
             <div>
-              <select class="mt-2 px-3 py-1 rounded-full" bind:value={selected} on:change={handleNavigation}>
+              <select id="networkDropdown" class="mt-2 px-3 py-1 rounded-full" bind:value={selected} on:change={handleNavigation}>
                 <option value="mainnet">mainnet</option>
                 <option value="hekla">hekla</option>
               </select>
@@ -911,4 +911,9 @@
 		border-radius: 30px;
 		padding: 10px 20px;
 	}
+
+  #networkDropdown{
+    color: hsl(var(--twc-textColor));
+    background-color: hsl(var(--twc-cardBackgroundColor));
+  }
 </style>
