@@ -183,15 +183,13 @@
               await ethRPC?.eth.getBalance(customAddressL1),
               "ether",
             ),
-          );
+          ).toFixed(4);
 
           // Use the taiko RPC to be reliable, a node that's not synced will display false numbers
-          L2Balance = Number(
-            L2TaikoRPC?.utils.fromWei(
+          L2Balance = Number(L2TaikoRPC?.utils.fromWei(
               await L2TaikoRPC?.eth.getBalance(customAddressL2),
               "ether",
-            ),
-          );
+            )).toFixed(4);
         }
       } else {
         L1Balance = null;

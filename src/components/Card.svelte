@@ -51,7 +51,7 @@
                 alt="ethereum icon"
               />
               <a
-                href="https://holesky.etherscan.io/address/{customAddressL1}"
+                href="https://etherscan.io/address/{customAddressL1}"
                 target="”_blank”"
               >
                 {bodyString}

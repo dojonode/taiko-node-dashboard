@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning].
 
 ## [Unreleased]
 
+## [1.4.2] - 2024-06-19
+
+### Fixed
+
+- use mainnet etherscan
+- show 4 fixed digits for eth balances
+
 ## [1.4.1] - 2024-06-06
 
 ### Fixed
