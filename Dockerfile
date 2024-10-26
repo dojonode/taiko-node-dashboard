@@ -1,4 +1,4 @@
-FROM oven/bun as Build
+FROM oven/bun AS Build
 
 # Set the working directory
 WORKDIR /app
