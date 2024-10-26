@@ -37,19 +37,18 @@ Or if you wish to run the dashboard standalone:
 
 ### Pre-installation
 
-Make sure you have **node** and **npm** installed on your system. You can do it by:
+Make sure you have **node** and **bun** installed on your system. You can do it by:
 
 `brew install node`
-`brew install npm`
-`npm install -g pnpm`
+`curl -fsSL https://bun.sh/install | bash`
 
 ### Development Usage
 
 You can start the application with the following lines:
 
-`pnpm install`
+`bun install`
 
-`pnpm start`
+`bun start`
 
 You'll probably also want to start the [systeminformation](https://github.com/dojonode/dojonode-systeminformation) application with:
 
@@ -57,7 +56,7 @@ You'll probably also want to start the [systeminformation](https://github.com/do
 
 `cd dojonode-systeminformation`
 
-`node server.js`
+`bun server.js`
 
 ### Deployment
 
