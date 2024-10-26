@@ -1,4 +1,4 @@
-FROM oven/bun AS Build
+FROM oven/bun AS build
 
 # Set the working directory
 WORKDIR /app
@@ -18,7 +18,7 @@ RUN bun run build
 # Use a lightweight Nginx image as the base image for the final image
 FROM nginx:1.27.1
 # Copy the built app from the Build stage to the Nginx web server
-COPY --from=Build /app/dist /usr/share/nginx/html
+COPY --from=build /app/dist /usr/share/nginx/html
 
 # Expose port 80 so that the container can be accessed from the host
 EXPOSE 80
