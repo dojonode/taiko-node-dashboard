@@ -1,23 +1,19 @@
-# Use the official Node.js image as the base image
-FROM node:22.9.0 AS Build
-
-# Install pnpm
-RUN npm install -g pnpm
+FROM oven/bun as Build
 
 # Set the working directory
 WORKDIR /app
 
-# Copy the package.json and pnpm-lock.yaml files into the container
-COPY package.json pnpm-lock.yaml ./
+# Copy the package.json into the container
+COPY package.json package.json
 
-# Install dependencies using pnpm
-RUN pnpm install
+# Install dependencies using bun
+RUN bun install
 
 # Copy the rest of the Svelte app into the container
 COPY . .
 
 # Build the Svelte app
-RUN pnpm run build
+RUN bun run build
 
 # Use a lightweight Nginx image as the base image for the final image
 FROM nginx:1.27.1
