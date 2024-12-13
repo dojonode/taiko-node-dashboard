@@ -17,15 +17,18 @@
     "lint": "bunx eslint './**/*.{ts,svelte}'",
     "lint:fix": "bunx eslint --fix './**/*.{ts,svelte}'",
     "predeploy": "bun run build",
-    "deploy": "gh-pages -d dist"
+    "deploy": "gh-pages -d dist",
+    "knip": "knip"
   },
   "devDependencies": {
     "@sveltejs/vite-plugin-svelte": "^3.1.2",
     "@tsconfig/svelte": "^5.0.4",
+    "@types/node": "^22.10.2",
     "autoprefixer": "^10.4.20",
     "babel-plugin-transform-es2015-modules-commonjs": "^6.26.2",
     "gh-pages": "^6.2.0",
-    "postcss": "^8.4.47",
+    "knip": "^5.40.0",
+    "postcss": "^8.4.49",
     "postcss-cli": "^11.0.0",
     "postcss-loader": "^8.1.1",
     "prettier": "3.3.3",

@@ -32,6 +32,7 @@
   import { MetricTypes, NodeTypes } from "../domain/enums";
   import headerImage from '../assets/Header.avif';
   import type {
+  Systeminfo,
     SysteminformationMetricsInterface,
   } from "../domain/types";
   import {
@@ -285,7 +286,7 @@
   async function fetchSystemInfo() {
     try {
       const response = await fetch(`${CUSTOM_SYSTEMINFO_API_URL}/metrics`);
-      const systemInfo = await response.json();
+      const systemInfo: Systeminfo = await response.json();
 
       const mem = systemInfo.mem;
       const disk = systemInfo.disk[0];

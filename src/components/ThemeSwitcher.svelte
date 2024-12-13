@@ -6,11 +6,8 @@
     setLocalStorageItem,
     getLocalStorageItem,
   } from "../utils/localstorage";
+  import { Themes } from '../domain/enums';
 
-  const Themes = {
-    Dark: "dark",
-    Paper: "paper",
-  };
   // Create a svelte store with the theme found in localstorage or the paper default theme
   let foundTheme = getLocalStorageItem("theme");
   export const currentTheme = writable(foundTheme ? foundTheme : Themes.Paper);
