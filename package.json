@@ -1,7 +1,6 @@
 {
   "name": "@wolfderechter/taiko-node-dashboard",
   "version": "1.3.1",
-  "private": true,
   "type": "module",
   "homepage": "https://dojonode.xyz",
   "scripts": {
@@ -31,17 +30,17 @@
     "postcss": "^8.4.49",
     "postcss-cli": "^11.0.0",
     "postcss-loader": "^8.1.1",
-    "prettier": "3.3.3",
+    "prettier": "3.4.2",
     "rollup-plugin-polyfill-node": "^0.13.0",
     "svelte": "^4.2.19",
-    "svelte-check": "^4.0.5",
+    "svelte-check": "^4.1.1",
     "svelte-loader": "^3.2.4",
     "svelte-preprocess": "^6.0.3",
-    "tailwindcss": "^3.4.14",
+    "tailwindcss": "^3.4.16",
     "ts-loader": "^9.5.1",
     "tslib": "^2.8.0",
     "typescript": "^5.6.3",
-    "vite": "^5.4.10"
+    "vite": "^5.4.11"
   },
   "dependencies": {
     "buffer": "^6.0.3",
@@ -49,7 +48,7 @@
     "simple-duration": "^1.1.1",
     "svelte-spa-router": "^4.0.1",
     "tw-colors": "^3.3.2",
-    "vite-plugin-pwa": "^0.20.5",
-    "web3": "^4.14.0"
+    "vite-plugin-pwa": "^0.21.1",
+    "web3": "^4.16.0"
   }
 }
